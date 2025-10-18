@@ -1,0 +1,57 @@
+﻿/* ---------- Collection Card ---------- */
+.collection-card {
+    position: relative;
+    display: block;
+    overflow: hidden;
+    border-radius: var(--r-lg);
+    background: #F3F4F6;
+    box-shadow: var(--shadow-1);
+    transition: box-shadow var(--t-mid) var(--ease), transform var(--t-mid) var(--ease);
+}
+
+    .collection-card:hover {
+        box-shadow: var(--shadow-2);
+        transform: translateY(-2px)
+    }
+
+    .collection-card:focus-visible {
+        outline: 3px solid var(--accent);
+        outline-offset: 2px
+    }
+
+.collection-card__media {
+    aspect-ratio: 16/12;
+    background: center/cover no-repeat;
+    background-image: var(--bg, none);
+}
+
+/* overlay under text */
+.collection-card::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    background: linear-gradient(to bottom, rgba(255,255,255,0) 0%, rgba(255,255,255,.35) 45%, rgba(255,255,255,.75) 100%);
+}
+/* caption on overlay */
+.collection-card__caption {
+    position: absolute;
+    left: 20px;
+    right: 20px;
+    bottom: 16px;
+    z-index: 1
+}
+
+.collection-card__title {
+    margin: 0;
+    font-size: var(--fs-xl);
+    font-weight: 700;
+    color: var(--ink)
+}
+
+.collection-card__meta {
+    margin: 6px 0 0;
+    font-size: var(--fs-sm);
+    color: var(--ink)
+}

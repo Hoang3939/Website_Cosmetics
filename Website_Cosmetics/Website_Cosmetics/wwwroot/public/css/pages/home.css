@@ -1,0 +1,22 @@
+﻿/* ---------- Hero (Banner) ---------- */
+.hero {
+    padding-top: 24px;
+}
+
+.hero-card {
+    border: none;
+    border-radius: 16px;
+    overflow: hidden;
+    background: #F6E7EB;
+}
+
+    .hero-card img {
+        display: block;
+        width: 100%;
+        height: auto;
+    }
+
+/* Special Deals panel */
+.section--panel {
+    background: var(--panel);
+}

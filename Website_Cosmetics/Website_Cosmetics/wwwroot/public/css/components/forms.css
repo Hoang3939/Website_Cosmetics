@@ -1,0 +1,23 @@
+﻿/* ---------- Forms ---------- */
+.input {
+    width: 100%;
+    height: 36px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: #fff;
+    color: var(--ink);
+    padding: 0 10px;
+}
+
+/* Dark background variant (footer) */
+.input--dark {
+    border-color: #1F2937;
+    background: #0B0E13;
+    color: #fff;
+}
+
+/* Stack */
+.hstack {
+    display: flex;
+    gap: 8px;
+}

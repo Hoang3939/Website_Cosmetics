@@ -1,0 +1,30 @@
+﻿/* ---------- Buttons ---------- */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: .5rem;
+    padding: .6rem 1rem;
+    border-radius: var(--r-sm);
+    border: 1px solid var(--line);
+    background: #fff;
+    cursor: pointer;
+    transition: transform var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease);
+}
+
+    .btn:hover {
+        box-shadow: var(--shadow-1);
+        transform: translateY(-1px)
+    }
+
+.btn--brand {
+    background: var(--brand);
+    color: #fff;
+    border-color: var(--brand)
+}
+
+.btn--icon {
+    width: 36px;
+    height: 36px;
+    padding: 0
+}

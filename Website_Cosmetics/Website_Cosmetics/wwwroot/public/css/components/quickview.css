@@ -1,0 +1,93 @@
+﻿.qv {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+}
+
+.qv__media img {
+    width: 100%;
+    border-radius: 10px;
+}
+
+.qv__brand {
+    font-size: .9rem;
+    letter-spacing: .05em;
+    color: #555;
+}
+
+.qv__title {
+    font-size: 1.4rem;
+    font-weight: 700;
+    margin: 8px 0;
+}
+
+.qv__rating {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 8px 0;
+}
+
+.qv__price {
+    display: flex;
+    gap: 10px;
+    font-size: 1.1rem;
+}
+
+    .qv__price .old {
+        color: #888;
+        text-decoration: line-through;
+    }
+
+.qv__qty {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 10px 0;
+}
+
+    .qv__qty input {
+        width: 50px;
+        text-align: center;
+    }
+
+.qv__actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.btn--brand {
+    background: #111827;
+    color: #fff;
+    border: 1px solid #111827;
+}
+
+.btn--ghost {
+    background: #fff;
+    border: 1px solid #ccc;
+}
+
+@media (max-width: 768px) {
+    .qv {
+        grid-template-columns: 1fr;
+    }
+}
+
+.qv__desc {
+    font-size: 0.95rem;
+    line-height: 1.55;
+    color: #4b5563;
+    margin: 8px 0 16px;
+    max-width: 520px;
+}
+
+.qv__details {
+    display: inline-block;
+    margin: 6px 0 14px;
+    color: #2563eb;
+}
+
+    .qv__details:hover {
+        text-decoration: underline;
+    }

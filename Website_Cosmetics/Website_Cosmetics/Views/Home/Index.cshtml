@@ -1,8 +1,343 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Home";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+<!-- Banner -->
+<section class="section hero">
+    <div class="container">
+        <div class="card hero-card">
+            <img src="/public/images/banner/banner-blush.png" alt="Banner" />
+        </div>
+    </div>
+</section>
+
+<!-- Most Loved -->
+<section class="section">
+    <div class="section__hd">
+        <h2>Most Loved</h2>
+        <p>Top-rated products by our customers.</p>
+    </div>
+
+    <div class="container grid grid--products">
+        <!-- 1 -->
+        <div class="card product" data-details="/Catalog/Details/matte-velvet-lipstick">
+            <div class="product__img"><img src="/public/images/products/img-cart-lip.png" alt="Matte Velvet Lipstick" /></div>
+            <div class="product__body">
+                <div class="product__brand">LANCOME</div>
+                <h3 class="product__title">Matte Velvet Lipstick</h3>
+                <div class="rating">
+                    <img class="icon icon--star" src="/public/images/icons/star.png" alt="" aria-hidden="true" />
+                    <span class="rating__score">4.9</span><span class="rating__count">(300 reviews)</span>
+                </div>
+                <div class="product__price"><span class="price--now">$15.00</span><span class="price--old">$20.00</span></div>
+                <div class="product__actions">
+                    <a class="btn" data-quickview>Quick view</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2 -->
+        <div class="card product">
+            <div class="product__img"><img src="/public/images/products/img-cart-lip.png" alt="Silk Shine Lip Gloss" /></div>
+            <div class="product__body">
+                <div class="product__brand">FENTY</div>
+                <h3 class="product__title">Silk Shine Lip Gloss</h3>
+                <div class="rating">
+                    <img class="icon icon--star" src="/public/images/icons/star.png" alt="" aria-hidden="true" />
+                    <span class="rating__score">4.8</span><span class="rating__count">(184 reviews)</span>
+                </div>
+                <div class="product__price"><span class="price--now">$18.00</span><span class="price--old">$22.00</span></div>
+                <div class="product__actions">
+                    <a class="btn" data-quickview>Quick view</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3 -->
+        <div class="card product">
+            <div class="product__img"><img src="/public/images/products/img-cart-lip.png" alt="Creamy Tint Balm" /></div>
+            <div class="product__body">
+                <div class="product__brand">ETUDE</div>
+                <h3 class="product__title">Creamy Tint Balm</h3>
+                <div class="rating">
+                    <img class="icon icon--star" src="/public/images/icons/star.png" alt="" aria-hidden="true" />
+                    <span class="rating__score">4.7</span><span class="rating__count">(129 reviews)</span>
+                </div>
+                <div class="product__price"><span class="price--now">$12.00</span><span class="price--old">$16.00</span></div>
+                <div class="product__actions">
+                    <a class="btn" data-quickview>Quick view</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4 -->
+        <div class="card product">
+            <div class="product__img"><img src="/public/images/products/img-cart-lip.png" alt="Velvet Muse Tint" /></div>
+            <div class="product__body">
+                <div class="product__brand">3CE</div>
+                <h3 class="product__title">Velvet Muse Tint</h3>
+                <div class="rating">
+                    <img class="icon icon--star" src="/public/images/icons/star.png" alt="" aria-hidden="true" />
+                    <span class="rating__score">4.9</span><span class="rating__count">(412 reviews)</span>
+                </div>
+                <div class="product__price"><span class="price--now">$19.00</span><span class="price--old">$24.00</span></div>
+                <div class="product__actions">
+                    <a class="btn" data-quickview>Quick view</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 5 -->
+        <div class="card product">
+            <div class="product__img"><img src="/public/images/products/img-cart-lip.png" alt="Plump Gloss Serum" /></div>
+            <div class="product__body">
+                <div class="product__brand">DIOR</div>
+                <h3 class="product__title">Plump Gloss Serum</h3>
+                <div class="rating">
+                    <img class="icon icon--star" src="/public/images/icons/star.png" alt="" aria-hidden="true" />
+                    <span class="rating__score">4.8</span><span class="rating__count">(268 reviews)</span>
+                </div>
+                <div class="product__price"><span class="price--now">$28.00</span><span class="price--old">$35.00</span></div>
+                <div class="product__actions">
+                    <a class="btn" data-quickview>Quick view</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 6 -->
+        <div class="card product">
+            <div class="product__img"><img src="/public/images/products/img-cart-lip.png" alt="Soft Blur Lipstick" /></div>
+            <div class="product__body">
+                <div class="product__brand">YSL</div>
+                <h3 class="product__title">Soft Blur Lipstick</h3>
+                <div class="rating">
+                    <img class="icon icon--star" src="/public/images/icons/star.png" alt="" aria-hidden="true" />
+                    <span class="rating__score">4.7</span><span class="rating__count">(153 reviews)</span>
+                </div>
+                <div class="product__price"><span class="price--now">$26.00</span><span class="price--old">$30.00</span></div>
+                <div class="product__actions">
+                    <a class="btn" data-quickview>Quick view</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 7 -->
+        <div class="card product">
+            <div class="product__img"><img src="/public/images/products/img-cart-lip.png" alt="Hydra Lip Oil" /></div>
+            <div class="product__body">
+                <div class="product__brand">RARE BEAUTY</div>
+                <h3 class="product__title">Hydra Lip Oil</h3>
+                <div class="rating">
+                    <img class="icon icon--star" src="/public/images/icons/star.png" alt="" aria-hidden="true" />
+                    <span class="rating__score">4.8</span><span class="rating__count">(341 reviews)</span>
+                </div>
+                <div class="product__price"><span class="price--now">$21.00</span><span class="price--old">$27.00</span></div>
+                <div class="product__actions">
+                    <a class="btn" data-quickview>Quick view</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 8 -->
+        <div class="card product">
+            <div class="product__img"><img src="/public/images/products/img-cart-lip.png" alt="Glow Tint Stick" /></div>
+            <div class="product__body">
+                <div class="product__brand">NARS</div>
+                <h3 class="product__title">Glow Tint Stick</h3>
+                <div class="rating">
+                    <img class="icon icon--star" src="/public/images/icons/star.png" alt="" aria-hidden="true" />
+                    <span class="rating__score">4.9</span><span class="rating__count">(198 reviews)</span>
+                </div>
+                <div class="product__price"><span class="price--now">$23.00</span><span class="price--old">$29.00</span></div>
+                <div class="product__actions">
+                    <a class="btn" data-quickview>Quick view</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container text-center mt-16">
+        <a class="btn" asp-controller="Catalog" asp-action="Index">View All Products</a>
+    </div>
+</section>
+
+<!-- Special Deals 40% -->
+<section class="section section--panel">
+    <div class="section__hd">
+        <h2>Special Deals 40%</h2>
+        <p>Hand-picked sale items and bundles.</p>
+    </div>
+
+    <div class="container grid grid--products">
+        <!-- 1 -->
+        <div class="card product">
+            <div class="product__img"><img src="/public/images/products/img-cart-brush.png" alt="Pro Brush Set" /></div>
+            <div class="product__body">
+                <div class="product__brand">BRUSHCO</div>
+                <h3 class="product__title">Pro Brush Set</h3>
+                <div class="rating">
+                    <img class="icon icon--star" src="/public/images/icons/star.png" alt="" aria-hidden="true" />
+                    <span class="rating__score">4.7</span><span class="rating__count">(210 reviews)</span>
+                </div>
+                <div class="product__price"><span class="price--now">$30.00</span><span class="price--old">$50.00</span></div>
+                <div class="product__actions">
+                    <a class="btn" data-quickview>Quick view</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2 -->
+        <div class="card product">
+            <div class="product__img"><img src="/public/images/products/img-cart-brush.png" alt="Soft Blend Brush 6pc" /></div>
+            <div class="product__body">
+                <div class="product__brand">MORPHE</div>
+                <h3 class="product__title">Soft Blend Brush 6pc</h3>
+                <div class="rating">
+                    <img class="icon icon--star" src="/public/images/icons/star.png" alt="" aria-hidden="true" />
+                    <span class="rating__score">4.6</span><span class="rating__count">(167 reviews)</span>
+                </div>
+                <div class="product__price"><span class="price--now">$24.00</span><span class="price--old">$40.00</span></div>
+                <div class="product__actions">
+                    <a class="btn" data-quickview>Quick view</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3 -->
+        <div class="card product">
+            <div class="product__img"><img src="/public/images/products/img-cart-brush.png" alt="Precision Eye Kit" /></div>
+            <div class="product__body">
+                <div class="product__brand">SIGMA</div>
+                <h3 class="product__title">Precision Eye Kit</h3>
+                <div class="rating">
+                    <img class="icon icon--star" src="/public/images/icons/star.png" alt="" aria-hidden="true" />
+                    <span class="rating__score">4.8</span><span class="rating__count">(134 reviews)</span>
+                </div>
+                <div class="product__price"><span class="price--now">$27.00</span><span class="price--old">$45.00</span></div>
+                <div class="product__actions">
+                    <a class="btn" data-quickview>Quick view</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4 -->
+        <div class="card product">
+            <div class="product__img"><img src="/public/images/products/img-cart-brush.png" alt="Contour & Highlight Duo" /></div>
+            <div class="product__body">
+                <div class="product__brand">REAL TECHNIQUES</div>
+                <h3 class="product__title">Contour & Highlight Duo</h3>
+                <div class="rating">
+                    <img class="icon icon--star" src="/public/images/icons/star.png" alt="" aria-hidden="true" />
+                    <span class="rating__score">4.7</span><span class="rating__count">(201 reviews)</span>
+                </div>
+                <div class="product__price"><span class="price--now">$18.00</span><span class="price--old">$30.00</span></div>
+                <div class="product__actions">
+                    <a class="btn" data-quickview>Quick view</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 5 -->
+        <div class="card product">
+            <div class="product__img"><img src="/public/images/products/img-cart-brush.png" alt="Kabuki Face Brush" /></div>
+            <div class="product__body">
+                <div class="product__brand">HOURGLASS</div>
+                <h3 class="product__title">Kabuki Face Brush</h3>
+                <div class="rating">
+                    <img class="icon icon--star" src="/public/images/icons/star.png" alt="" aria-hidden="true" />
+                    <span class="rating__score">4.8</span><span class="rating__count">(178 reviews)</span>
+                </div>
+                <div class="product__price"><span class="price--now">$33.00</span><span class="price--old">$55.00</span></div>
+                <div class="product__actions">
+                    <a class="btn" data-quickview>Quick view</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 6 -->
+        <div class="card product">
+            <div class="product__img"><img src="/public/images/products/img-cart-brush.png" alt="Detail Liner Brush" /></div>
+            <div class="product__body">
+                <div class="product__brand">ZOEVA</div>
+                <h3 class="product__title">Detail Liner Brush</h3>
+                <div class="rating">
+                    <img class="icon icon--star" src="/public/images/icons/star.png" alt="" aria-hidden="true" />
+                    <span class="rating__score">4.5</span><span class="rating__count">(96 reviews)</span>
+                </div>
+                <div class="product__price"><span class="price--now">$12.00</span><span class="price--old">$20.00</span></div>
+                <div class="product__actions">
+                    <a class="btn" data-quickview>Quick view</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 7 -->
+        <div class="card product">
+            <div class="product__img"><img src="/public/images/products/img-cart-brush.png" alt="Air Powder Brush" /></div>
+            <div class="product__body">
+                <div class="product__brand">SEPHORA</div>
+                <h3 class="product__title">Air Powder Brush</h3>
+                <div class="rating">
+                    <img class="icon icon--star" src="/public/images/icons/star.png" alt="" aria-hidden="true" />
+                    <span class="rating__score">4.6</span><span class="rating__count">(142 reviews)</span>
+                </div>
+                <div class="product__price"><span class="price--now">$16.00</span><span class="price--old">$27.00</span></div>
+                <div class="product__actions">
+                    <a class="btn" data-quickview>Quick view</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 8 -->
+        <div class="card product">
+            <div class="product__img"><img src="/public/images/products/img-cart-brush.png" alt="Travel Brush Trio" /></div>
+            <div class="product__body">
+                <div class="product__brand">E.L.F.</div>
+                <h3 class="product__title">Travel Brush Trio</h3>
+                <div class="rating">
+                    <img class="icon icon--star" src="/public/images/icons/star.png" alt="" aria-hidden="true" />
+                    <span class="rating__score">4.6</span><span class="rating__count">(88 reviews)</span>
+                </div>
+                <div class="product__price"><span class="price--now">$10.00</span><span class="price--old">$16.00</span></div>
+                <div class="product__actions">
+                    <a class="btn" data-quickview>Quick view</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- View all for Sales -->
+    <div class="container text-center mt-16">
+        <a class="btn btn--brand" asp-controller="Deals" asp-action="Index">View All Deals</a>
+    </div>
+</section>
+
+<!-- Explore the Collection -->
+<section class="section">
+    <div class="section__hd">
+        <h2>Explore the Collection</h2>
+        <p>Find the right products for your needs.</p>
+    </div>
+
+    <div class="container grid grid--categories">
+        @{
+            var collections = new[] {
+        new { Name = "New & Trending",   Image = "/public/images/ui/collections-trending.png", Count = 200, Slug = "new-trending" },
+        new { Name = "Makeup",           Image = "/public/images/ui/collections-makeup.png",   Count = 420, Slug = "makeup" },
+        new { Name = "Tools & Brushes",  Image = "/public/images/ui/collections-tools.jpg",    Count = 95,  Slug = "tools-brushes" },
+        new { Name = "Gift & Value Sets",Image = "/public/images/ui/collections-gifts.jpg",    Count = 58,  Slug = "gifts" }
+        };
+        }
+        @foreach (var c in collections)
+        {
+            <a class="collection-card" style="--bg: url('@c.Image')"
+               asp-controller="Catalog" asp-action="Category" asp-route-slug="@c.Slug">
+                <div class="collection-card__media" aria-hidden="true"></div>
+                <div class="collection-card__caption">
+                    <h3 class="collection-card__title">@c.Name</h3>
+                    <p class="collection-card__meta">@c.Count products</p>
+                </div>
+            </a>
+        }
+    </div>
+</section>

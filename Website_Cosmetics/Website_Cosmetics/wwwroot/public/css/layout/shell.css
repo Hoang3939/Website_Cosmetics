@@ -1,0 +1,156 @@
+﻿/* ---------- Header ---------- */
+.header {
+    position: sticky;
+    top: 0;
+    background: #fff;
+    border-bottom: 1px solid var(--line);
+    z-index: 20
+}
+
+.header__row {
+    height: 64px;
+    display: flex;
+    align-items: center;
+    gap: 16px
+}
+
+.header__brand {
+    font-weight: 700;
+    letter-spacing: .3px
+}
+
+.header__search {
+    flex: 1;
+    display: flex
+}
+
+    .header__search input {
+        flex: 1;
+        height: 36px;
+        border: 1px solid var(--line);
+        border-radius: 18px;
+        padding: 0 14px
+    }
+
+.header__actions {
+    display: flex;
+    gap: 8px
+}
+
+/* ---------- Navbar ---------- */
+.navbar {
+    background: #0A0A0A;
+    color: #fff
+}
+
+.navbar__row {
+    height: 44px;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 28px
+}
+
+.navbar--spread .navbar__row {
+    justify-content: space-evenly;
+}
+
+@media (min-width: 1024px) {
+    .navbar__row {
+        gap: 130px;
+    }
+}
+
+.navbar a {
+    color: #fff;
+    opacity: .9
+}
+
+    .navbar a:hover {
+        opacity: 1;
+        transition: opacity var(--t-fast) var(--ease)
+    }
+
+
+/* ---------- Footer ---------- */
+.footer {
+    background: #0A0A0A;
+    color: #D1D5DB;
+    margin-top: 56px
+}
+
+.footer__grid {
+    display: grid;
+    grid-template-columns: repeat(12,1fr);
+    gap: 24px;
+    padding: 40px 0;
+    border-top: 1px solid #1F2937
+}
+
+.footer h4 {
+    color: #fff;
+    margin: 0 0 10px;
+    font-size: var(--fs-sm)
+}
+
+.footer a {
+    color: #D1D5DB
+}
+
+.footer__btm {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 0;
+    border-top: 1px solid #1F2937
+}
+
+.footer__links {
+    display: flex;
+    gap: 16px
+}
+
+.footer__social {
+    display: flex;
+    gap: 12px
+}
+
+/* ---------- Sections / Grids ---------- */
+.section {
+    padding: 40px 0
+}
+
+.section__hd {
+    margin: 0 0 16px;
+    text-align: center
+}
+
+    .section__hd h2 {
+        margin: 0;
+        font-size: var(--fs-2xl)
+    }
+
+    .section__hd p {
+        margin: 6px 0 0;
+        color: var(--muted)
+    }
+
+.grid {
+    display: grid;
+    gap: 16px
+}
+
+.grid--products {
+    grid-template-columns: repeat(4,1fr)
+}
+
+.grid--categories {
+    grid-template-columns: repeat(4,1fr)
+}
+
+@media (max-width:1024px) {
+    .grid--products, .grid--categories {
+        grid-template-columns: repeat(2,1fr)
+    }
+}
