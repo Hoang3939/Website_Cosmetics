@@ -172,12 +172,13 @@ Website_Cosmetics/appsettings.json
    dotnet ef database update
 
 2. Configure environment variables:
-SMTP_SERVER, SMTP_PORT, SMTP_USER, SMTP_PASS
-JWT_SECRET, ASPNETCORE_ENVIRONMENT
+  SMTP_SERVER, SMTP_PORT, SMTP_USER, SMTP_PASS
+  JWT_SECRET, ASPNETCORE_ENVIRONMENT
 
 3. Rebuild and restart:
-dotnet build
-dotnet run
+  ```bash
+  dotnet build
+  dotnet run
 
 4. Access URLs:
 /Auth/Login
