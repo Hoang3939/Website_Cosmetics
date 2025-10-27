@@ -1,0 +1,49 @@
+@model Website_Cosmetics.Models.LoginViewModel
+@{
+    ViewData["Title"] = "Sign In";
+}
+
+<div class="auth-container">
+    <div class="auth-card">
+        <div class="auth-header">
+            <h1 class="auth-title">Sign in</h1>
+            <p class="auth-subtitle">Welcome back!</p>
+        </div>
+
+        <form asp-action="Login" method="post" class="auth-form">
+            @await Html.PartialAsync("_Alerts")
+            <div asp-validation-summary="ModelOnly" class="validation-summary"></div>
+
+            <div class="form-group">
+                <label asp-for="UsernameOrEmail" class="form-label"></label>
+                <input asp-for="UsernameOrEmail" class="form-input" placeholder="Enter email or username" />
+                <span asp-validation-for="UsernameOrEmail" class="validation-error"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Password" class="form-label"></label>
+                <input asp-for="Password" class="form-input" placeholder="Enter password" />
+                <span asp-validation-for="Password" class="validation-error"></span>
+            </div>
+
+            <div class="form-group form-group--checkbox">
+                <label class="checkbox-label">
+                    <input asp-for="RememberMe" class="checkbox-input" />
+                    <span class="checkbox-text">Remember me</span>
+                </label>
+            </div>
+
+            <button type="submit" class="btn btn--brand btn--full">Sign in</button>
+
+            <div class="auth-links">
+                <a asp-action="ForgotPassword" class="auth-link">Forgot password?</a>
+                <span class="auth-divider">|</span>
+                <a asp-action="Register" class="auth-link">Don't have an account? Sign up</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Styles {
+    <link rel="stylesheet" href="~/public/css/authorize/auth.css" asp-append-version="true" />
+}

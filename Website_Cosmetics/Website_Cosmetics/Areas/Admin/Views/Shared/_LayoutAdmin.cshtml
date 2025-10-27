@@ -65,7 +65,8 @@
                 <div class="header__actions">
                     <div class="header__badge">Admin</div>
                     <a asp-area="" asp-controller="Home" asp-action="Index" class="header__link">View site</a>
-                    <form asp-area="" asp-controller="Account" asp-action="Logout" method="post" class="header__logout">
+                    <form asp-area="" asp-controller="Auth" asp-action="LogoutConfirmed" method="post" class="header__logout">
+                        @Html.AntiForgeryToken()
                         <button type="submit">Log out</button>
                     </form>
                 </div>

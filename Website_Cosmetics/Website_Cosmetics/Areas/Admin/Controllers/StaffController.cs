@@ -1,0 +1,185 @@
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Website_Cosmetics.Attributes;
+using Website_Cosmetics.Data;
+using Website_Cosmetics.Models;
+using Website_Cosmetics.Services;
+
+namespace Website_Cosmetics.Areas.Admin.Controllers
+{
+    [Area("Admin")]
+    [RequirePermission("Admin.Staff.Manage")]
+    public class StaffController : Controller
+    {
+        private readonly ApplicationDbContext _context;
+        private readonly IAuthorizationService _authService;
+        private readonly ILogger<StaffController> _logger;
+
+        public StaffController(ApplicationDbContext context, IAuthorizationService authService, ILogger<StaffController> logger)
+        {
+            _context = context;
+            _authService = authService;
+            _logger = logger;
+        }
+
+        // GET: /Admin/Staff/
+        public async Task<IActionResult> Index()
+        {
+            var staff = await _context.UserRoles
+                .Where(ur => ur.Role.RoleName == "Staff")
+                .Include(ur => ur.User)
+                .Select(ur => ur.User)
+                .ToListAsync();
+
+            return View(staff);
+        }
+
+        // GET: /Admin/Staff/Create
+        public IActionResult Create()
+        {
+            return View();
+        }
+
+        // POST: /Admin/Staff/Create
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create(User model)
+        {
+            if (ModelState.IsValid)
+            {
+                // Check if user already exists
+                if (await _context.Users.AnyAsync(u => u.Username == model.Username || u.Email == model.Email))
+                {
+                    ModelState.AddModelError(string.Empty, "Tên đăng nhập hoặc email đã tồn tại.");
+                    return View(model);
+                }
+
+                // Create new user
+                var user = new User
+                {
+                    Username = model.Username,
+                    Email = model.Email,
+                    PasswordHash = BCrypt.Net.BCrypt.HashPassword("Staff123!"), // Default password
+                    FirstName = model.FirstName,
+                    LastName = model.LastName,
+                    PhoneNumber = model.PhoneNumber,
+                    IsEmailConfirmed = true, // Admin creates, so auto-confirm
+                    IsActive = true
+                };
+
+                _context.Users.Add(user);
+                await _context.SaveChangesAsync();
+
+                // Assign Staff role
+                var staffRole = await _context.Roles.FirstOrDefaultAsync(r => r.RoleName == "Staff");
+                if (staffRole != null)
+                {
+                    _context.UserRoles.Add(new UserRole
+                    {
+                        UserUID = user.UID,
+                        RoleUID = staffRole.UID
+                    });
+                    await _context.SaveChangesAsync();
+                }
+
+                TempData["SuccessMessage"] = "Tạo nhân viên thành công!";
+                return RedirectToAction("Index");
+            }
+
+            return View(model);
+        }
+
+        // GET: /Admin/Staff/Permissions/{id}
+        public async Task<IActionResult> Permissions(Guid id)
+        {
+            var user = await _context.Users.FindAsync(id);
+            if (user == null)
+                return NotFound();
+
+            var userPermissions = await _authService.GetUserPermissionsAsync(id);
+            var allPermissions = await _context.Permissions
+                .Where(p => p.Category == "Staff" && p.IsActive)
+                .ToListAsync();
+
+            ViewBag.User = user;
+            ViewBag.UserPermissions = userPermissions;
+            ViewBag.AllPermissions = allPermissions;
+
+            return View();
+        }
+
+        // POST: /Admin/Staff/GrantPermission
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> GrantPermission(Guid userId, string permissionName)
+        {
+            var currentUserId = Guid.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? "");
+            
+            var success = await _authService.GrantPermissionAsync(userId, permissionName, currentUserId);
+            
+            if (success)
+            {
+                TempData["SuccessMessage"] = "Cấp quyền thành công!";
+            }
+            else
+            {
+                TempData["ErrorMessage"] = "Cấp quyền thất bại!";
+            }
+
+            return RedirectToAction("Permissions", new { id = userId });
+        }
+
+        // POST: /Admin/Staff/RevokePermission
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> RevokePermission(Guid userId, string permissionName)
+        {
+            var success = await _authService.RevokePermissionAsync(userId, permissionName);
+            
+            if (success)
+            {
+                TempData["SuccessMessage"] = "Thu hồi quyền thành công!";
+            }
+            else
+            {
+                TempData["ErrorMessage"] = "Thu hồi quyền thất bại!";
+            }
+
+            return RedirectToAction("Permissions", new { id = userId });
+        }
+
+        // POST: /Admin/Staff/Deactivate
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Deactivate(Guid id)
+        {
+            var user = await _context.Users.FindAsync(id);
+            if (user != null)
+            {
+                user.IsActive = false;
+                user.UpdatedAt = DateTime.UtcNow;
+                await _context.SaveChangesAsync();
+                TempData["SuccessMessage"] = "Vô hiệu hóa nhân viên thành công!";
+            }
+
+            return RedirectToAction("Index");
+        }
+
+        // POST: /Admin/Staff/Activate
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Activate(Guid id)
+        {
+            var user = await _context.Users.FindAsync(id);
+            if (user != null)
+            {
+                user.IsActive = true;
+                user.UpdatedAt = DateTime.UtcNow;
+                await _context.SaveChangesAsync();
+                TempData["SuccessMessage"] = "Kích hoạt nhân viên thành công!";
+            }
+
+            return RedirectToAction("Index");
+        }
+    }
+}

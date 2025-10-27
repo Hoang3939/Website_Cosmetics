@@ -1,0 +1,18 @@
+@{
+    ViewData["Title"] = "Log out";
+}
+
+<div class="auth-container">
+    <div class="auth-card">
+        <h1 class="auth-title">Log out</h1>
+        <p class="auth-description">Are you sure you want to log out?</p>
+        
+        <form asp-controller="Auth" asp-action="LogoutConfirmed" method="post">
+            @Html.AntiForgeryToken()
+            <div class="auth-actions">
+                <button type="submit" class="btn btn--brand">Log out</button>
+                <a asp-controller="Home" asp-action="Index" class="btn btn--secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
