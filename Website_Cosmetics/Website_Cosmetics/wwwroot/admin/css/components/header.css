@@ -1,0 +1,19 @@
+﻿.header__link {
+    opacity: .9
+}
+
+    .header__link:hover {
+        opacity: 1
+    }
+
+.header__logout button {
+    background: #1A1C21;
+    border: 1px solid var(--stroke);
+    color: var(--text);
+    padding: 6px 10px;
+    border-radius: 10px
+}
+
+    .header__logout button:hover {
+        border-color: #3a3d44
+    }
