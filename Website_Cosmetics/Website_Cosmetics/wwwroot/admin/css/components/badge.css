@@ -1,0 +1,26 @@
+﻿.badge {
+    display: inline-block;
+    font-size: 12px;
+    padding: 4px 8px;
+    border-radius: 999px;
+    border: 1px solid var(--stroke);
+    background: #14161B
+}
+
+.badge--processing {
+    border-color: #3d3f46;
+    color: #E7E7A6;
+    background: #23231a
+}
+
+.badge--shipped {
+    border-color: #2e3f58;
+    background: #1a2432;
+    color: #C8DAFF
+}
+
+.badge--delivered {
+    border-color: #254437;
+    background: #16221b;
+    color: #CFF1DE
+}
