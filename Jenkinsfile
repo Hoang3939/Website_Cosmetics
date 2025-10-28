@@ -60,12 +60,18 @@ pipeline {
             steps {
                 sh """#!/usr/bin/env bash
                     set -euxo pipefail
+                    
+                    # Thư mục làm việc hiện tại là $WORKSPACE/Website_Cosmetics
                     cd Website_Cosmetics
-                    dotnet publish Website_Cosmetics.csproj --no-restore -c Release -o "\$OUT_DIR" --nologo
+                    
+                    # 1. Chỉ định đúng đường dẫn đến file .csproj (thêm "Website_Cosmetics/")
+                    # 2. Chỉ định đường dẫn output tuyệt đối (-o "\$WORKSPACE/\$OUT_DIR")
+                    dotnet publish Website_Cosmetics/Website_Cosmetics.csproj --no-restore -c Release -o "\$WORKSPACE/\$OUT_DIR" --nologo
                 """
             }
             post {
                 success {
+                    // Giờ đây 'publish/**/*' sẽ trỏ đúng đến $WORKSPACE/publish/
                     archiveArtifacts artifacts: "${env.OUT_DIR}/**/*", fingerprint: true
                 }
             }
