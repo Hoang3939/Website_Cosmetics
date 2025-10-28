@@ -1,0 +1,327 @@
+@model Website_Cosmetics.Models.Product
+
+@{
+    ViewData["Title"] = Model.Name;
+    
+    // Lấy hình ảnh chính (IsCover = true) hoặc hình đầu tiên
+    var coverImage = Model.ProductImages?.FirstOrDefault(img => img.IsCover == true) 
+                     ?? Model.ProductImages?.FirstOrDefault();
+    
+    var allImages = Model.ProductImages?.ToList() ?? new List<ProductImage>();
+}
+
+<div class="product-details">
+    <div class="container">
+        <!-- Breadcrumb -->
+        <nav class="breadcrumb" aria-label="breadcrumb">
+            <a asp-controller="Home" asp-action="Index">Home</a>
+            <span class="breadcrumb-separator">/</span>
+            <a asp-controller="Products" asp-action="Index">Products</a>
+            <span class="breadcrumb-separator">/</span>
+            @if (Model.Category != null)
+            {
+                <a asp-controller="Categories" asp-action="Details" asp-route-id="@Model.CategoryId">@Model.Category.Name</a>
+                <span class="breadcrumb-separator">/</span>
+            }
+            <span class="breadcrumb-current">@Model.Name</span>
+        </nav>
+
+        <div class="product-details__wrapper">
+            <!-- Gallery bên trái -->
+            <div class="product-details__gallery">
+                <!-- Hình ảnh chính -->
+                <div class="gallery__main">
+                    <img id="mainImage" 
+                         src="@(coverImage?.Url ?? "/public/images/products/img-cart-lip.png")" 
+                         alt="@Model.Name" 
+                         class="gallery__main-img" />
+                    
+                    @if (allImages.Count > 1)
+                    {
+                        <div class="gallery__nav">
+                            <button class="gallery__nav-btn gallery__nav-btn--prev" id="prevBtn" aria-label="Previous image">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="15 18 9 12 15 6"></polyline>
+                                </svg>
+                            </button>
+                            <button class="gallery__nav-btn gallery__nav-btn--next" id="nextBtn" aria-label="Next image">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="9 18 15 12 9 6"></polyline>
+                                </svg>
+                            </button>
+                        </div>
+                    }
+                </div>
+
+                <!-- Thumbnails -->
+                @if (allImages.Count > 1)
+                {
+                    <div class="gallery__thumbs">
+                        @for (int i = 0; i < allImages.Count; i++)
+                        {
+                            var img = allImages[i];
+                            var isActive = img.IsCover == true || (i == 0 && coverImage == null);
+                            <button class="gallery__thumb @(isActive ? "active" : "")" 
+                                    data-index="@i"
+                                    data-image="@img.Url"
+                                    aria-label="View image @(i + 1)">
+                                <img src="@img.Url" alt="@Model.Name thumbnail @(i + 1)" />
+                            </button>
+                        }
+                    </div>
+                }
+            </div>
+
+            <!-- Thông tin sản phẩm bên phải -->
+            <div class="product-details__info">
+                <!-- Brand -->
+                @if (Model.Brand != null)
+                {
+                    <div class="product-details__brand">@Model.Brand.Name</div>
+                }
+
+                <!-- Tên sản phẩm -->
+                <h1 class="product-details__title">@Model.Name</h1>
+
+                <!-- Rating (demo) -->
+                <div class="product-details__rating">
+                    <div class="rating">
+                        <img class="icon icon--star" src="/public/images/icons/star.png" alt="" aria-hidden="true" />
+                        <span class="rating__score">4.8</span>
+                        <span class="rating__count">(@(new Random().Next(100, 500)) reviews)</span>
+                    </div>
+                </div>
+
+                <!-- Price -->
+                <div class="product-details__price">
+                    <span class="price--now">$@Model.Price.ToString("0.00")</span>
+                    <span class="price--old">$@((Model.Price * 1.33m).ToString("0.00"))</span>
+                    <span class="price--discount">-25%</span>
+                </div>
+
+                <!-- Mô tả ngắn -->
+                @if (!string.IsNullOrEmpty(Model.Description))
+                {
+                    <div class="product-details__description">
+                        <p>@Model.Description</p>
+                    </div>
+                }
+
+                <!-- Category -->
+                @if (Model.Category != null)
+                {
+                    <div class="product-details__meta">
+                        <span class="meta__label">Category:</span>
+                        <a asp-controller="Categories" asp-action="Details" asp-route-id="@Model.CategoryId" 
+                           class="meta__link">@Model.Category.Name</a>
+                    </div>
+                }
+
+                <!-- Actions -->
+                <div class="product-details__actions">
+                    <div class="quantity-selector">
+                        <button class="quantity-selector__btn quantity-selector__btn--minus" aria-label="Decrease quantity">-</button>
+                        <input type="number" class="quantity-selector__input" value="1" min="1" max="99" aria-label="Quantity" />
+                        <button class="quantity-selector__btn quantity-selector__btn--plus" aria-label="Increase quantity">+</button>
+                    </div>
+                    
+                    <button class="btn btn--primary btn--add-to-cart">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="9" cy="21" r="1"></circle>
+                            <circle cx="20" cy="21" r="1"></circle>
+                            <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+                        </svg>
+                        <span>Add to Cart</span>
+                    </button>
+                    
+                    <button class="btn btn--secondary btn--wishlist" aria-label="Add to wishlist">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- Extra Info -->
+                <div class="product-details__extra">
+                    <div class="extra__item">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                            <circle cx="12" cy="10" r="3"></circle>
+                        </svg>
+                        <span>Free shipping on orders over $50</span>
+                    </div>
+                    <div class="extra__item">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                        </svg>
+                        <span>100% Authentic Guarantee</span>
+                    </div>
+                    <div class="extra__item">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="23 4 23 10 17 10"></polyline>
+                            <polyline points="1 20 1 14 7 14"></polyline>
+                            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                        </svg>
+                        <span>30-Day Return Policy</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabs: Product Details -->
+        <div class="product-tabs">
+            <div class="product-tabs__header">
+                <button class="product-tabs__tab active" data-tab="description">Description</button>
+                <button class="product-tabs__tab" data-tab="ingredients">Ingredients</button>
+                <button class="product-tabs__tab" data-tab="reviews">Reviews (0)</button>
+            </div>
+
+            <div class="product-tabs__content">
+                <!-- Tab Description -->
+                <div class="product-tabs__panel active" id="description">
+                    <h3>Product Description</h3>
+                    @if (!string.IsNullOrEmpty(Model.Description))
+                    {
+                        <p>@Model.Description</p>
+                    }
+                    else
+                    {
+                        <p>Product details will be updated soon.</p>
+                    }
+                </div>
+
+                <!-- Tab Ingredients -->
+                <div class="product-tabs__panel" id="ingredients">
+                    <h3>Ingredients</h3>
+                    @if (!string.IsNullOrEmpty(Model.Ingredients))
+                    {
+                        <p>@Model.Ingredients</p>
+                    }
+                    else
+                    {
+                        <p>Ingredients information will be updated soon.</p>
+                    }
+                </div>
+
+                <!-- Tab Reviews -->
+                <div class="product-tabs__panel" id="reviews">
+                    <h3>Customer Reviews</h3>
+                    <p class="text-muted">No reviews yet for this product.</p>
+                    <button class="btn btn--outline">Write a Review</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Related Products -->
+        <div class="related-products">
+            <h2>Related Products</h2>
+            <p class="text-muted">Similar products you might like</p>
+            
+            <div class="grid grid--products">
+                <p class="text-muted">Coming soon...</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Gallery functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const mainImage = document.getElementById('mainImage');
+            const thumbs = document.querySelectorAll('.gallery__thumb');
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            let currentIndex = 0;
+            const images = Array.from(thumbs).map(thumb => thumb.dataset.image);
+
+            // Thumbnail click
+            thumbs.forEach((thumb, index) => {
+                thumb.addEventListener('click', function() {
+                    currentIndex = index;
+                    updateMainImage();
+                    updateActiveThumb();
+                });
+            });
+
+            // Previous button
+            if (prevBtn) {
+                prevBtn.addEventListener('click', function() {
+                    currentIndex = (currentIndex - 1 + images.length) % images.length;
+                    updateMainImage();
+                    updateActiveThumb();
+                });
+            }
+
+            // Next button
+            if (nextBtn) {
+                nextBtn.addEventListener('click', function() {
+                    currentIndex = (currentIndex + 1) % images.length;
+                    updateMainImage();
+                    updateActiveThumb();
+                });
+            }
+
+            function updateMainImage() {
+                mainImage.src = images[currentIndex];
+            }
+
+            function updateActiveThumb() {
+                thumbs.forEach((thumb, index) => {
+                    thumb.classList.toggle('active', index === currentIndex);
+                });
+            }
+
+            // Quantity selector
+            const minusBtn = document.querySelector('.quantity-selector__btn--minus');
+            const plusBtn = document.querySelector('.quantity-selector__btn--plus');
+            const quantityInput = document.querySelector('.quantity-selector__input');
+
+            if (minusBtn && plusBtn && quantityInput) {
+                minusBtn.addEventListener('click', function() {
+                    const value = parseInt(quantityInput.value);
+                    if (value > 1) {
+                        quantityInput.value = value - 1;
+                    }
+                });
+
+                plusBtn.addEventListener('click', function() {
+                    const value = parseInt(quantityInput.value);
+                    const max = parseInt(quantityInput.max);
+                    if (value < max) {
+                        quantityInput.value = value + 1;
+                    }
+                });
+            }
+
+            // Tabs functionality
+            const tabBtns = document.querySelectorAll('.product-tabs__tab');
+            const tabPanels = document.querySelectorAll('.product-tabs__panel');
+
+            tabBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const tabId = this.dataset.tab;
+                    
+                    // Remove active class from all tabs and panels
+                    tabBtns.forEach(b => b.classList.remove('active'));
+                    tabPanels.forEach(p => p.classList.remove('active'));
+                    
+                    // Add active class to clicked tab and corresponding panel
+                    this.classList.add('active');
+                    document.getElementById(tabId).classList.add('active');
+                });
+            });
+
+            // Add to cart button
+            const addToCartBtn = document.querySelector('.btn--add-to-cart');
+            if (addToCartBtn) {
+                addToCartBtn.addEventListener('click', function() {
+                    const quantity = quantityInput.value;
+                    alert(`Added ${quantity} item(s) to cart!`);
+                    // TODO: Implement actual cart functionality
+                });
+            }
+        });
+    </script>
+}
+
