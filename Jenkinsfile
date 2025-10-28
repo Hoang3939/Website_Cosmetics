@@ -1,5 +1,5 @@
 pipeline {
-    agent { label 'github-server' }
+    agent { label 'lab-server' }
 
     options {
         skipStagesAfterUnstable()
