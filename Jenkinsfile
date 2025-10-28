@@ -15,7 +15,7 @@ pipeline {
         OUT_DIR    = 'publish'
         DEPLOY_DIR = '/data/cosmetics/Website_Cosmetics/run'
         DLL        = 'Website_Cosmetics.dll'
-        PORT       = '5001'
+        PORT       = '3000'
         SERVICE    = 'cosmetics-website.service'
     }
 
@@ -37,7 +37,7 @@ pipeline {
                     $class: 'GitSCM',
                     branches: [[name: '*/feature/user-authentication']],
                     userRemoteConfigs: [[
-                        url: 'https://github.com/your-username/Website_Cosmetics.git',
+                        url: 'https://github.com/Hoang3939/Website_Cosmetics.git',
                         credentialsId: 'jenkins-github-user'
                     ]]
                 ])
@@ -72,7 +72,6 @@ pipeline {
         }
 
         stage('Deploy') {
-            // SỬ DỤNG CREDENTIALS THAY VÌ HARDCODE PASSWORD
             environment {
                 DB_CONNECTION = credentials('COSMETICS-DB-CONNECTION')
                 EMAIL_PASSWORD = credentials('COSMETICS-EMAIL-PASSWORD')
