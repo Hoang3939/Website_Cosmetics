@@ -1,10 +1,11 @@
 using Website_Cosmetics.Models;
+using Website_Cosmetics.Data;
 
 namespace Website_Cosmetics.Services;
 
 public class DbInitializer
 {
-    public static void Initialize(WebsiteCosmeticContext context)
+    public static void Initialize(ApplicationDbContext context)
     {
         // Clear existing data to reseed with English data
         if (context.Products.Any())

@@ -13,7 +13,7 @@
     <link rel="stylesheet" href="~/admin/css/site-admin.css" asp-append-version="true" />
     @RenderSection("Styles", required: false)
 </head>
-<body data-page="@ViewContext.RouteData.Values["controller"]?.ToString().ToLower().Trim().Replace("controller", "").Replace("controller", "") + " ." + ViewContext.RouteData.Values["action"]?.ToString().ToLower()">
+<body data-page="@(ViewContext.RouteData.Values["controller"]?.ToString()?.ToLower()?.Trim()?.Replace("controller", "") + " ." + ViewContext.RouteData.Values["action"]?.ToString()?.ToLower())">
 
     <div class="admin">
         <!-- Sidebar -->

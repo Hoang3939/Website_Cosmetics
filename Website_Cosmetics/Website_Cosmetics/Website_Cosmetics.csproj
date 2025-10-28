@@ -6,38 +6,26 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
-  <PropertyGroup Condition=" '$(RunConfiguration)' == 'https' " />
-  <PropertyGroup Condition=" '$(RunConfiguration)' == 'http' " />
   <ItemGroup>
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.10">
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
-    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.10" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Remove="Repositories\" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Repositories\" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Areas\Admin\Data\" />
-    <Folder Include="Areas\Admin\Models\" />
-    <Folder Include="wwwroot\lib\bootstrap\" />
-    <Folder Include="wwwroot\lib\jquery-validation-unobtrusive\" />
-    <Folder Include="wwwroot\lib\jquery-validation\" />
-    <Folder Include="wwwroot\lib\jquery\" />
-  </ItemGroup>
-
-  <ItemGroup>
+    <!-- Entity Framework Core 8.0 (compatible with .NET 8.0) -->
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.11" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.11" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.11" />
+    
+    <!-- ASP.NET Core packages -->
+    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.11" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="8.0.7" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.0" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.0" />
+    
+    <!-- Security & Authentication -->
     <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
-    <PackageReference Include="MailKit" Version="4.3.0" />
-    <PackageReference Include="MimeKit" Version="4.3.0" />
+    
+    <!-- Email packages (latest versions) -->
+    <PackageReference Include="MailKit" Version="4.8.0" />
+    <PackageReference Include="MimeKit" Version="4.8.0" />
+    
+    <!-- Additional useful packages -->
+    <PackageReference Include="Serilog.AspNetCore" Version="8.0.2" />
+    <PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
   </ItemGroup>
 
 </Project>

@@ -1,10 +1,10 @@
 using Microsoft.AspNetCore.Mvc;
-using Website_Cosmetics.Attributes;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Website_Cosmetics.Areas.Admin.Controllers
 {
     [Area("Admin")]
-    [RequirePermission("Staff.Dashboard.View")]
+    [Authorize(Roles = "Staff,Admin")]
     public class StaffDashboardController : Controller
     {
         public IActionResult Index()

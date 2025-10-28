@@ -1,117 +1,193 @@
-# Hướng dẫn triển khai hệ thống Authentication
+# Website Cosmetics Database
 
-## 1. Tạo Database và Tables
+This directory contains the database scripts for the Website Cosmetics application.
 
-### Chạy script SQL:
-```sql
--- Chạy file Database/DB_Tables.sql để tạo các bảng
--- Chạy file Database/DB_SampleData.sql để thêm dữ liệu mẫu
-```
+## 📁 Files Overview
 
-### Hoặc sử dụng Entity Framework Migrations:
+| File | Description | Purpose |
+|------|-------------|---------|
+| `01_CreateTables.sql` | Database schema creation | Creates all tables, indexes, and constraints |
+| `02_InsertData.sql` | Sample data insertion | Inserts sample data and creates default accounts |
+| `README.md` | This documentation | Usage instructions and database information |
 
-```bash
-# Tạo migration đầu tiên
-dotnet ef migrations add InitialCreate
+## 🚀 Quick Start
 
-# Cập nhật database
-dotnet ef database update
-```
+### Prerequisites
+- SQL Server 2019 or later
+- SQL Server Management Studio (SSMS) or sqlcmd
+- Database server access credentials
 
-## 2. Cấu hình Connection String
+### Installation Steps
 
-Cập nhật `appsettings.json` với connection string phù hợp:
+1. **Create Database Schema**
+   ```sql
+   -- Run this first
+   sqlcmd -S [SERVER_NAME] -U [USERNAME] -P [PASSWORD] -i "01_CreateTables.sql"
+   ```
 
+2. **Insert Sample Data**
+   ```sql
+   -- Run this second
+   sqlcmd -S [SERVER_NAME] -U [USERNAME] -P [PASSWORD] -i "02_InsertData.sql"
+   ```
+
+3. **Verify Installation**
+   ```sql
+   USE WebsiteCosmetic;
+   SELECT COUNT(*) as TableCount FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE';
+   ```
+
+## 📊 Database Schema
+
+### Authentication & Authorization Tables
+- **Users** - User accounts and profiles
+- **Roles** - User roles (Admin, Staff, User)
+- **UserRoles** - User-role assignments
+- **PasswordResetTokens** - Password reset functionality
+- **EmailConfirmationTokens** - Email confirmation system
+
+### Permission System Tables
+- **Permissions** - System permissions
+- **RolePermissions** - Role-permission assignments
+- **UserPermissions** - Individual user permissions
+
+### Product & Business Tables
+- **Brand** - Product brands
+- **Category** - Product categories
+- **Product** - Product information
+- **ProductImage** - Product images
+
+## 🔐 Default Accounts
+
+After running the data insertion script, the following accounts are created:
+
+### Admin Account
+- **Username:** `admin`
+- **Email:** `admin@cosmetics.com`
+- **Password:** `Admin123!`
+- **Role:** Admin
+- **Access:** Full system access
+
+### Staff Account
+- **Username:** `staff`
+- **Email:** `staff@cosmetics.com`
+- **Password:** `Staff123!`
+- **Role:** Staff
+- **Access:** Limited admin access
+
+## 📝 Sample Data
+
+The database includes sample data for:
+
+### Brands (5)
+- L'Oréal (France)
+- Maybelline (USA)
+- MAC Cosmetics (Canada)
+- NARS (France)
+- Fenty Beauty (USA)
+
+### Categories (5)
+- Lipstick
+- Eyeshadow
+- Blush
+- Foundation
+- Setting Powder
+
+### Products (5)
+- Maybelline SuperStay Matte Ink ($15.00)
+- L'Oréal Paradise Enchanted Palette ($18.00)
+- NARS Orgasm Blush ($32.00)
+- MAC Studio Fix Fluid SPF15 ($35.00)
+- Fenty Beauty Pro Filt'r Powder ($36.00)
+
+## 🛠️ Database Management
+
+### Connection String
 ```json
 {
   "ConnectionStrings": {
-    "DefaultConnection": "Server=(localdb)\\mssqllocaldb;Database=WebsiteCosmetic;Trusted_Connection=true;MultipleActiveResultSets=true"
+    "DefaultConnection": "Server=[SERVER];Database=WebsiteCosmetic;User Id=[USER];Password=[PASSWORD];TrustServerCertificate=true;"
   }
 }
 ```
 
-## 3. Cài đặt Packages
-
-Các packages đã được thêm vào `Website_Cosmetics.csproj`:
-- Microsoft.EntityFrameworkCore.SqlServer
-- Microsoft.EntityFrameworkCore.Tools
-- Microsoft.AspNetCore.Identity.EntityFrameworkCore
-- BCrypt.Net-Next
-
-## 4. Chạy ứng dụng
-
-```bash
-# Restore packages
-dotnet restore
-
-# Build project
-dotnet build
-
-# Chạy ứng dụng
-dotnet run
+### Backup Database
+```sql
+BACKUP DATABASE WebsiteCosmetic 
+TO DISK = 'C:\Backup\WebsiteCosmetic.bak'
+WITH FORMAT, INIT, NAME = 'WebsiteCosmetic Full Backup';
 ```
 
-## 5. Truy cập các trang Authentication
+### Restore Database
+```sql
+RESTORE DATABASE WebsiteCosmetic 
+FROM DISK = 'C:\Backup\WebsiteCosmetic.bak'
+WITH REPLACE;
+```
 
-- **Đăng nhập**: `/Auth/Login`
-- **Đăng ký**: `/Auth/Register`
-- **Quên mật khẩu**: `/Auth/ForgotPassword`
-- **Đặt lại mật khẩu**: `/Auth/ResetPassword?token={token}&email={email}`
+## 🔧 Troubleshooting
 
-## 6. Tài khoản Admin mặc định
+### Common Issues
 
-- **Username**: admin
-- **Email**: admin@cosmetics.com
-- **Password**: Admin123!
+1. **"Invalid object name" Error**
+   - Ensure you've run `01_CreateTables.sql` first
+   - Check if the database exists and is selected
 
-## 7. Các tính năng đã được triển khai
+2. **Login Failed**
+   - Verify the default accounts are created
+   - Check password hashing (uses BCrypt)
 
-### Models:
-- `User` - Thông tin người dùng
-- `Role` - Vai trò người dùng
-- `UserRole` - Liên kết user-role
-- `PasswordResetToken` - Token đặt lại mật khẩu
-- `EmailConfirmationToken` - Token xác nhận email
+3. **Permission Denied**
+   - Ensure user has appropriate database permissions
+   - Check if the user account is active
 
-### ViewModels:
-- `LoginViewModel` - Form đăng nhập
-- `RegisterViewModel` - Form đăng ký
-- `ForgotPasswordViewModel` - Form quên mật khẩu
-- `ResetPasswordViewModel` - Form đặt lại mật khẩu
+### Reset Database
+```sql
+-- Drop and recreate database (WARNING: This will delete all data)
+DROP DATABASE IF EXISTS WebsiteCosmetic;
+-- Then run 01_CreateTables.sql and 02_InsertData.sql again
+```
 
-### Services:
-- `IAuthService` - Interface cho authentication
-- `AuthService` - Service xử lý authentication
+## 📈 Performance Optimization
 
-### Controllers:
-- `AuthController` - Controller xử lý các action authentication
+The database includes the following indexes for optimal performance:
 
-### Views:
-- `Login.cshtml` - Trang đăng nhập
-- `Register.cshtml` - Trang đăng ký
-- `ForgotPassword.cshtml` - Trang quên mật khẩu
-- `ResetPassword.cshtml` - Trang đặt lại mật khẩu
+- **User lookups:** Email, Username
+- **Token searches:** Password reset, Email confirmation
+- **Product searches:** Name, Slug, Brand, Category
+- **Permission checks:** Role and user permissions
 
-### CSS:
-- `auth.css` - Styles cho các trang authentication
+## 🔄 Migration Notes
 
-## 8. Lưu ý quan trọng
+### From Previous Versions
+If migrating from an older version:
 
-1. **Email Service**: Hiện tại token được log ra console. Trong production cần tích hợp email service thực tế.
+1. Backup existing data
+2. Run new table creation script
+3. Migrate data using appropriate transformation scripts
+4. Verify data integrity
 
-2. **Password Hashing**: Sử dụng BCrypt để hash mật khẩu.
+### Entity Framework Migrations
+The application uses Entity Framework Core migrations. To update the database schema:
 
-3. **Session Management**: Sử dụng Cookie Authentication với sliding expiration.
+```bash
+dotnet ef database update -c ApplicationDbContext
+```
 
-4. **Validation**: Có validation đầy đủ cho tất cả forms.
+## 📞 Support
 
-5. **Security**: Có CSRF protection và proper authentication flow.
+For database-related issues:
+1. Check this README first
+2. Review the SQL scripts for syntax errors
+3. Verify connection string configuration
+4. Check SQL Server logs for detailed error messages
 
-## 9. Các bước tiếp theo có thể làm
+## 📋 Version History
 
-1. Tích hợp email service để gửi email xác nhận và đặt lại mật khẩu
-2. Thêm tính năng đổi mật khẩu
-3. Thêm tính năng quản lý profile
-4. Thêm tính năng đăng nhập bằng Google/Facebook
-5. Thêm tính năng 2FA
-6. Thêm audit log cho các hoạt động authentication
+- **v1.0** - Initial database schema with authentication and product management
+- **v1.1** - Added permission system and role-based access control
+- **v1.2** - Updated to use GUID primary keys and improved indexing
+
+---
+
+**Note:** Always backup your database before making structural changes!

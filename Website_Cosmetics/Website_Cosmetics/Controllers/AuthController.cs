@@ -42,13 +42,13 @@ namespace Website_Cosmetics.Controllers
             var user = await _authService.LoginAsync(model.UsernameOrEmail, model.Password);
             if (user == null)
             {
-                ModelState.AddModelError(string.Empty, "Tên đăng nhập hoặc mật khẩu không đúng.");
+                ModelState.AddModelError(string.Empty, "Invalid username or password.");
                 return View(model);
             }
 
             if (!user.IsEmailConfirmed)
             {
-                ModelState.AddModelError(string.Empty, "Vui lòng xác nhận email trước khi đăng nhập.");
+                ModelState.AddModelError(string.Empty, "Please confirm your email before logging in.");
                 return View(model);
             }
 
