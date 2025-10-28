@@ -1,0 +1,48 @@
+﻿.sidebar {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding: 24px;
+    background: var(--bg-2);
+    border-right: 1px solid var(--stroke);
+}
+
+.sidebar__brand {
+    font-weight: 700;
+    letter-spacing: .08em;
+    margin-bottom: 18px
+}
+
+.sidebar__nav {
+    display: grid;
+    gap: 18px;
+    flex: 1;
+    min-height: 0
+}
+
+.sidebar__group {
+    display: grid;
+    gap: 8px
+}
+
+.sidebar__label {
+    font-size: 12px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: .08em
+}
+
+.sidebar__link {
+    display: block;
+    padding: 10px 12px;
+    border-radius: 10px;
+    color: var(--text);
+    opacity: .9;
+    border: 1px solid transparent
+}
+
+    .sidebar__link:hover {
+        opacity: 1;
+        background: var(--bg-3);
+        border-color: var(--stroke)
+    }

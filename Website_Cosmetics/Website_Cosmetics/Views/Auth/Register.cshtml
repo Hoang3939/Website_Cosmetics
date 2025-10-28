@@ -1,0 +1,73 @@
+@model Website_Cosmetics.Models.RegisterViewModel
+@{
+    ViewData["Title"] = "Sign up";
+}
+
+<div class="auth-container">
+    <div class="auth-card">
+        <div class="auth-header">
+            <h1 class="auth-title">Sign up</h1>
+            <p class="auth-subtitle">Create a new account to start shopping</p>
+        </div>
+
+        <form asp-action="Register" method="post" class="auth-form">
+            @await Html.PartialAsync("_Alerts")
+            <div asp-validation-summary="ModelOnly" class="validation-summary"></div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label asp-for="FirstName" class="form-label"></label>
+                    <input asp-for="FirstName" class="form-input" placeholder="First name" />
+                    <span asp-validation-for="FirstName" class="validation-error"></span>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="LastName" class="form-label"></label>
+                    <input asp-for="LastName" class="form-input" placeholder="Last name" />
+                    <span asp-validation-for="LastName" class="validation-error"></span>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Username" class="form-label"></label>
+                <input asp-for="Username" class="form-input" placeholder="Username" />
+                <span asp-validation-for="Username" class="validation-error"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Email" class="form-label"></label>
+                <input asp-for="Email" class="form-input" placeholder="Email" />
+                <span asp-validation-for="Email" class="validation-error"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="PhoneNumber" class="form-label"></label>
+                <input asp-for="PhoneNumber" class="form-input" placeholder="Phone number" />
+                <span asp-validation-for="PhoneNumber" class="validation-error"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Password" class="form-label"></label>
+                <input asp-for="Password" class="form-input" placeholder="Password" />
+                <span asp-validation-for="Password" class="validation-error"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="ConfirmPassword" class="form-label"></label>
+                <input asp-for="ConfirmPassword" class="form-input" placeholder="Confirm password" />
+                <span asp-validation-for="ConfirmPassword" class="validation-error"></span>
+            </div>
+
+            <button type="submit" class="btn btn--brand btn--full">Sign up</button>
+
+            <div class="auth-links">
+                <span class="auth-text">Already have an account?</span>
+                <a asp-action="Login" class="auth-link">Sign in now</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Styles {
+    <link rel="stylesheet" href="~/public/css/authorize/auth.css" asp-append-version="true" />
+}

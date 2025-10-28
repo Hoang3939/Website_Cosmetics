@@ -1,0 +1,158 @@
+@{
+    ViewData["Title"] = "Products";
+}
+
+<div class="container">
+    <div class="page-header">
+        <h1>Beauty Products</h1>
+        <p>Discover our premium collection of beauty products</p>
+    </div>
+
+    <div class="product-filters">
+        <div class="filter-group">
+            <label>Category:</label>
+            <select class="filter-select">
+                <option value="">All</option>
+                <option value="makeup">Makeup</option>
+                <option value="skincare">Skincare</option>
+                <option value="tools">Tools</option>
+            </select>
+        </div>
+        <div class="filter-group">
+            <label>Sort by:</label>
+            <select class="filter-select">
+                <option value="newest">Newest</option>
+                <option value="price-low">Price: Low to High</option>
+                <option value="price-high">Price: High to Low</option>
+                <option value="popular">Most Popular</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="product-grid">
+        <div class="product-card">
+            <div class="product-image">
+                <img src="/public/images/products/img-cart-lip.png" alt="Lipstick Set" />
+                <div class="product-badge">New</div>
+            </div>
+            <div class="product-info">
+                <h3 class="product-title">Lipstick Set Premium</h3>
+                <p class="product-description">Premium lipstick set with 6 diverse colors</p>
+                <div class="product-price">
+                    <span class="current-price">299,000₫</span>
+                    <span class="old-price">399,000₫</span>
+                </div>
+                <div class="product-rating">
+                    <span class="stars">★★★★★</span>
+                    <span class="rating-count">(128 reviews)</span>
+                </div>
+                <button class="btn btn--brand btn--full">Add to Cart</button>
+            </div>
+        </div>
+
+        <div class="product-card">
+            <div class="product-image">
+                <img src="/public/images/products/img-cart-brush.png" alt="Brush Set" />
+                <div class="product-badge">Hot</div>
+            </div>
+            <div class="product-info">
+                <h3 class="product-title">Professional Brush Set</h3>
+                <p class="product-description">Professional makeup brush set with 12 brushes</p>
+                <div class="product-price">
+                    <span class="current-price">189,000₫</span>
+                </div>
+                <div class="product-rating">
+                    <span class="stars">★★★★☆</span>
+                    <span class="rating-count">(95 reviews)</span>
+                </div>
+                <button class="btn btn--brand btn--full">Add to Cart</button>
+            </div>
+        </div>
+
+        <div class="product-card">
+            <div class="product-image">
+                <img src="/public/images/products/img-cart-lip.png" alt="Foundation" />
+            </div>
+            <div class="product-info">
+                <h3 class="product-title">Liquid Foundation</h3>
+                <p class="product-description">Liquid foundation with perfect coverage</p>
+                <div class="product-price">
+                    <span class="current-price">459,000₫</span>
+                </div>
+                <div class="product-rating">
+                    <span class="stars">★★★★★</span>
+                    <span class="rating-count">(203 reviews)</span>
+                </div>
+                <button class="btn btn--brand btn--full">Add to Cart</button>
+            </div>
+        </div>
+
+        <div class="product-card">
+            <div class="product-image">
+                <img src="/public/images/products/img-cart-brush.png" alt="Eyeshadow Palette" />
+            </div>
+            <div class="product-info">
+                <h3 class="product-title">Eyeshadow Palette</h3>
+                <p class="product-description">Eyeshadow palette with 15 diverse colors</p>
+                <div class="product-price">
+                    <span class="current-price">329,000₫</span>
+                </div>
+                <div class="product-rating">
+                    <span class="stars">★★★★☆</span>
+                    <span class="rating-count">(87 reviews)</span>
+                </div>
+                <button class="btn btn--brand btn--full">Add to Cart</button>
+            </div>
+        </div>
+
+        <div class="product-card">
+            <div class="product-image">
+                <img src="/public/images/products/img-cart-lip.png" alt="Mascara" />
+            </div>
+            <div class="product-info">
+                <h3 class="product-title">Volume Mascara</h3>
+                <p class="product-description">Mascara for natural volume and curl</p>
+                <div class="product-price">
+                    <span class="current-price">179,000₫</span>
+                </div>
+                <div class="product-rating">
+                    <span class="stars">★★★★☆</span>
+                    <span class="rating-count">(156 reviews)</span>
+                </div>
+                <button class="btn btn--brand btn--full">Add to Cart</button>
+            </div>
+        </div>
+
+        <div class="product-card">
+            <div class="product-image">
+                <img src="/public/images/products/img-cart-brush.png" alt="Concealer" />
+            </div>
+            <div class="product-info">
+                <h3 class="product-title">Full Coverage Concealer</h3>
+                <p class="product-description">Full coverage concealer for perfect coverage</p>
+                <div class="product-price">
+                    <span class="current-price">249,000₫</span>
+                </div>
+                <div class="product-rating">
+                    <span class="stars">★★★★★</span>
+                    <span class="rating-count">(92 reviews)</span>
+                </div>
+                <button class="btn btn--brand btn--full">Add to Cart</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="pagination">
+        <button class="btn btn--outline" disabled>Previous</button>
+        <span class="page-numbers">
+            <button class="page-number active">1</button>
+            <button class="page-number">2</button>
+            <button class="page-number">3</button>
+        </span>
+        <button class="btn btn--outline">Next</button>
+    </div>
+</div>
+
+@section Styles {
+    <link rel="stylesheet" href="~/public/css/pages/products.css" asp-append-version="true" />
+}

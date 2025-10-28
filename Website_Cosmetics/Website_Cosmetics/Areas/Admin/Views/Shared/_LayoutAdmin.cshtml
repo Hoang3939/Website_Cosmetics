@@ -1,0 +1,84 @@
+﻿@{
+    Layout = null;
+    var title = ViewData["Title"] as string ?? "Admin";
+}
+
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@title - Cosmetic Admin</title>
+
+    <link rel="stylesheet" href="~/admin/css/site-admin.css" asp-append-version="true" />
+    @RenderSection("Styles", required: false)
+</head>
+<body data-page="@ViewContext.RouteData.Values["controller"]?.ToString().ToLower().Trim().Replace("controller", "").Replace("controller", "") + " ." + ViewContext.RouteData.Values["action"]?.ToString().ToLower()">
+
+    <div class="admin">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar__brand">
+                <a asp-area="Admin" asp-controller="Dashboard" asp-action="Index">COSMETIC</a>
+            </div>
+
+            <nav class="sidebar__nav">
+                <div class="sidebar__group">
+                    <div class="sidebar__label">Management</div>
+                    <a class="sidebar__link" asp-area="Admin" asp-controller="Dashboard" asp-action="Index">Dashboard</a>
+                    <a class="sidebar__link" asp-area="Admin" asp-controller="Products" asp-action="Index">Products</a>
+                    <a class="sidebar__link" asp-area="Admin" asp-controller="Orders" asp-action="Index">Orders</a>
+                    <a class="sidebar__link" asp-area="Admin" asp-controller="Users" asp-action="Index">Users</a>
+                    <a class="sidebar__link" asp-area="Admin" asp-controller="Reviews" asp-action="Index">Reviews</a>
+                </div>
+
+                <div class="sidebar__group">
+                    <div class="sidebar__label">Inventory</div>
+                    <a class="sidebar__link" asp-area="Admin" asp-controller="Batches" asp-action="Index">Batches</a>
+                    <a class="sidebar__link" asp-area="Admin" asp-controller="Inventory" asp-action="Index">Stock (FIFO)</a>
+                </div>
+
+                <div class="sidebar__group">
+                    <div class="sidebar__label">Commerce</div>
+                    <a class="sidebar__link" asp-area="Admin" asp-controller="Coupons" asp-action="Index">Coupons</a>
+                    <a class="sidebar__link" asp-area="Admin" asp-controller="Reports" asp-action="Index">Reports</a>
+                </div>
+
+                <div class="sidebar__group">
+                    <div class="sidebar__label">System</div>
+                    <a class="sidebar__link" asp-area="Admin" asp-controller="Roles" asp-action="Index">Roles & Permissions</a>
+                    <a class="sidebar__link" asp-area="Admin" asp-controller="Ai" asp-action="Index">AI Settings</a>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- Main -->
+        <div class="main">
+            <!-- Header -->
+            <header class="header">
+                <button class="header__toggle" id="btnSidebarToggle" aria-label="Toggle sidebar">☰</button>
+
+                <div class="header__search">
+                    <input placeholder="Search..." />
+                </div>
+
+                <div class="header__actions">
+                    <div class="header__badge">Admin</div>
+                    <a asp-area="" asp-controller="Home" asp-action="Index" class="header__link">View site</a>
+                    <form asp-area="" asp-controller="Auth" asp-action="LogoutConfirmed" method="post" class="header__logout">
+                        @Html.AntiForgeryToken()
+                        <button type="submit">Log out</button>
+                    </form>
+                </div>
+            </header>
+
+            <!-- Content -->
+            <main class="content">
+                @RenderBody()
+            </main>
+        </div>
+    </div>
+
+    @RenderSection("Scripts", required: false)
+</body>
+</html>

@@ -1,0 +1,73 @@
+﻿@{
+    ViewData["Title"] = "Dashboard";
+}
+
+<section class="grid-cards">
+    <div class="card kpi">
+        <div class="kpi__title">Revenue (Today)</div>
+        <div class="kpi__value">$12,430</div>
+        <div class="kpi__delta kpi__delta--up">+8.2%</div>
+    </div>
+
+    <div class="card kpi">
+        <div class="kpi__title">Orders</div>
+        <div class="kpi__value">238</div>
+        <div class="kpi__delta kpi__delta--down">-1.3%</div>
+    </div>
+
+    <div class="card kpi">
+        <div class="kpi__title">New Users</div>
+        <div class="kpi__value">37</div>
+        <div class="kpi__delta kpi__delta--up">+4.1%</div>
+    </div>
+
+    <div class="card kpi">
+        <div class="kpi__title">Low Stock</div>
+        <div class="kpi__value">12</div>
+        <div class="kpi__delta">Check now</div>
+    </div>
+</section>
+
+<section class="card">
+    <div class="card__hd">
+        <h3>Recent Orders</h3>
+        <a asp-area="Admin" asp-controller="Orders" asp-action="Index" class="link">See all</a>
+    </div>
+    <div class="table">
+        <div class="table__row table__row--hd">
+            <div>#</div>
+            <div>Customer</div>
+            <div>Total</div>
+            <div>Status</div>
+            <div>Placed</div>
+        </div>
+
+        <div class="table__row">
+            <div>SO-000912</div>
+            <div>Mai Anh</div>
+            <div>$59.00</div>
+            <div><span class="badge badge--processing">Processing</span></div>
+            <div>Today 09:21</div>
+        </div>
+
+        <div class="table__row">
+            <div>SO-000911</div>
+            <div>Khánh H.</div>
+            <div>$120.50</div>
+            <div><span class="badge badge--shipped">Shipped</span></div>
+            <div>Today 08:55</div>
+        </div>
+
+        <div class="table__row">
+            <div>SO-000910</div>
+            <div>Lan Ph.</div>
+            <div>$35.20</div>
+            <div><span class="badge badge--delivered">Delivered</span></div>
+            <div>Yesterday</div>
+        </div>
+    </div>
+</section>
+
+@section Styles {
+    <link rel="stylesheet" href="~/admin/css/pages/dashboard.css" asp-append-version="true" />
+}
