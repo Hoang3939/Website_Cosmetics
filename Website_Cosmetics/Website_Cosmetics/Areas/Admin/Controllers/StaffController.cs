@@ -50,7 +50,7 @@ namespace Website_Cosmetics.Areas.Admin.Controllers
                 // Check if user already exists
                 if (await _context.Users.AnyAsync(u => u.Username == model.Username || u.Email == model.Email))
                 {
-                    ModelState.AddModelError(string.Empty, "Tên đăng nhập hoặc email đã tồn tại.");
+                    ModelState.AddModelError(string.Empty, "Username or email already exists.");
                     return View(model);
                 }
 
@@ -82,7 +82,7 @@ namespace Website_Cosmetics.Areas.Admin.Controllers
                     await _context.SaveChangesAsync();
                 }
 
-                TempData["SuccessMessage"] = "Tạo nhân viên thành công!";
+                TempData["SuccessMessage"] = "Staff created successfully!";
                 return RedirectToAction("Index");
             }
 
@@ -119,11 +119,11 @@ namespace Website_Cosmetics.Areas.Admin.Controllers
             
             if (success)
             {
-                TempData["SuccessMessage"] = "Cấp quyền thành công!";
+                TempData["SuccessMessage"] = "Permission granted successfully!";
             }
             else
             {
-                TempData["ErrorMessage"] = "Cấp quyền thất bại!";
+                TempData["ErrorMessage"] = "Failed to grant permission!";
             }
 
             return RedirectToAction("Permissions", new { id = userId });
@@ -138,11 +138,11 @@ namespace Website_Cosmetics.Areas.Admin.Controllers
             
             if (success)
             {
-                TempData["SuccessMessage"] = "Thu hồi quyền thành công!";
+                TempData["SuccessMessage"] = "Permission revoked successfully!";
             }
             else
             {
-                TempData["ErrorMessage"] = "Thu hồi quyền thất bại!";
+                TempData["ErrorMessage"] = "Failed to revoke permission!";
             }
 
             return RedirectToAction("Permissions", new { id = userId });
@@ -159,7 +159,7 @@ namespace Website_Cosmetics.Areas.Admin.Controllers
                 user.IsActive = false;
                 user.UpdatedAt = DateTime.UtcNow;
                 await _context.SaveChangesAsync();
-                TempData["SuccessMessage"] = "Vô hiệu hóa nhân viên thành công!";
+                TempData["SuccessMessage"] = "Staff deactivated successfully!";
             }
 
             return RedirectToAction("Index");
@@ -176,7 +176,7 @@ namespace Website_Cosmetics.Areas.Admin.Controllers
                 user.IsActive = true;
                 user.UpdatedAt = DateTime.UtcNow;
                 await _context.SaveChangesAsync();
-                TempData["SuccessMessage"] = "Kích hoạt nhân viên thành công!";
+                TempData["SuccessMessage"] = "Staff activated successfully!";
             }
 
             return RedirectToAction("Index");

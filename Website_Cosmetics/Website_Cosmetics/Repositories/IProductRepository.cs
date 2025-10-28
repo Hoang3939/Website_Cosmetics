@@ -6,7 +6,7 @@ namespace Website_Cosmetics.Repositories
     {
         Task<IEnumerable<Product>> GetAllAsync();
 
-        Task<Product> GetByIdAsync(Guid id);
+        Task<Product?> GetByIdAsync(Guid id);
 
         Task AddAsync(Product product);
 

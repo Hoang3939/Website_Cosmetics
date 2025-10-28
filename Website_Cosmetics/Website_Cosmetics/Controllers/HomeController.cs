@@ -17,11 +17,11 @@ namespace Website_Cosmetics.Controllers
 
         public async Task<IActionResult> Index()
         {
-            // Lấy danh sách sản phẩm Most Loved và On Sale
+            // Get Most Loved and On Sale products list
             var mostLovedProducts = await _productRepository.GetMostLovedAsync(8);
             var onSaleProducts = await _productRepository.GetOnSaleAsync(8);
 
-            // Truyền dữ liệu vào ViewData để view có thể sử dụng
+            // Pass data to ViewData so view can use it
             ViewData["MostLovedProducts"] = mostLovedProducts;
             ViewData["OnSaleProducts"] = onSaleProducts;
 
@@ -29,6 +29,11 @@ namespace Website_Cosmetics.Controllers
         }
 
         public IActionResult Privacy()
+        {
+            return View();
+        }
+
+        public IActionResult AccessDenied()
         {
             return View();
         }

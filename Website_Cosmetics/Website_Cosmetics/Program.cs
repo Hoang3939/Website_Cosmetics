@@ -8,19 +8,16 @@ var builder = WebApplication.CreateBuilder(args);
 // Lấy chuỗi kết nối từ appsettings.json
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
-// Đăng ký DbContext với service container
-builder.Services.AddDbContext<WebsiteCosmeticContext>(options =>
-    options.UseSqlServer(connectionString));
-
-builder.Services.AddScoped<IProductRepository, ProductRepository>();
-builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
-
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
-// Add Entity Framework
+// Add Entity Framework - chỉ sử dụng ApplicationDbContext
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+// Add Repositories
+builder.Services.AddScoped<IProductRepository, ProductRepository>();
+builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 
 // Add Authentication
 builder.Services.AddAuthentication("Cookies")
@@ -49,7 +46,7 @@ using (var scope = app.Services.CreateScope())
     var services = scope.ServiceProvider;
     try
     {
-        var context = services.GetRequiredService<WebsiteCosmeticContext>();
+        var context = services.GetRequiredService<ApplicationDbContext>();
         DbInitializer.Initialize(context);
     }
     catch (Exception ex)

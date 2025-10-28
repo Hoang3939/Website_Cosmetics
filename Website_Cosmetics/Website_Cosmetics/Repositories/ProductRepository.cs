@@ -1,14 +1,16 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Website_Cosmetics.Models;
+using Website_Cosmetics.Data;
+using System;
 
 namespace Website_Cosmetics.Repositories
 {
     // 1. Class này hiện thực hóa Interface
     public class ProductRepository : IProductRepository
     {
-        private readonly WebsiteCosmeticContext _context;
+        private readonly ApplicationDbContext _context;
 
-        public ProductRepository(WebsiteCosmeticContext context)
+        public ProductRepository(ApplicationDbContext context)
         {
             _context = context;
         }
@@ -25,7 +27,7 @@ namespace Website_Cosmetics.Repositories
         }
 
         // Hiện thực hàm Lấy theo ID
-        public async Task<Product> GetByIdAsync(Guid id)
+        public async Task<Product?> GetByIdAsync(Guid id)
         {
             return await _context.Products
                                  .Include(p => p.Brand)
@@ -36,6 +38,8 @@ namespace Website_Cosmetics.Repositories
         // Hiện thực hàm Thêm
         public async Task AddAsync(Product product)
         {
+            product.CreatedAt = DateTime.UtcNow;
+            product.UpdatedAt = DateTime.UtcNow;
             _context.Products.Add(product);
             await _context.SaveChangesAsync();
         }
@@ -43,17 +47,19 @@ namespace Website_Cosmetics.Repositories
         // Hiện thực hàm Cập nhật
         public async Task UpdateAsync(Product product)
         {
+            product.UpdatedAt = DateTime.UtcNow;
             _context.Products.Update(product);
             await _context.SaveChangesAsync();
         }
 
-        // Hiện thực hàm Xóa
+        // Hiện thực hàm Xóa (Soft Delete)
         public async Task DeleteAsync(Guid id)
         {
             var product = await _context.Products.FindAsync(id);
             if (product != null)
             {
-                _context.Products.Remove(product);
+                product.IsActive = false;
+                product.UpdatedAt = DateTime.UtcNow;
                 await _context.SaveChangesAsync();
             }
         }

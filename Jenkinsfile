@@ -64,14 +64,14 @@ pipeline {
                     # Thư mục làm việc hiện tại là $WORKSPACE/Website_Cosmetics
                     cd Website_Cosmetics
                     
-                    # 1. Chỉ định đúng đường dẫn đến file .csproj (thêm "Website_Cosmetics/")
-                    # 2. Chỉ định đường dẫn output tuyệt đối (-o "\$WORKSPACE/\$OUT_DIR")
+                    # 1. Specify correct path to .csproj file (add "Website_Cosmetics/")
+                    # 2. Specify absolute output path (-o "\$WORKSPACE/\$OUT_DIR")
                     dotnet publish Website_Cosmetics/Website_Cosmetics.csproj --no-restore -c Release -o "\$WORKSPACE/\$OUT_DIR" --nologo
                 """
             }
             post {
                 success {
-                    // Giờ đây 'publish/**/*' sẽ trỏ đúng đến $WORKSPACE/publish/
+                    // Now 'publish/**/*' will correctly point to $WORKSPACE/publish/
                     archiveArtifacts artifacts: "${env.OUT_DIR}/**/*", fingerprint: true
                 }
             }
@@ -152,12 +152,12 @@ EOF
                             break
                         fi
                         if [[ "\$i" -eq 30 ]]; then
-                            echo "LỖI: Port \$PORT không mở sau 30 giây! (Lệnh grep có thể đang không hoạt động đúng)" >&2
-                            # Vẫn giữ lại log để phòng trường hợp lỗi khác
+                            echo "ERROR: Port \$PORT not opened after 30 seconds! (grep command may not be working correctly)" >&2
+                            # Keep logs for other error cases
                             sudo journalctl -u "\$SERVICE" -n 100 --no-pager || true 
                             exit 1
                         fi
-                        echo "Chờ port \$PORT... (thử \$i/30)"
+                        echo "Waiting for port \$PORT... (attempt \$i/30)"
                         sleep 1
                     done
 

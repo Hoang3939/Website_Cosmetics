@@ -6,7 +6,7 @@ namespace Website_Cosmetics.Repositories
     {
         Task<IEnumerable<Category>> GetAllAsync();
 
-        Task<Category> GetByIdAsync(Guid id);
+        Task<Category?> GetByIdAsync(Guid id);
 
         Task AddAsync(Category category);
 

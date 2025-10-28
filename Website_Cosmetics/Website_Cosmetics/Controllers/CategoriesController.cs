@@ -10,7 +10,7 @@ namespace Website_Cosmetics.Controllers
 {
     public class CategoriesController : Controller
     {
-        // 1. Inject Interface của Category
+        // 1. Inject Category Interface
         private readonly ICategoryRepository _categoryRepository;
 
         public CategoriesController(ICategoryRepository categoryRepository)
@@ -18,14 +18,14 @@ namespace Website_Cosmetics.Controllers
             _categoryRepository = categoryRepository;
         }
 
-        // 2. Lấy tất cả (GET: /Categories)
+        // 2. Get all categories (GET: /Categories)
         public async Task<IActionResult> Index()
         {
             var categories = await _categoryRepository.GetAllAsync();
             return View(categories); 
         }
 
-        // 3. Lấy chi tiết (GET: /Categories/Details/5)
+        // 3. Get details (GET: /Categories/Details/5)
         public async Task<IActionResult> Details(Guid id)
         {
             var category = await _categoryRepository.GetByIdAsync(id);
@@ -36,13 +36,13 @@ namespace Website_Cosmetics.Controllers
             return View(category);
         }
 
-        // 4. Tạo mới (GET: /Categories/Create)
+        // 4. Create new (GET: /Categories/Create)
         public IActionResult Create()
         {
             return View();
         }
 
-        // 5. Tạo mới (POST: /Categories/Create)
+        // 5. Create new (POST: /Categories/Create)
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Category category)
@@ -50,12 +50,12 @@ namespace Website_Cosmetics.Controllers
             if (ModelState.IsValid)
             {
                 await _categoryRepository.AddAsync(category);
-                return RedirectToAction(nameof(Index)); // Quay về trang danh sách
+                return RedirectToAction(nameof(Index)); // Return to list page
             }
-            return View(category); // Hiển thị lại form nếu có lỗi
+            return View(category); // Display form again if there are errors
         }
 
-        // 6. Chỉnh sửa (GET: /Categories/Edit/5)
+        // 6. Edit (GET: /Categories/Edit/5)
         public async Task<IActionResult> Edit(Guid id)
         {
             var category = await _categoryRepository.GetByIdAsync(id);
@@ -66,7 +66,7 @@ namespace Website_Cosmetics.Controllers
             return View(category);
         }
 
-        // 7. Chỉnh sửa (POST: /Categories/Edit/5)
+        // 7. Edit (POST: /Categories/Edit/5)
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(Guid id, Category category)
@@ -84,7 +84,7 @@ namespace Website_Cosmetics.Controllers
             return View(category);
         }
 
-        // 8. Xóa (GET: /Categories/Delete/5)
+        // 8. Delete (GET: /Categories/Delete/5)
         public async Task<IActionResult> Delete(Guid id)
         {
             var category = await _categoryRepository.GetByIdAsync(id);
@@ -95,7 +95,7 @@ namespace Website_Cosmetics.Controllers
             return View(category);
         }
 
-        // 9. Xóa (POST: /Categories/Delete/5)
+        // 9. Delete (POST: /Categories/Delete/5)
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(Guid id)
