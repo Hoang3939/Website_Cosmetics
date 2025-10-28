@@ -1,4 +1,4 @@
-/* CSS Manifest – stable load order */
+/* CSS Manifest ï¿½ stable load order */
 @import url("layout/tokens.css");
 @import url("layout/base.css");
 @import url("layout/shell.css");
@@ -18,3 +18,4 @@
 
 /* Pages */
 @import url("pages/home.css");
+@import url("pages/product-details.css");
