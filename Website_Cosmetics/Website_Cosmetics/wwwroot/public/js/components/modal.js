@@ -20,14 +20,16 @@
             const navPrev = document.createElement('button');
             navPrev.className = 'modal-nav modal-nav--prev';
             navPrev.type = 'button';
-            navPrev.innerHTML = '‹';
+            navPrev.innerHTML = '<i data-lucide="chevron-left"></i>';
             navPrev.setAttribute('data-modal-nav', 'prev');
+            navPrev.setAttribute('aria-label', 'Previous product');
 
             const navNext = document.createElement('button');
             navNext.className = 'modal-nav modal-nav--next';
             navNext.type = 'button';
-            navNext.innerHTML = '›';
+            navNext.innerHTML = '<i data-lucide="chevron-right"></i>';
             navNext.setAttribute('data-modal-nav', 'next');
+            navNext.setAttribute('aria-label', 'Next product');
 
             const dialog = document.createElement('div');
             dialog.className = 'modal';
@@ -39,7 +41,7 @@
             closeBtn.className = 'modal__close';
             closeBtn.type = 'button';
             closeBtn.setAttribute('aria-label', 'Close');
-            closeBtn.innerHTML = '×';
+            closeBtn.innerHTML = '<i data-lucide="x"></i>';
             closeBtn.addEventListener('click', () => this.close());
 
             dialog.appendChild(closeBtn);
@@ -86,6 +88,11 @@
             this._overlay.classList.add('is-open');
             this._overlay.setAttribute('aria-hidden', 'false');
             document.documentElement.classList.add('no-scroll');
+
+            // Initialize Lucide icons in modal
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
 
             // focusables
             this._focusables = Array.from(this._dialog.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'))

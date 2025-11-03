@@ -12,10 +12,10 @@
     transition: transform var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease);
 }
 
-    .btn:hover {
-        box-shadow: var(--shadow-1);
-        transform: translateY(-1px)
-    }
+.btn:hover {
+    box-shadow: var(--shadow-1);
+    transform: translateY(-1px)
+}
 
 .btn--brand {
     background: var(--brand);
