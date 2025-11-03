@@ -1,11 +1,11 @@
 ﻿/* ---------- Product Card (content) ---------- */
 .product {
-    display: flex;
-    flex-direction: column;
+    display: flex !important;
+    flex-direction: column !important;
     overflow: hidden;
-    text-decoration: none;
     color: inherit;
     transition: transform 0.2s, box-shadow 0.2s;
+    cursor: pointer;
 }
 
 .product:hover {
@@ -14,12 +14,30 @@
 }
 
 .product__img {
+    width: 100%;
     aspect-ratio: 4/3;
-    background: #F3F4F6
+    background: #F3F4F6;
+    flex-shrink: 0;
+    display: block;
+    text-decoration: none;
+    color: inherit;
+}
+
+.product__img img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.product__img:hover img {
+    transform: scale(1.05);
 }
 
 .product__body {
-    padding: 12px
+    width: 100%;
+    padding: 12px;
+    flex: 1 1 auto;
 }
 
 /* brand → title → rating → price → actions */

@@ -39,33 +39,102 @@
 
 .modal__close {
     position: absolute;
-    top: 10px;
-    right: 10px;
-    width: 32px;
-    height: 32px;
+    top: 16px;
+    right: 16px;
+    width: 36px;
+    height: 36px;
     border: none;
     background: #f3f4f6;
-    border-radius: 8px;
+    border-radius: 50%;
     cursor: pointer;
-    font-size: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    z-index: 10;
+}
+
+.modal__close:hover {
+    background: #e5e7eb;
+    transform: scale(1.1);
+}
+
+.modal__close svg,
+.modal__close i {
+    width: 20px;
+    height: 20px;
+    stroke: #374151;
+    margin: 0;
+    padding: 0;
+    display: block;
 }
 
 .modal-nav {
     position: absolute;
     top: 50%;
     transform: translateY(-50%);
-    width: 40px;
-    height: 40px;
-    border-radius: 999px;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
     background: #fff;
-    border: 1px solid #ddd;
+    border: 2px solid #e5e7eb;
     cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 0;
+    margin: 0;
+}
+
+.modal-nav:hover {
+    background: var(--brand, #dc2626);
+    border-color: var(--brand, #dc2626);
+    transform: translateY(-50%) scale(1.1);
+    box-shadow: 0 6px 12px rgba(220, 38, 38, 0.3);
+}
+
+.modal-nav:hover svg,
+.modal-nav:hover i {
+    stroke: #fff;
+}
+
+.modal-nav svg,
+.modal-nav i {
+    width: 24px;
+    height: 24px;
+    stroke: #374151;
+    transition: stroke 0.3s ease;
+    margin: 0;
+    padding: 0;
+    display: block;
+    flex-shrink: 0;
+}
+
+.modal-nav i {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-nav i svg,
+.modal__close i svg {
+    margin: 0;
+    padding: 0;
+    display: block;
 }
 
 .modal-nav--prev {
-    left: 20px;
+    left: 24px;
 }
 
 .modal-nav--next {
-    right: 20px;
+    right: 24px;
+}
+
+@media (max-width: 768px) {
+    .modal-nav {
+        display: none;
+    }
 }

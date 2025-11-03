@@ -26,10 +26,10 @@
         {
             var productImage = product.ProductImages?.FirstOrDefault()?.Url ?? "/public/images/products/img-cart-lip.png";
             var oldPrice = product.Price * 1.33m; // Calculate 25% discount for demo
-            <a asp-controller="Products" asp-action="Details" asp-route-id="@product.ProductId" class="card product" data-product-id="@product.ProductId">
-                <div class="product__img">
+            <div class="card product" data-product-id="@product.ProductId" data-details="@Url.Action("Details", "Products", new { id = product.ProductId })">
+                <a asp-controller="Products" asp-action="Details" asp-route-id="@product.ProductId" class="product__img">
                     <img src="@productImage" alt="@product.Name" />
-                </div>
+                </a>
                 <div class="product__body">
                     <div class="product__brand">@(product.Brand?.Name?.ToUpper() ?? "UNKNOWN")</div>
                     <h3 class="product__title">@product.Name</h3>
@@ -43,10 +43,10 @@
                         <span class="price--old">$@oldPrice.ToString("0.00")</span>
                     </div>
                     <div class="product__actions">
-                        <a class="btn" data-quickview>Quick view</a>
+                        <button type="button" class="btn" data-quickview>Quick view</button>
                     </div>
                 </div>
-            </a>
+            </div>
         }
     </div>
 
@@ -67,10 +67,10 @@
         {
             var productImage = product.ProductImages?.FirstOrDefault()?.Url ?? "/public/images/products/img-cart-brush.png";
             var oldPrice = product.Price * 1.67m; // Calculate 40% discount for demo
-            <a asp-controller="Products" asp-action="Details" asp-route-id="@product.ProductId" class="card product" data-product-id="@product.ProductId">
-                <div class="product__img">
+            <div class="card product" data-product-id="@product.ProductId" data-details="@Url.Action("Details", "Products", new { id = product.ProductId })">
+                <a asp-controller="Products" asp-action="Details" asp-route-id="@product.ProductId" class="product__img">
                     <img src="@productImage" alt="@product.Name" />
-                </div>
+                </a>
                 <div class="product__body">
                     <div class="product__brand">@(product.Brand?.Name?.ToUpper() ?? "UNKNOWN")</div>
                     <h3 class="product__title">@product.Name</h3>
@@ -84,10 +84,10 @@
                         <span class="price--old">$@oldPrice.ToString("0.00")</span>
                     </div>
                     <div class="product__actions">
-                        <a class="btn" data-quickview>Quick view</a>
+                        <button type="button" class="btn" data-quickview>Quick view</button>
                     </div>
                 </div>
-            </a>
+            </div>
         }
     </div>
 

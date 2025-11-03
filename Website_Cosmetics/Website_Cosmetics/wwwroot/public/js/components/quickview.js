@@ -66,42 +66,47 @@
         wrap.innerHTML = `
       <div class="qv__media"><img src="${p.image}" alt="${p.title}"></div>
       <div class="qv__info">
-        <h3 class="qv__brand">${p.brand}</h3>
+        <div class="qv__brand">${p.brand}</div>
         <h2 class="qv__title">${p.title}</h2>
 
         <div class="qv__rating">
-          <span class="qv__stars" aria-hidden="true">★★★★★</span>
+          <img class="qv__star-icon" src="/public/images/icons/star.png" alt="" aria-hidden="true" />
           <span class="qv__score">${p.ratingScore || ''}</span>
           <span class="qv__count">${p.ratingCount || ''}</span>
         </div>
 
         <div class="qv__price">
-          <span class="qv__now">${p.priceNow}</span>
-          ${p.priceOld ? `<span class="qv__old">${p.priceOld}</span>` : ''}
+          <span class="qv__price-now">${p.priceNow}</span>
+          ${p.priceOld ? `<span class="qv__price-old">${p.priceOld}</span>` : ''}
         </div>
 
         ${descHtml}
         ${detailsHtml}
-        ${variantsHtml}
 
-        <div class="qv__row">
-          <div class="qv__label">Quantity</div>
+        <div class="qv__quantity">
+          <label class="qv__quantity-label">Quantity</label>
           <div class="qv__qty">
-            <button type="button" class="qty__btn" data-qty="-1" aria-label="Decrease quantity">−</button>
-            <input type="number" class="qty__input" min="1" value="1" inputmode="numeric" pattern="[0-9]*" />
-            <button type="button" class="qty__btn" data-qty="1" aria-label="Increase quantity">+</button>
+            <button type="button" class="qv__qty-btn qv__qty-btn--minus" data-qty="-1" aria-label="Decrease quantity">-</button>
+            <input type="number" class="qv__qty-input" min="1" value="1" inputmode="numeric" pattern="[0-9]*" />
+            <button type="button" class="qv__qty-btn qv__qty-btn--plus" data-qty="1" aria-label="Increase quantity">+</button>
           </div>
         </div>
 
+        ${variantsHtml}
+
         <div class="qv__actions">
-          <button type="button" class="btn btn--brand qv__add">Add to cart</button>
-          <button type="button" class="btn btn--ghost qv__wish">Add to list</button>
+          <button type="button" class="btn btn--primary qv__add">Add to cart</button>
+          <button type="button" class="btn btn--secondary qv__wish" aria-label="Add to wishlist">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+            </svg>
+          </button>
         </div>
       </div>`;
 
         // qty
-        const qtyInput = $('.qty__input', wrap);
-        $$('.qty__btn', wrap).forEach(btn => {
+        const qtyInput = $('.qv__qty-input', wrap);
+        $$('.qv__qty-btn', wrap).forEach(btn => {
             btn.addEventListener('click', () => {
                 const delta = parseInt(btn.getAttribute('data-qty'), 10);
                 const val = Math.max(1, parseInt(qtyInput.value || '1', 10) + delta);
@@ -142,13 +147,34 @@
                 this._indexById.set(card.getAttribute('data-id'), idx);
             });
 
+            // Handle Quick view button clicks
             document.addEventListener('click', (e) => {
                 const trigger = e.target.closest('[data-quickview]');
                 if (!trigger) return;
+                
+                // Prevent default link behavior and stop propagation immediately
                 e.preventDefault();
+                e.stopPropagation();
+                
                 const card = e.target.closest('.card.product');
                 if (!card) return;
+                
                 this.openByCard(card);
+            }, true);
+
+            // Handle card clicks (navigate to details page)
+            document.addEventListener('click', (e) => {
+                // Ignore if clicking on Quick view button or any button
+                if (e.target.closest('[data-quickview]') || e.target.closest('button')) return;
+                
+                const card = e.target.closest('.card.product');
+                if (!card) return;
+                
+                // Navigate to details page
+                const detailsUrl = card.getAttribute('data-details');
+                if (detailsUrl) {
+                    window.location.href = detailsUrl;
+                }
             });
 
             Modal.onNav((dir) => {
