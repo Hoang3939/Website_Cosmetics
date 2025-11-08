@@ -11,8 +11,9 @@ public partial class Product
 {
     [Key]
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-    public Guid ProductId { get; set; }
+    public int ProductId { get; set; }
 
+    [Required]
     [StringLength(200)]
     public string Name { get; set; } = null!;
 
@@ -20,11 +21,27 @@ public partial class Product
     public string? Slug { get; set; }
 
     [Column(TypeName = "decimal(12, 2)")]
-    public decimal Price { get; set; }
+    public decimal BasePrice { get; set; }
 
     public string? Description { get; set; }
 
     public string? Ingredients { get; set; }
+
+    [Column(TypeName = "decimal(3, 2)")]
+    public decimal? Rating { get; set; }
+
+    public int ReviewCount { get; set; } = 0;
+
+    public int LikeCount { get; set; } = 0;
+
+    [StringLength(50)]
+    public string? SPF { get; set; }
+
+    [StringLength(50)]
+    public string? Size { get; set; }
+
+    [StringLength(50)]
+    public string? Finish { get; set; }
 
     public bool? IsActive { get; set; }
 
@@ -34,9 +51,9 @@ public partial class Product
     [Column(TypeName = "datetime2")]
     public DateTime UpdatedAt { get; set; }
 
-    public Guid? BrandId { get; set; }
+    public int? BrandId { get; set; }
 
-    public Guid? CategoryId { get; set; }
+    public int? CategoryId { get; set; }
 
     [ForeignKey("BrandId")]
     [InverseProperty("Products")]
@@ -48,4 +65,13 @@ public partial class Product
 
     [InverseProperty("Product")]
     public virtual ICollection<ProductImage> ProductImages { get; set; } = new List<ProductImage>();
+
+    [InverseProperty("Product")]
+    public virtual ICollection<ProductVariant> ProductVariants { get; set; } = new List<ProductVariant>();
+
+    [InverseProperty("Product")]
+    public virtual ICollection<ProductReview> ProductReviews { get; set; } = new List<ProductReview>();
+
+    [InverseProperty("Product")]
+    public virtual ICollection<ProductLike> ProductLikes { get; set; } = new List<ProductLike>();
 }

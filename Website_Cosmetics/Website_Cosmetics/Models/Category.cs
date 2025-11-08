@@ -11,8 +11,9 @@ public partial class Category
 {
     [Key]
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-    public Guid CategoryId { get; set; }
+    public int CategoryId { get; set; }
 
+    [Required]
     [StringLength(100)]
     public string Name { get; set; } = null!;
 

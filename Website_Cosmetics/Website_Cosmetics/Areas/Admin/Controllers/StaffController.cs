@@ -76,8 +76,8 @@ namespace Website_Cosmetics.Areas.Admin.Controllers
                 {
                     _context.UserRoles.Add(new UserRole
                     {
-                        UserUID = user.UID,
-                        RoleUID = staffRole.UID
+                        UserId = user.UserId,
+                        RoleId = staffRole.RoleId
                     });
                     await _context.SaveChangesAsync();
                 }
@@ -90,7 +90,7 @@ namespace Website_Cosmetics.Areas.Admin.Controllers
         }
 
         // GET: /Admin/Staff/Permissions/{id}
-        public async Task<IActionResult> Permissions(Guid id)
+        public async Task<IActionResult> Permissions(int id)
         {
             var user = await _context.Users.FindAsync(id);
             if (user == null)
@@ -111,9 +111,9 @@ namespace Website_Cosmetics.Areas.Admin.Controllers
         // POST: /Admin/Staff/GrantPermission
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> GrantPermission(Guid userId, string permissionName)
+        public async Task<IActionResult> GrantPermission(int userId, string permissionName)
         {
-            var currentUserId = Guid.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? "");
+            var currentUserId = int.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? "0");
             
             var success = await _authService.GrantPermissionAsync(userId, permissionName, currentUserId);
             
@@ -132,7 +132,7 @@ namespace Website_Cosmetics.Areas.Admin.Controllers
         // POST: /Admin/Staff/RevokePermission
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> RevokePermission(Guid userId, string permissionName)
+        public async Task<IActionResult> RevokePermission(int userId, string permissionName)
         {
             var success = await _authService.RevokePermissionAsync(userId, permissionName);
             
@@ -151,7 +151,7 @@ namespace Website_Cosmetics.Areas.Admin.Controllers
         // POST: /Admin/Staff/Deactivate
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Deactivate(Guid id)
+        public async Task<IActionResult> Deactivate(int id)
         {
             var user = await _context.Users.FindAsync(id);
             if (user != null)
@@ -168,7 +168,7 @@ namespace Website_Cosmetics.Areas.Admin.Controllers
         // POST: /Admin/Staff/Activate
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Activate(Guid id)
+        public async Task<IActionResult> Activate(int id)
         {
             var user = await _context.Users.FindAsync(id);
             if (user != null)

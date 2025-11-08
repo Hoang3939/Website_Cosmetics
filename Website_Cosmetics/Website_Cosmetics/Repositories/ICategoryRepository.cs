@@ -6,12 +6,12 @@ namespace Website_Cosmetics.Repositories
     {
         Task<IEnumerable<Category>> GetAllAsync();
 
-        Task<Category?> GetByIdAsync(Guid id);
+        Task<Category?> GetByIdAsync(int id);
 
         Task AddAsync(Category category);
 
         Task UpdateAsync(Category category);
 
-        Task DeleteAsync(Guid id);
+        Task DeleteAsync(int id);
     }
 }

@@ -7,7 +7,8 @@ namespace Website_Cosmetics.Models
     public class Permission
     {
         [Key]
-        public Guid UID { get; set; } = Guid.NewGuid();
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public int PermissionId { get; set; }
 
         [Required]
         [StringLength(100, MinimumLength = 3)]

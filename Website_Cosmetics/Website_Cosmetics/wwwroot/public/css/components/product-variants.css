@@ -1,0 +1,306 @@
+/* ====================================
+   PRODUCT VARIANTS STYLES
+   ==================================== */
+
+.product-details__variants {
+    margin: 2rem 0;
+    padding: 1.5rem 0;
+    border-top: 1px solid var(--color-border, #e5e7eb);
+    border-bottom: 1px solid var(--color-border, #e5e7eb);
+}
+
+.variant-section {
+    margin-bottom: 1.5rem;
+}
+
+.variant-section:last-child {
+    margin-bottom: 0;
+}
+
+.variant-label {
+    display: block;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--color-text, #1f2937);
+    margin-bottom: 0.75rem;
+}
+
+.variant-selected {
+    color: var(--color-brand, #e91e63);
+    font-weight: 700;
+}
+
+/* ====================================
+   VARIANT OPTIONS
+   ==================================== */
+
+.variant-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+
+.variant-option {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.625rem 1rem;
+    border: 2px solid var(--color-border, #e5e7eb);
+    border-radius: 8px;
+    background: white;
+    color: var(--color-text, #1f2937);
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    user-select: none;
+}
+
+.variant-option:hover:not(:disabled) {
+    border-color: var(--color-brand, #e91e63);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(233, 30, 99, 0.15);
+}
+
+.variant-option.active {
+    border-color: var(--color-brand, #e91e63);
+    background: rgba(233, 30, 99, 0.05);
+    color: var(--color-brand, #e91e63);
+    font-weight: 600;
+}
+
+.variant-option:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: #f9fafb;
+}
+
+/* ====================================
+   COLOR VARIANTS
+   ==================================== */
+
+.variant-options--colors .variant-option {
+    padding-left: 0.75rem;
+}
+
+.color-swatch {
+    display: inline-block;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: 2px solid white;
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
+    flex-shrink: 0;
+}
+
+.variant-option.active .color-swatch {
+    box-shadow: 0 0 0 2px var(--color-brand, #e91e63);
+}
+
+/* ====================================
+   SIZE VARIANTS
+   ==================================== */
+
+.variant-options--sizes .variant-option {
+    min-width: 80px;
+    justify-content: center;
+}
+
+.size-text {
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+/* ====================================
+   VARIANT BADGES
+   ==================================== */
+
+.variant-badge {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    padding: 0.125rem 0.375rem;
+    border-radius: 4px;
+    font-size: 0.625rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    line-height: 1;
+}
+
+.variant-badge--low {
+    background: #fbbf24;
+    color: #78350f;
+}
+
+.variant-badge--out {
+    background: #ef4444;
+    color: white;
+}
+
+/* ====================================
+   STOCK INFO
+   ==================================== */
+
+.stock-info {
+    margin-top: 1rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.stock-available {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    color: #10b981;
+}
+
+.stock-available svg {
+    flex-shrink: 0;
+}
+
+.stock-out {
+    color: #ef4444;
+    font-weight: 600;
+}
+
+/* ====================================
+   PRODUCT INFO GRID
+   ==================================== */
+
+.product-details__info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem;
+    margin: 1.5rem 0;
+    padding: 1rem;
+    background: #f9fafb;
+    border-radius: 8px;
+}
+
+.info-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.info-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.info-value {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--color-text, #1f2937);
+}
+
+/* ====================================
+   PRICE ENHANCEMENTS
+   ==================================== */
+
+.product-details__price {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin: 1.5rem 0;
+}
+
+.price--discount {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.625rem;
+    background: #fef2f2;
+    color: #dc2626;
+    font-size: 0.75rem;
+    font-weight: 700;
+    border-radius: 4px;
+}
+
+/* ====================================
+   RESPONSIVE
+   ==================================== */
+
+@media (max-width: 640px) {
+    .variant-options {
+        gap: 0.5rem;
+    }
+    
+    .variant-option {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.8125rem;
+    }
+    
+    .color-swatch {
+        width: 20px;
+        height: 20px;
+    }
+    
+    .variant-options--sizes .variant-option {
+        min-width: 70px;
+    }
+    
+    .product-details__info-grid {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+    }
+}
+
+/* ====================================
+   ANIMATIONS
+   ==================================== */
+
+@keyframes variantSelect {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+.variant-option.active {
+    animation: variantSelect 0.3s ease;
+}
+
+/* ====================================
+   ACCESSIBILITY
+   ==================================== */
+
+.variant-option:focus {
+    outline: 2px solid var(--color-brand, #e91e63);
+    outline-offset: 2px;
+}
+
+.variant-option:focus:not(:focus-visible) {
+    outline: none;
+}
+
+/* Dark mode support (optional) */
+@media (prefers-color-scheme: dark) {
+    .variant-option {
+        background: #1f2937;
+        color: #f9fafb;
+        border-color: #374151;
+    }
+    
+    .variant-option:hover:not(:disabled) {
+        background: #111827;
+    }
+    
+    .variant-option.active {
+        background: rgba(233, 30, 99, 0.15);
+    }
+    
+    .product-details__info-grid {
+        background: #1f2937;
+    }
+}
+

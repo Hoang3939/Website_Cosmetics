@@ -25,7 +25,7 @@ namespace Website_Cosmetics.Repositories
                                 .ToListAsync();
         }
 
-        public async Task<Category?> GetByIdAsync(Guid id)
+        public async Task<Category?> GetByIdAsync(int id)
         {
             return await _context.Categories.FindAsync(id);
         }
@@ -45,7 +45,7 @@ namespace Website_Cosmetics.Repositories
             await _context.SaveChangesAsync(); 
         }
 
-        public async Task DeleteAsync(Guid id)
+        public async Task DeleteAsync(int id)
         {
             var category = await _context.Categories.FindAsync(id);
             if (category != null)

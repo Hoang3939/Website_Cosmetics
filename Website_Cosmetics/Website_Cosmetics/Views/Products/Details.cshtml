@@ -1,13 +1,25 @@
 @model Website_Cosmetics.Models.Product
+@using System.Web
 
 @{
     ViewData["Title"] = Model.Name;
     
-    // Lấy hình ảnh chính (IsCover = true) hoặc hình đầu tiên
-    var coverImage = Model.ProductImages?.FirstOrDefault(img => img.IsCover == true) 
-                     ?? Model.ProductImages?.FirstOrDefault();
+    var defaultVariant = ViewBag.DefaultVariant as ProductVariant;
+    var currentVariant = defaultVariant ?? Model.ProductVariants?.FirstOrDefault();
     
-    var allImages = Model.ProductImages?.ToList() ?? new List<ProductImage>();
+    // Lấy ảnh từ variant hoặc product
+    var variantImages = currentVariant?.ProductVariantImages?.ToList() ?? new List<ProductVariantImage>();
+    var productImages = Model.ProductImages?.ToList() ?? new List<ProductImage>();
+    
+    var coverImage = variantImages.FirstOrDefault(img => img.IsPrimary == true) ?? variantImages.FirstOrDefault();
+    // URL from database may be URL-encoded, ensure it's rendered correctly in HTML
+    var coverImageUrl = coverImage?.Url ?? "/public/images/products/img-cart-lip.png";
+    // If URL starts with /public, use it as-is (it's already a relative path)
+    // Browser will automatically decode URL-encoded characters (%23 -> #, %20 -> space)
+    
+    var currentPrice = currentVariant?.FinalPrice ?? Model.BasePrice;
+    var comparePrice = currentVariant?.CompareAtPrice ?? Model.BasePrice * 1.33m;
+    var hasDiscount = currentVariant?.CompareAtPrice != null && currentVariant.CompareAtPrice > currentVariant.Price;
 }
 
 <div class="product-details">
@@ -32,11 +44,12 @@
                 <!-- Hình ảnh chính -->
                 <div class="gallery__main">
                     <img id="mainImage" 
-                         src="@(coverImage?.Url ?? "/public/images/products/img-cart-lip.png")" 
+                         src="@coverImageUrl" 
                          alt="@Model.Name" 
-                         class="gallery__main-img" />
+                         class="gallery__main-img"
+                         onerror="console.error('Failed to load image:', this.src); this.onerror=null; this.src='/public/images/products/img-cart-lip.png';" />
                     
-                    @if (allImages.Count > 1)
+                    @if (variantImages.Count > 1)
                     {
                         <div class="gallery__nav">
                             <button class="gallery__nav-btn gallery__nav-btn--prev" id="prevBtn" aria-label="Previous image">
@@ -54,13 +67,14 @@
                 </div>
 
                 <!-- Thumbnails -->
-                @if (allImages.Count > 1)
-                {
-                    <div class="gallery__thumbs">
-                        @for (int i = 0; i < allImages.Count; i++)
+                <div class="gallery__thumbs" id="galleryThumbs">
+                    @if (variantImages.Any())
+                    {
+                        @for (int i = 0; i < variantImages.Count; i++)
                         {
-                            var img = allImages[i];
-                            var isActive = img.IsCover == true || (i == 0 && coverImage == null);
+                            var img = variantImages[i];
+                            // Use URL as-is from database (browser will handle URL-encoded paths automatically)
+                            var isActive = img.IsPrimary || i == 0;
                             <button class="gallery__thumb @(isActive ? "active" : "")" 
                                     data-index="@i"
                                     data-image="@img.Url"
@@ -68,8 +82,8 @@
                                 <img src="@img.Url" alt="@Model.Name thumbnail @(i + 1)" />
                             </button>
                         }
-                    </div>
-                }
+                    }
+                </div>
             </div>
 
             <!-- Thông tin sản phẩm bên phải -->
@@ -87,57 +101,171 @@
                 <div class="product-details__rating">
                     <div class="rating">
                         <img class="icon icon--star" src="/public/images/icons/star.png" alt="" aria-hidden="true" />
-                        <span class="rating__score">4.8</span>
+                        <span class="rating__score">@(Model.Rating?.ToString("0.0") ?? "4.8")</span>
                     </div>
                     <span class="stats-separator">|</span>
                     <div class="product-details__stats">
                         <div class="stats__item">
                             <span class="stats__label">Reviews</span>
-                            <span class="stats__value">@(new Random().Next(100, 300))k</span>
+                            <span class="stats__value">@Model.ReviewCount</span>
                         </div>
                         <span class="stats-separator">|</span>
                         <div class="stats__item">
-                            <span class="stats__label">Sold</span>
-                            <span class="stats__value">@(new Random().Next(500, 999))k+</span>
+                            <span class="stats__label">Likes</span>
+                            <span class="stats__value">@Model.LikeCount</span>
                         </div>
                     </div>
                 </div>
 
                 <!-- Price -->
                 <div class="product-details__price">
-                    <span class="price--now">$@Model.Price.ToString("0.00")</span>
-                    <span class="price--old">$@((Model.Price * 1.33m).ToString("0.00"))</span>
-                    
-                    <!-- Discount Info Icon -->
-                    <div class="price-discount-info">
-                        <button type="button" class="price-discount-icon" aria-label="Discount details">
-                            <i data-lucide="ticket-percent" class="lucide-icon"></i>
-                        </button>
-                        
-                        <!-- Tooltip -->
-                        <div class="price-discount-tooltip">
-                            <div class="tooltip-header">Price Details</div>
-                            <div class="tooltip-body">
-                                <div class="tooltip-row">
-                                    <span class="tooltip-label">Original Price</span>
-                                    <span class="tooltip-value">$@((Model.Price * 1.33m).ToString("0.00"))</span>
-                                </div>
-                                <div class="tooltip-row">
-                                    <span class="tooltip-label">Product Discount</span>
-                                    <span class="tooltip-value tooltip-value--discount">-$@((Model.Price * 0.33m).ToString("0.00"))</span>
-                                </div>
-                                <div class="tooltip-divider"></div>
-                                <div class="tooltip-row tooltip-row--total">
-                                    <span class="tooltip-label">Estimated Price (when applying vouchers above)</span>
-                                    <span class="tooltip-value tooltip-value--total">$@Model.Price.ToString("0.00")</span>
-                                </div>
-                            </div>
-                            <div class="tooltip-footer">
-                                *Please add available Vouchers at checkout to get the price as shown above
-                            </div>
-                        </div>
-                    </div>
+                    <span class="price--now" id="currentPrice">$@currentPrice.ToString("0.00")</span>
+                    @if (hasDiscount)
+                    {
+                        <span class="price--old" id="comparePrice">$@comparePrice.ToString("0.00")</span>
+                        <span class="price--discount">@Math.Round((1 - (currentPrice / comparePrice)) * 100)% OFF</span>
+                    }
                 </div>
+
+                <!-- Product Info -->
+                @{
+                    var hasSizeVariants = Model.ProductVariants?.Any(v => !string.IsNullOrWhiteSpace(v.Size) && v.IsActive == true) ?? false;
+                    var hasAnyInfo = !string.IsNullOrWhiteSpace(Model.SPF) || 
+                                    (!hasSizeVariants && !string.IsNullOrWhiteSpace(Model.Size)) ||
+                                    !string.IsNullOrWhiteSpace(Model.Finish);
+                }
+                @if (hasAnyInfo)
+                {
+                    <div class="product-details__info-grid">
+                        @if (!string.IsNullOrWhiteSpace(Model.SPF))
+                        {
+                            <div class="info-item">
+                                <span class="info-label">SPF:</span>
+                                <span class="info-value">@Model.SPF</span>
+                            </div>
+                        }
+                        @* Size chỉ hiển thị nếu không có size variants *@
+                        @if (!hasSizeVariants && !string.IsNullOrWhiteSpace(Model.Size))
+                        {
+                            <div class="info-item">
+                                <span class="info-label">Size:</span>
+                                <span class="info-value">@Model.Size</span>
+                            </div>
+                        }
+                        @* Finish chỉ hiển thị nếu có giá trị *@
+                        @if (!string.IsNullOrWhiteSpace(Model.Finish))
+                        {
+                            <div class="info-item">
+                                <span class="info-label">Finish:</span>
+                                <span class="info-value">@Model.Finish</span>
+                            </div>
+                        }
+                    </div>
+                }
+
+                <!-- Variant Selection -->
+                @if (Model.ProductVariants?.Any() == true)
+                {
+                    <div class="product-details__variants">
+                        @{
+                            var colorVariants = Model.ProductVariants.Where(v => !string.IsNullOrEmpty(v.ColorName) && v.IsActive == true).ToList();
+                            var sizeVariants = Model.ProductVariants.Where(v => !string.IsNullOrEmpty(v.Size) && v.IsActive == true).ToList();
+                        }
+
+                        @* COLOR SELECTION *@
+                        @if (colorVariants.Any())
+                        {
+                            <div class="variant-section">
+                                <label class="variant-label">
+                                    Color: <span class="variant-selected" id="selectedColorName">@(currentVariant?.ColorName ?? "Select")</span>
+                                </label>
+                                <div class="variant-options variant-options--colors">
+                                    @foreach (var variant in colorVariants)
+                                    {
+                                        var isSelected = variant.VariantId == currentVariant?.VariantId;
+                                        <button class="variant-option variant-option--color @(isSelected ? "active" : "")"
+                                                data-variant-id="@variant.VariantId"
+                                                data-variant-name="@variant.VariantName"
+                                                data-color-name="@variant.ColorName"
+                                                data-price="@variant.FinalPrice"
+                                                data-compare-price="@variant.CompareAtPrice"
+                                                data-stock="@variant.Stock"
+                                                data-sku="@variant.SKU"
+                                                title="@variant.ColorName"
+                                                @(variant.Stock <= 0 ? "disabled" : "")>
+                                            @if (!string.IsNullOrEmpty(variant.ColorCode))
+                                            {
+                                                <span class="color-swatch" style="background-color: @variant.ColorCode;"></span>
+                                            }
+                                            <span class="variant-name">@variant.ColorName</span>
+                                            @if (variant.IsLowStock)
+                                            {
+                                                <span class="variant-badge variant-badge--low">Low Stock</span>
+                                            }
+                                            @if (variant.Stock <= 0)
+                                            {
+                                                <span class="variant-badge variant-badge--out">Out of Stock</span>
+                                            }
+                                        </button>
+                                    }
+                                </div>
+                            </div>
+                        }
+
+                        @* SIZE SELECTION *@
+                        @if (sizeVariants.Any())
+                        {
+                            <div class="variant-section">
+                                <label class="variant-label">
+                                    Size: <span class="variant-selected" id="selectedSize">@(currentVariant?.Size ?? "Select")</span>
+                                </label>
+                                <div class="variant-options variant-options--sizes">
+                                    @foreach (var variant in sizeVariants)
+                                    {
+                                        var isSelected = variant.VariantId == currentVariant?.VariantId;
+                                        <button class="variant-option variant-option--size @(isSelected ? "active" : "")"
+                                                data-variant-id="@variant.VariantId"
+                                                data-variant-name="@variant.VariantName"
+                                                data-size="@variant.Size"
+                                                data-price="@variant.FinalPrice"
+                                                data-compare-price="@variant.CompareAtPrice"
+                                                data-stock="@variant.Stock"
+                                                @(variant.Stock <= 0 ? "disabled" : "")>
+                                            <span class="size-text">@variant.Size</span>
+                                            @if (variant.IsLowStock)
+                                            {
+                                                <span class="variant-badge variant-badge--low">Low</span>
+                                            }
+                                        </button>
+                                    }
+                                </div>
+                            </div>
+                        }
+
+                        <!-- Stock Info -->
+                        <div class="stock-info" id="stockInfo">
+                            @if (currentVariant != null)
+                            {
+                                @if (currentVariant.Stock > 0)
+                                {
+                                    <span class="stock-available">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <polyline points="20 6 9 17 4 12"></polyline>
+                                        </svg>
+                                        @currentVariant.Stock items in stock
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="stock-out">Out of stock</span>
+                                }
+                            }
+                        </div>
+
+                        <!-- Hidden input to store selected variant -->
+                        <input type="hidden" id="selectedVariantId" value="@(currentVariant?.VariantId ?? 0)" />
+                    </div>
+                }
 
                 <!-- Mô tả ngắn -->
                 @if (!string.IsNullOrEmpty(Model.Description))
@@ -158,33 +286,23 @@
                     </button>
                 </div>
 
-                <!-- Category -->
-                @if (Model.Category != null)
-                {
-                    <div class="product-details__meta">
-                        <span class="meta__label">Category:</span>
-                        <a asp-controller="Categories" asp-action="Details" asp-route-id="@Model.CategoryId" 
-                           class="meta__link">@Model.Category.Name</a>
-                    </div>
-                }
-
                 <!-- Quantity -->
                 <div class="product-details__quantity">
                     <label class="quantity__label">Quantity</label>
                     <div class="quantity-selector">
                         <button class="quantity-selector__btn quantity-selector__btn--minus" aria-label="Decrease quantity">-</button>
-                        <input type="number" class="quantity-selector__input" value="1" min="1" max="99" aria-label="Quantity" />
+                        <input type="number" class="quantity-selector__input" value="1" min="1" max="@(currentVariant?.Stock ?? 99)" aria-label="Quantity" />
                         <button class="quantity-selector__btn quantity-selector__btn--plus" aria-label="Increase quantity">+</button>
                     </div>
                 </div>
 
                 <!-- Actions -->
                 <div class="product-details__actions">
-                    <button class="btn btn--primary btn--add-to-cart">
+                    <button class="btn btn--primary btn--add-to-cart" @(currentVariant?.Stock <= 0 ? "disabled" : "")>
                         <span>Add to Cart</span>
                     </button>
 
-                    <button class="btn btn--brand btn--buy-now">
+                    <button class="btn btn--brand btn--buy-now" @(currentVariant?.Stock <= 0 ? "disabled" : "")>
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <circle cx="9" cy="21" r="1"></circle>
                             <circle cx="20" cy="21" r="1"></circle>
@@ -232,7 +350,7 @@
             <div class="product-tabs__header">
                 <button class="product-tabs__tab active" data-tab="description">Description</button>
                 <button class="product-tabs__tab" data-tab="ingredients">Ingredients</button>
-                <button class="product-tabs__tab" data-tab="reviews">Reviews (0)</button>
+                <button class="product-tabs__tab" data-tab="reviews">Reviews (@Model.ReviewCount)</button>
             </div>
 
             <div class="product-tabs__content">
@@ -265,7 +383,35 @@
                 <!-- Tab Reviews -->
                 <div class="product-tabs__panel" id="reviews">
                     <h3>Customer Reviews</h3>
-                    <p class="text-muted">No reviews yet for this product.</p>
+                    @if (Model.ProductReviews?.Any() == true)
+                    {
+                        <div class="reviews-list">
+                            @foreach (var review in Model.ProductReviews)
+                            {
+                                <div class="review-item">
+                                    <div class="review-header">
+                                        <strong>@review.User.FullName</strong>
+                                        <span class="review-rating">
+                                            @for (int i = 0; i < review.Rating; i++)
+                                            {
+                                                <span>⭐</span>
+                                            }
+                                        </span>
+                                    </div>
+                                    @if (!string.IsNullOrEmpty(review.Title))
+                                    {
+                                        <h4>@review.Title</h4>
+                                    }
+                                    <p>@review.Content</p>
+                                    <small class="text-muted">@review.CreatedAt.ToString("MMM dd, yyyy")</small>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="text-muted">No reviews yet for this product.</p>
+                    }
                     <button class="btn btn--outline">Write a Review</button>
                 </div>
             </div>
@@ -283,58 +429,374 @@
     </div>
 </div>
 
+<!-- Virtual Try-On Modal -->
+<div class="modal" id="virtualTryOnModal" style="display:none;">
+    <div class="modal__overlay"></div>
+    <div class="modal__content modal__content--large">
+        <button class="modal__close" id="closeModal" aria-label="Close">&times;</button>
+        
+        <div class="modal__header">
+            <h2>✨ Virtual Try-On</h2>
+            <p>Upload ảnh của bạn để xem <span id="modalVariantName">@Model.Name</span> trên khuôn mặt</p>
+        </div>
+
+        <div class="modal__body">
+            <!-- Upload Area -->
+            <div class="virtual-tryon__upload-area" id="uploadArea">
+                <input type="file" id="customerPhotoInput" accept="image/*" style="display:none;" />
+                
+                <div class="upload-area__content" id="uploadContent">
+                    <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="17 8 12 3 7 8"></polyline>
+                        <line x1="12" y1="3" x2="12" y2="15"></line>
+                    </svg>
+                    <h3>Click để chọn ảnh hoặc kéo thả vào đây</h3>
+                    <p>Hỗ trợ: JPG, JPEG, PNG (Tối đa 10MB)</p>
+                </div>
+
+                <div class="upload-area__preview" id="previewArea" style="display:none;">
+                    <img id="previewImage" alt="Preview" />
+                    <button type="button" class="btn btn--secondary btn--small" id="changePhotoBtn">
+                        Đổi ảnh khác
+                    </button>
+                </div>
+            </div>
+
+            <!-- Loading -->
+            <div class="virtual-tryon__loading" id="loadingArea" style="display:none;">
+                <div class="loading-spinner" style="width: 50px; height: 50px; margin: 0 auto 1rem; border: 4px solid transparent; border-top: 4px solid #ff69b4; border-radius: 50%; animation: spinner-rotate 1s linear infinite; position: relative; background: transparent; box-sizing: border-box; overflow: hidden; display: block;"></div>
+                <p>Đang xử lý ảnh...</p>
+                <p class="loading__hint">Có thể mất 5-10 giây, vui lòng đợi</p>
+            </div>
+
+            <!-- Result -->
+            <div class="virtual-tryon__result" id="resultArea" style="display:none;">
+                <h3>Kết quả:</h3>
+                <div class="result__comparison">
+                    <div class="result__item">
+                        <p class="result__label">Ảnh đầu vào</p>
+                        <div class="result__image-wrapper">
+                            <img id="originalImage" alt="Original" />
+                        </div>
+                    </div>
+                    <div class="result__item">
+                        <p class="result__label">Ảnh mẫu</p>
+                        <div class="result__image-wrapper">
+                            <img id="sampleImage" alt="Sample Makeup Reference" />
+                        </div>
+                    </div>
+                    <div class="result__item">
+                        <p class="result__label">Kết quả</p>
+                        <div class="result__image-wrapper">
+                            <img id="resultImage" alt="Result" data-url="" />
+                        </div>
+                    </div>
+                </div>
+                <div class="result__actions">
+                    <button type="button" class="btn btn--primary" id="downloadResultBtn">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="7 10 12 15 17 10"></polyline>
+                            <line x1="12" y1="15" x2="12" y2="3"></line>
+                        </svg>
+                        Tải xuống
+                    </button>
+                    <button type="button" class="btn btn--secondary" id="tryAgainBtn">Thử lại</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal__footer">
+            <button type="button" class="btn btn--secondary" id="cancelBtn">Hủy</button>
+            <button type="button" class="btn btn--primary" id="applyMakeupBtn" disabled>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <path d="M8 14s1.5 2 4 2 4-2 4-2"></path>
+                    <line x1="9" y1="9" x2="9.01" y2="9"></line>
+                    <line x1="15" y1="9" x2="15.01" y2="9"></line>
+                </svg>
+                Áp dụng Makeup
+            </button>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <link rel="stylesheet" href="~/public/css/components/virtual-tryon.css" />
+    <link rel="stylesheet" href="~/public/css/components/product-variants.css" />
+}
+
 @section Scripts {
+    <!-- Virtual Try-On JS -->
+    <script src="~/public/js/components/virtual-tryon.js"></script>
+    
     <script>
-        // Gallery functionality
+        // Product Variant & Gallery JavaScript
         document.addEventListener('DOMContentLoaded', function() {
             const mainImage = document.getElementById('mainImage');
-            const thumbs = document.querySelectorAll('.gallery__thumb');
+            const galleryThumbs = document.getElementById('galleryThumbs');
             const prevBtn = document.getElementById('prevBtn');
             const nextBtn = document.getElementById('nextBtn');
+            const variantOptions = document.querySelectorAll('.variant-option');
+            const selectedVariantInput = document.getElementById('selectedVariantId');
+            const currentPriceEl = document.getElementById('currentPrice');
+            const comparePriceEl = document.getElementById('comparePrice');
+            const stockInfoEl = document.getElementById('stockInfo');
+            const quantityInput = document.querySelector('.quantity-selector__input');
+            const addToCartBtn = document.querySelector('.btn--add-to-cart');
+            const buyNowBtn = document.querySelector('.btn--buy-now');
+            
             let currentIndex = 0;
-            const images = Array.from(thumbs).map(thumb => thumb.dataset.image);
+            let currentImages = [];
 
-            // Thumbnail click
-            thumbs.forEach((thumb, index) => {
-                thumb.addEventListener('click', function() {
-                    currentIndex = index;
-                    updateMainImage();
-                    updateActiveThumb();
-                });
-            });
+            // Initialize gallery with current variant images
+            function initializeGallery() {
+                const thumbs = galleryThumbs.querySelectorAll('.gallery__thumb');
+                currentImages = Array.from(thumbs)
+                    .map(thumb => thumb.dataset.image)
+                    .filter(url => url); // Filter out empty URLs
+                currentIndex = 0;
+                console.log('Gallery initialized with', currentImages.length, 'images:', currentImages);
+            }
 
-            // Previous button
+            initializeGallery();
+
+            // Thumbnail click handler (will be used by event delegation)
+            function handleThumbnailClick(e) {
+                const thumb = e.target.closest('.gallery__thumb');
+                if (!thumb) return;
+                
+                const index = parseInt(thumb.dataset.index);
+                if (isNaN(index)) return;
+                
+                currentIndex = index;
+                updateMainImage();
+                updateActiveThumb();
+            }
+
+            // Use event delegation so it works even after innerHTML updates
+            galleryThumbs.addEventListener('click', handleThumbnailClick);
+
+            // Previous/Next buttons
             if (prevBtn) {
                 prevBtn.addEventListener('click', function() {
-                    currentIndex = (currentIndex - 1 + images.length) % images.length;
+                    currentIndex = (currentIndex - 1 + currentImages.length) % currentImages.length;
                     updateMainImage();
                     updateActiveThumb();
                 });
             }
 
-            // Next button
             if (nextBtn) {
                 nextBtn.addEventListener('click', function() {
-                    currentIndex = (currentIndex + 1) % images.length;
+                    currentIndex = (currentIndex + 1) % currentImages.length;
                     updateMainImage();
                     updateActiveThumb();
                 });
             }
 
             function updateMainImage() {
-                mainImage.src = images[currentIndex];
+                if (currentImages[currentIndex]) {
+                    mainImage.src = currentImages[currentIndex];
+                }
             }
 
             function updateActiveThumb() {
+                const thumbs = galleryThumbs.querySelectorAll('.gallery__thumb');
                 thumbs.forEach((thumb, index) => {
                     thumb.classList.toggle('active', index === currentIndex);
                 });
             }
 
+            // Variant Selection
+            variantOptions.forEach(option => {
+                option.addEventListener('click', async function() {
+                    if (this.disabled) return;
+                    
+                    const variantId = this.dataset.variantId;
+                    const colorName = this.dataset.colorName;
+                    const size = this.dataset.size;
+                    const price = parseFloat(this.dataset.price);
+                    const comparePrice = this.dataset.comparePrice ? parseFloat(this.dataset.comparePrice) : null;
+                    const stock = parseInt(this.dataset.stock);
+                    
+                    // Update active state
+                    this.closest('.variant-options').querySelectorAll('.variant-option').forEach(opt => {
+                        opt.classList.remove('active');
+                    });
+                    this.classList.add('active');
+                    
+                    // Update selected variant ID
+                    selectedVariantInput.value = variantId;
+                    
+                    // Update display
+                    if (colorName) {
+                        document.getElementById('selectedColorName').textContent = colorName;
+                    }
+                    if (size) {
+                        document.getElementById('selectedSize').textContent = size;
+                    }
+                    
+                    // Update price
+                    currentPriceEl.textContent = '$' + price.toFixed(2);
+                    if (comparePrice && comparePrice > price) {
+                        comparePriceEl.textContent = '$' + comparePrice.toFixed(2);
+                        comparePriceEl.style.display = 'inline';
+                    } else {
+                        comparePriceEl.style.display = 'none';
+                    }
+                    
+                    // Update stock
+                    if (stock > 0) {
+                        stockInfoEl.innerHTML = `
+                            <span class="stock-available">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                </svg>
+                                ${stock} items in stock
+                            </span>
+                        `;
+                        quantityInput.max = stock;
+                        addToCartBtn.disabled = false;
+                        buyNowBtn.disabled = false;
+                    } else {
+                        stockInfoEl.innerHTML = '<span class="stock-out">Out of stock</span>';
+                        addToCartBtn.disabled = true;
+                        buyNowBtn.disabled = true;
+                    }
+                    
+                    // Fetch and update images for this variant
+                    try {
+                        console.log('Fetching variant images for variantId:', variantId);
+                        const response = await fetch(`/Products/GetVariant?variantId=${variantId}`);
+                        
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+                        
+                        const data = await response.json();
+                        console.log('Variant data received:', data);
+                        
+                        if (data.images && data.images.length > 0) {
+                            console.log('Updating gallery with', data.images.length, 'images');
+                            
+                            // Update gallery thumbs
+                            let thumbsHtml = '';
+                            data.images.forEach((img, index) => {
+                                // Use original URL in data-image for consistency
+                                const imageUrl = img.url;
+                                const isActive = index === 0;
+                                console.log(`  Adding image ${index}: ${imageUrl}, IsPrimary: ${img.isPrimary}`);
+                                thumbsHtml += `
+                                    <button class="gallery__thumb ${isActive ? 'active' : ''}" 
+                                            data-index="${index}"
+                                            data-image="${imageUrl.replace(/"/g, '&quot;')}"
+                                            aria-label="View image ${index + 1}">
+                                        <img src="${imageUrl.replace(/"/g, '&quot;')}" 
+                                             alt="${(img.altText || 'Product image').replace(/"/g, '&quot;')}" 
+                                             loading="lazy"
+                                             onerror="console.error('Failed to load thumbnail:', this.src); this.onerror=null; this.src='/public/images/products/img-cart-lip.png';" />
+                                    </button>
+                                `;
+                            });
+                            galleryThumbs.innerHTML = thumbsHtml;
+                            console.log('Gallery thumbs HTML updated');
+                            
+                            // Update currentImages array directly from data.images (don't rely on DOM)
+                            currentImages = data.images.map(img => img.url);
+                            currentIndex = 0;
+                            console.log('Current images updated:', currentImages);
+                            
+                            // Update main image
+                            const primaryImage = data.images.find(img => img.isPrimary) || data.images[0];
+                            if (primaryImage && primaryImage.url) {
+                                const mainImageUrl = primaryImage.url;
+                                console.log('Updating main image to:', mainImageUrl);
+                                
+                                // Create new image to preload and verify it loads
+                                const imgPreload = new Image();
+                                imgPreload.onload = function() {
+                                    console.log('✅ Main image preloaded successfully:', mainImageUrl);
+                                    // Update main image
+                                    mainImage.src = mainImageUrl;
+                                    // Force browser to show new image by triggering reflow
+                                    void mainImage.offsetHeight;
+                                    
+                                    // Update active thumb
+                                    updateActiveThumb();
+                                    
+                                    // Update nav buttons visibility
+                                    const galleryNav = document.querySelector('.gallery__nav');
+                                    if (data.images.length > 1) {
+                                        if (galleryNav) galleryNav.style.display = 'flex';
+                                        if (prevBtn) prevBtn.style.display = 'flex';
+                                        if (nextBtn) nextBtn.style.display = 'flex';
+                                    } else {
+                                        if (galleryNav) galleryNav.style.display = 'none';
+                                        if (prevBtn) prevBtn.style.display = 'none';
+                                        if (nextBtn) nextBtn.style.display = 'none';
+                                    }
+                                };
+                                imgPreload.onerror = function() {
+                                    console.error('❌ Failed to preload main image:', mainImageUrl);
+                                    console.error('Image URL might be incorrect or file does not exist');
+                                    // Try to load the image anyway - sometimes browser cache helps
+                                    mainImage.src = mainImageUrl;
+                                    mainImage.onerror = function() {
+                                        console.error('❌ Main image failed to load after retry:', mainImageUrl);
+                                        this.onerror = null; // Prevent infinite loop
+                                        this.src = '/public/images/products/img-cart-lip.png';
+                                    };
+                                    
+                                    // Update active thumb
+                                    updateActiveThumb();
+                                    
+                                    // Update nav buttons visibility
+                                    const galleryNav = document.querySelector('.gallery__nav');
+                                    if (data.images.length > 1) {
+                                        if (galleryNav) galleryNav.style.display = 'flex';
+                                        if (prevBtn) prevBtn.style.display = 'flex';
+                                        if (nextBtn) nextBtn.style.display = 'flex';
+                                    } else {
+                                        if (galleryNav) galleryNav.style.display = 'none';
+                                        if (prevBtn) prevBtn.style.display = 'none';
+                                        if (nextBtn) nextBtn.style.display = 'none';
+                                    }
+                                };
+                                // Start preloading
+                                imgPreload.src = mainImageUrl;
+                            } else {
+                                console.warn('⚠️ No primary image found, using first image');
+                                const firstImage = data.images[0];
+                                if (firstImage && firstImage.url) {
+                                    console.log('Using first image:', firstImage.url);
+                                    mainImage.src = firstImage.url;
+                                    updateActiveThumb();
+                                } else {
+                                    console.error('❌ No images available for variant');
+                                }
+                            }
+                            
+                            // No need to reattach - event delegation handles it automatically
+                            
+                            // Update sample image in Virtual Try-On modal when variant changes
+                            // This works whether modal is open or closed
+                            if (window.virtualTryOnInstance) {
+                                window.virtualTryOnInstance.loadSampleImageFromVariant(variantId, data.images);
+                            }
+                        } else {
+                            console.warn('No images found for variant:', variantId);
+                        }
+                    } catch (error) {
+                        console.error('Error fetching variant images:', error);
+                        alert('Không thể tải ảnh của màu sản phẩm này. Vui lòng thử lại.');
+                    }
+                });
+            });
+
             // Quantity selector
             const minusBtn = document.querySelector('.quantity-selector__btn--minus');
             const plusBtn = document.querySelector('.quantity-selector__btn--plus');
-            const quantityInput = document.querySelector('.quantity-selector__input');
 
             if (minusBtn && plusBtn && quantityInput) {
                 minusBtn.addEventListener('click', function() {
@@ -361,26 +823,47 @@
                 btn.addEventListener('click', function() {
                     const tabId = this.dataset.tab;
                     
-                    // Remove active class from all tabs and panels
                     tabBtns.forEach(b => b.classList.remove('active'));
                     tabPanels.forEach(p => p.classList.remove('active'));
                     
-                    // Add active class to clicked tab and corresponding panel
                     this.classList.add('active');
                     document.getElementById(tabId).classList.add('active');
                 });
             });
 
             // Add to cart button
-            const addToCartBtn = document.querySelector('.btn--add-to-cart');
             if (addToCartBtn) {
                 addToCartBtn.addEventListener('click', function() {
+                    const variantId = selectedVariantInput.value;
                     const quantity = quantityInput.value;
+                    
+                    if (!variantId || variantId === '0') {
+                        alert('Please select a variant');
+                        return;
+                    }
+                    
+                    // TODO: Implement cart functionality
                     alert(`Added ${quantity} item(s) to cart!`);
-                    // TODO: Implement actual cart functionality
+                    console.log('Add to cart:', { variantId, quantity });
+                });
+            }
+
+            // Buy now button
+            if (buyNowBtn) {
+                buyNowBtn.addEventListener('click', function() {
+                    const variantId = selectedVariantInput.value;
+                    const quantity = quantityInput.value;
+                    
+                    if (!variantId || variantId === '0') {
+                        alert('Please select a variant');
+                        return;
+                    }
+                    
+                    // TODO: Implement buy now functionality
+                    alert(`Proceeding to checkout with ${quantity} item(s)`);
+                    console.log('Buy now:', { variantId, quantity });
                 });
             }
         });
     </script>
 }
-

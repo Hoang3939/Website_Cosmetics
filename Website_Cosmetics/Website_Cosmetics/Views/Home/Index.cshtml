@@ -25,7 +25,7 @@
         @foreach (var product in mostLovedProducts)
         {
             var productImage = product.ProductImages?.FirstOrDefault()?.Url ?? "/public/images/products/img-cart-lip.png";
-            var oldPrice = product.Price * 1.33m; // Calculate 25% discount for demo
+            var oldPrice = product.BasePrice * 1.33m; // Calculate 25% discount for demo
             <div class="card product" data-product-id="@product.ProductId" data-details="@Url.Action("Details", "Products", new { id = product.ProductId })">
                 <a asp-controller="Products" asp-action="Details" asp-route-id="@product.ProductId" class="product__img">
                     <img src="@productImage" alt="@product.Name" />
@@ -39,7 +39,7 @@
                         <span class="rating__count">(@(new Random().Next(100, 400)) reviews)</span>
                     </div>
                     <div class="product__price">
-                        <span class="price--now">$@product.Price.ToString("0.00")</span>
+                        <span class="price--now">$@product.BasePrice.ToString("0.00")</span>
                         <span class="price--old">$@oldPrice.ToString("0.00")</span>
                     </div>
                     <div class="product__actions">
@@ -66,7 +66,7 @@
         @foreach (var product in onSaleProducts)
         {
             var productImage = product.ProductImages?.FirstOrDefault()?.Url ?? "/public/images/products/img-cart-brush.png";
-            var oldPrice = product.Price * 1.67m; // Calculate 40% discount for demo
+            var oldPrice = product.BasePrice * 1.67m; // Calculate 40% discount for demo
             <div class="card product" data-product-id="@product.ProductId" data-details="@Url.Action("Details", "Products", new { id = product.ProductId })">
                 <a asp-controller="Products" asp-action="Details" asp-route-id="@product.ProductId" class="product__img">
                     <img src="@productImage" alt="@product.Name" />
@@ -80,7 +80,7 @@
                         <span class="rating__count">(@(new Random().Next(90, 300)) reviews)</span>
                     </div>
                     <div class="product__price">
-                        <span class="price--now">$@product.Price.ToString("0.00")</span>
+                        <span class="price--now">$@product.BasePrice.ToString("0.00")</span>
                         <span class="price--old">$@oldPrice.ToString("0.00")</span>
                     </div>
                     <div class="product__actions">

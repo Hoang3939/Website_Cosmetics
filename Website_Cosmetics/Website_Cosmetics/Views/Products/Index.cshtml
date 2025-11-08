@@ -1,3 +1,5 @@
+@model IEnumerable<Website_Cosmetics.Models.Product>
+
 @{
     ViewData["Title"] = "Products";
 }
@@ -5,7 +7,7 @@
 <div class="container">
     <div class="page-header">
         <h1>Beauty Products</h1>
-        <p>Discover our premium collection of beauty products</p>
+        <p>Discover our premium collection of beauty products (@Model.Count() products)</p>
     </div>
 
     <div class="product-filters">
@@ -30,127 +32,89 @@
     </div>
 
     <div class="product-grid">
-        <div class="product-card">
-            <div class="product-image">
-                <img src="/public/images/products/img-cart-lip.png" alt="Lipstick Set" />
-                <div class="product-badge">New</div>
+        @foreach (var product in Model)
+        {
+            var coverImage = product.ProductImages?.FirstOrDefault(img => img.ImageType == "cover")?.Url 
+                             ?? product.ProductImages?.FirstOrDefault()?.Url
+                             ?? "/public/images/products/img-cart-lip.png";
+            
+            <div class="product-card">
+                <a asp-controller="Products" asp-action="Details" asp-route-id="@product.ProductId">
+                    <div class="product-image">
+                        <img src="@coverImage" alt="@product.Name" />
+                    </div>
+                    <div class="product-info">
+                        <h3 class="product-title">@product.Name</h3>
+                        @if (!string.IsNullOrEmpty(product.Description) && product.Description.Length > 60)
+                        {
+                            <p class="product-description">@product.Description.Substring(0, 60)...</p>
+                        }
+                        else
+                        {
+                            <p class="product-description">@product.Description</p>
+                        }
+                        <div class="product-price">
+                            <span class="current-price">$@product.BasePrice.ToString("0.00")</span>
+                            <span class="old-price">$@((product.BasePrice * 1.33m).ToString("0.00"))</span>
+                        </div>
+                        <div class="product-rating">
+                            <span class="stars">★★★★★</span>
+                            <span class="rating-count">(4.8)</span>
+                        </div>
+                        <button class="btn btn--brand btn--full" type="button">View Details</button>
+                    </div>
+                </a>
             </div>
-            <div class="product-info">
-                <h3 class="product-title">Lipstick Set Premium</h3>
-                <p class="product-description">Premium lipstick set with 6 diverse colors</p>
-                <div class="product-price">
-                    <span class="current-price">299,000₫</span>
-                    <span class="old-price">399,000₫</span>
-                </div>
-                <div class="product-rating">
-                    <span class="stars">★★★★★</span>
-                    <span class="rating-count">(128 reviews)</span>
-                </div>
-                <button class="btn btn--brand btn--full">Add to Cart</button>
-            </div>
-        </div>
-
-        <div class="product-card">
-            <div class="product-image">
-                <img src="/public/images/products/img-cart-brush.png" alt="Brush Set" />
-                <div class="product-badge">Hot</div>
-            </div>
-            <div class="product-info">
-                <h3 class="product-title">Professional Brush Set</h3>
-                <p class="product-description">Professional makeup brush set with 12 brushes</p>
-                <div class="product-price">
-                    <span class="current-price">189,000₫</span>
-                </div>
-                <div class="product-rating">
-                    <span class="stars">★★★★☆</span>
-                    <span class="rating-count">(95 reviews)</span>
-                </div>
-                <button class="btn btn--brand btn--full">Add to Cart</button>
-            </div>
-        </div>
-
-        <div class="product-card">
-            <div class="product-image">
-                <img src="/public/images/products/img-cart-lip.png" alt="Foundation" />
-            </div>
-            <div class="product-info">
-                <h3 class="product-title">Liquid Foundation</h3>
-                <p class="product-description">Liquid foundation with perfect coverage</p>
-                <div class="product-price">
-                    <span class="current-price">459,000₫</span>
-                </div>
-                <div class="product-rating">
-                    <span class="stars">★★★★★</span>
-                    <span class="rating-count">(203 reviews)</span>
-                </div>
-                <button class="btn btn--brand btn--full">Add to Cart</button>
-            </div>
-        </div>
-
-        <div class="product-card">
-            <div class="product-image">
-                <img src="/public/images/products/img-cart-brush.png" alt="Eyeshadow Palette" />
-            </div>
-            <div class="product-info">
-                <h3 class="product-title">Eyeshadow Palette</h3>
-                <p class="product-description">Eyeshadow palette with 15 diverse colors</p>
-                <div class="product-price">
-                    <span class="current-price">329,000₫</span>
-                </div>
-                <div class="product-rating">
-                    <span class="stars">★★★★☆</span>
-                    <span class="rating-count">(87 reviews)</span>
-                </div>
-                <button class="btn btn--brand btn--full">Add to Cart</button>
-            </div>
-        </div>
-
-        <div class="product-card">
-            <div class="product-image">
-                <img src="/public/images/products/img-cart-lip.png" alt="Mascara" />
-            </div>
-            <div class="product-info">
-                <h3 class="product-title">Volume Mascara</h3>
-                <p class="product-description">Mascara for natural volume and curl</p>
-                <div class="product-price">
-                    <span class="current-price">179,000₫</span>
-                </div>
-                <div class="product-rating">
-                    <span class="stars">★★★★☆</span>
-                    <span class="rating-count">(156 reviews)</span>
-                </div>
-                <button class="btn btn--brand btn--full">Add to Cart</button>
-            </div>
-        </div>
-
-        <div class="product-card">
-            <div class="product-image">
-                <img src="/public/images/products/img-cart-brush.png" alt="Concealer" />
-            </div>
-            <div class="product-info">
-                <h3 class="product-title">Full Coverage Concealer</h3>
-                <p class="product-description">Full coverage concealer for perfect coverage</p>
-                <div class="product-price">
-                    <span class="current-price">249,000₫</span>
-                </div>
-                <div class="product-rating">
-                    <span class="stars">★★★★★</span>
-                    <span class="rating-count">(92 reviews)</span>
-                </div>
-                <button class="btn btn--brand btn--full">Add to Cart</button>
-            </div>
-        </div>
+        }
     </div>
 
-    <div class="pagination">
-        <button class="btn btn--outline" disabled>Previous</button>
-        <span class="page-numbers">
-            <button class="page-number active">1</button>
-            <button class="page-number">2</button>
-            <button class="page-number">3</button>
-        </span>
-        <button class="btn btn--outline">Next</button>
-    </div>
+    @if (Model.Count() == 0)
+    {
+        <div style="text-align: center; padding: 3rem;">
+            <p>No products found.</p>
+        </div>
+    }
+
+    @* Phân trang *@
+    @if (ViewBag.TotalPages > 1)
+    {
+        <div class="pagination">
+            @* Previous button *@
+            @if (ViewBag.CurrentPage > 1)
+            {
+                <a asp-action="Index" asp-route-page="@(ViewBag.CurrentPage - 1)" class="btn btn--outline">Previous</a>
+            }
+            else
+            {
+                <button class="btn btn--outline" disabled>Previous</button>
+            }
+
+            <span class="page-numbers">
+                @* Hiển thị các số trang *@
+                @for (int i = 1; i <= ViewBag.TotalPages; i++)
+                {
+                    @if (i == ViewBag.CurrentPage)
+                    {
+                        <button class="page-number active">@i</button>
+                    }
+                    else
+                    {
+                        <a asp-action="Index" asp-route-page="@i" class="page-number">@i</a>
+                    }
+                }
+            </span>
+
+            @* Next button *@
+            @if (ViewBag.CurrentPage < ViewBag.TotalPages)
+            {
+                <a asp-action="Index" asp-route-page="@(ViewBag.CurrentPage + 1)" class="btn btn--outline">Next</a>
+            }
+            else
+            {
+                <button class="btn btn--outline" disabled>Next</button>
+            }
+        </div>
+    }
 </div>
 
 @section Styles {
