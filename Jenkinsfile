@@ -35,7 +35,7 @@ pipeline {
             steps {
                 checkout([
                     $class: 'GitSCM',
-                    branches: [[name: '*/feature/user-authentication']],
+                    branches: [[name: '*/develop']],
                     userRemoteConfigs: [[
                         url: 'https://github.com/Hoang3939/Website_Cosmetics.git',
                         credentialsId: 'jenkins-github-user'
