@@ -13,7 +13,8 @@ builder.Services.AddControllersWithViews();
 
 // Add Entity Framework - chỉ sử dụng ApplicationDbContext
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"), 
+        sqlOptions => sqlOptions.CommandTimeout(120))); // Tăng timeout lên 120 giây
 
 // Add Repositories
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
@@ -38,9 +39,17 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IAuthorizationService, AuthorizationService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 
+// Add HttpClient for VirtualMakeupService
+builder.Services.AddHttpClient();
+
+// Add VirtualMakeupService
+builder.Services.AddScoped<VirtualMakeupService>();
+
 var app = builder.Build();
 
-// Seed database
+// Seed database - CHỈ seed khi database TRỐNG (không xóa dữ liệu cũ)
+// Nếu muốn tắt hoàn toàn, comment đoạn code dưới đây
+/*
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
@@ -55,6 +64,7 @@ using (var scope = app.Services.CreateScope())
         logger.LogError(ex, "An error occurred while seeding the database.");
     }
 }
+*/
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())

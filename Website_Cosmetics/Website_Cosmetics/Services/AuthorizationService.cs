@@ -7,12 +7,12 @@ namespace Website_Cosmetics.Services
 {
     public interface IAuthorizationService
     {
-        Task<bool> HasPermissionAsync(Guid userId, string permissionName);
-        Task<bool> HasRoleAsync(Guid userId, string roleName);
-        Task<List<string>> GetUserPermissionsAsync(Guid userId);
-        Task<List<string>> GetUserRolesAsync(Guid userId);
-        Task<bool> GrantPermissionAsync(Guid userId, string permissionName, Guid grantedBy);
-        Task<bool> RevokePermissionAsync(Guid userId, string permissionName);
+        Task<bool> HasPermissionAsync(int userId, string permissionName);
+        Task<bool> HasRoleAsync(int userId, string roleName);
+        Task<List<string>> GetUserPermissionsAsync(int userId);
+        Task<List<string>> GetUserRolesAsync(int userId);
+        Task<bool> GrantPermissionAsync(int userId, string permissionName, int grantedBy);
+        Task<bool> RevokePermissionAsync(int userId, string permissionName);
     }
 
     public class AuthorizationService : IAuthorizationService
@@ -26,15 +26,15 @@ namespace Website_Cosmetics.Services
             _logger = logger;
         }
 
-        public async Task<bool> HasPermissionAsync(Guid userId, string permissionName)
+        public async Task<bool> HasPermissionAsync(int userId, string permissionName)
         {
             try
             {
                 // Check role-based permissions
                 var hasRolePermission = await _context.UserRoles
-                    .Where(ur => ur.UserUID == userId)
-                    .Join(_context.RolePermissions, ur => ur.RoleUID, rp => rp.RoleUID, (ur, rp) => rp)
-                    .Join(_context.Permissions, rp => rp.PermissionUID, p => p.UID, (rp, p) => p)
+                    .Where(ur => ur.UserId == userId)
+                    .Join(_context.RolePermissions, ur => ur.RoleId, rp => rp.RoleId, (ur, rp) => rp)
+                    .Join(_context.Permissions, rp => rp.PermissionId, p => p.PermissionId, (rp, p) => p)
                     .AnyAsync(p => p.PermissionName == permissionName && p.IsActive);
 
                 if (hasRolePermission)
@@ -42,8 +42,8 @@ namespace Website_Cosmetics.Services
 
                 // Check user-specific permissions
                 var hasUserPermission = await _context.UserPermissions
-                    .Where(up => up.UserUID == userId && up.IsActive)
-                    .Join(_context.Permissions, up => up.PermissionUID, p => p.UID, (up, p) => new { up, p })
+                    .Where(up => up.UserId == userId && up.IsActive)
+                    .Join(_context.Permissions, up => up.PermissionId, p => p.PermissionId, (up, p) => new { up, p })
                     .AnyAsync(x => x.p.PermissionName == permissionName && 
                                    x.p.IsActive && 
                                    (x.up.ExpiresAt == null || x.up.ExpiresAt > DateTime.UtcNow));
@@ -57,13 +57,13 @@ namespace Website_Cosmetics.Services
             }
         }
 
-        public async Task<bool> HasRoleAsync(Guid userId, string roleName)
+        public async Task<bool> HasRoleAsync(int userId, string roleName)
         {
             try
             {
                 return await _context.UserRoles
-                    .Where(ur => ur.UserUID == userId)
-                    .Join(_context.Roles, ur => ur.RoleUID, r => r.UID, (ur, r) => r)
+                    .Where(ur => ur.UserId == userId)
+                    .Join(_context.Roles, ur => ur.RoleId, r => r.RoleId, (ur, r) => r)
                     .AnyAsync(r => r.RoleName == roleName && r.IsActive);
             }
             catch (Exception ex)
@@ -73,21 +73,21 @@ namespace Website_Cosmetics.Services
             }
         }
 
-        public async Task<List<string>> GetUserPermissionsAsync(Guid userId)
+        public async Task<List<string>> GetUserPermissionsAsync(int userId)
         {
             try
             {
                 var rolePermissions = await _context.UserRoles
-                    .Where(ur => ur.UserUID == userId)
-                    .Join(_context.RolePermissions, ur => ur.RoleUID, rp => rp.RoleUID, (ur, rp) => rp)
-                    .Join(_context.Permissions, rp => rp.PermissionUID, p => p.UID, (rp, p) => p)
+                    .Where(ur => ur.UserId == userId)
+                    .Join(_context.RolePermissions, ur => ur.RoleId, rp => rp.RoleId, (ur, rp) => rp)
+                    .Join(_context.Permissions, rp => rp.PermissionId, p => p.PermissionId, (rp, p) => p)
                     .Where(p => p.IsActive)
                     .Select(p => p.PermissionName)
                     .ToListAsync();
 
                 var userPermissions = await _context.UserPermissions
-                    .Where(up => up.UserUID == userId && up.IsActive)
-                    .Join(_context.Permissions, up => up.PermissionUID, p => p.UID, (up, p) => new { up, p })
+                    .Where(up => up.UserId == userId && up.IsActive)
+                    .Join(_context.Permissions, up => up.PermissionId, p => p.PermissionId, (up, p) => new { up, p })
                     .Where(x => x.p.IsActive && (x.up.ExpiresAt == null || x.up.ExpiresAt > DateTime.UtcNow))
                     .Select(x => x.p.PermissionName)
                     .ToListAsync();
@@ -101,13 +101,13 @@ namespace Website_Cosmetics.Services
             }
         }
 
-        public async Task<List<string>> GetUserRolesAsync(Guid userId)
+        public async Task<List<string>> GetUserRolesAsync(int userId)
         {
             try
             {
                 return await _context.UserRoles
-                    .Where(ur => ur.UserUID == userId)
-                    .Join(_context.Roles, ur => ur.RoleUID, r => r.UID, (ur, r) => r)
+                    .Where(ur => ur.UserId == userId)
+                    .Join(_context.Roles, ur => ur.RoleId, r => r.RoleId, (ur, r) => r)
                     .Where(r => r.IsActive)
                     .Select(r => r.RoleName)
                     .ToListAsync();
@@ -119,7 +119,7 @@ namespace Website_Cosmetics.Services
             }
         }
 
-        public async Task<bool> GrantPermissionAsync(Guid userId, string permissionName, Guid grantedBy)
+        public async Task<bool> GrantPermissionAsync(int userId, string permissionName, int grantedBy)
         {
             try
             {
@@ -130,7 +130,7 @@ namespace Website_Cosmetics.Services
                     return false;
 
                 var existingPermission = await _context.UserPermissions
-                    .FirstOrDefaultAsync(up => up.UserUID == userId && up.PermissionUID == permission.UID);
+                    .FirstOrDefaultAsync(up => up.UserId == userId && up.PermissionId == permission.PermissionId);
 
                 if (existingPermission != null)
                 {
@@ -143,8 +143,8 @@ namespace Website_Cosmetics.Services
                 {
                     _context.UserPermissions.Add(new UserPermission
                     {
-                        UserUID = userId,
-                        PermissionUID = permission.UID,
+                        UserId = userId,
+                        PermissionId = permission.PermissionId,
                         GrantedBy = grantedBy,
                         GrantedAt = DateTime.UtcNow,
                         IsActive = true
@@ -161,7 +161,7 @@ namespace Website_Cosmetics.Services
             }
         }
 
-        public async Task<bool> RevokePermissionAsync(Guid userId, string permissionName)
+        public async Task<bool> RevokePermissionAsync(int userId, string permissionName)
         {
             try
             {
@@ -172,7 +172,7 @@ namespace Website_Cosmetics.Services
                     return false;
 
                 var userPermission = await _context.UserPermissions
-                    .FirstOrDefaultAsync(up => up.UserUID == userId && up.PermissionUID == permission.UID);
+                    .FirstOrDefaultAsync(up => up.UserId == userId && up.PermissionId == permission.PermissionId);
 
                 if (userPermission != null)
                 {

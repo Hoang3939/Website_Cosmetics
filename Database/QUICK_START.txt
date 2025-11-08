@@ -1,0 +1,80 @@
+╔═══════════════════════════════════════════════════════════════════════════════╗
+║                    TẠO LẠI DATABASE VỚI GUID CỐ ĐỊNH                          ║
+║                         (Quick Start Guide)                                   ║
+╚═══════════════════════════════════════════════════════════════════════════════╝
+
+🚀 CÁC BƯỚC THỰC HIỆN NHANH:
+
+1️⃣  Mở SQL Server Management Studio (SSMS)
+
+2️⃣  Chạy file: 01_CreateTables.sql
+    → Tạo database mới và cấu trúc bảng
+    → ⚠️ Sẽ XÓA database cũ nếu có!
+
+3️⃣  Chạy file: 02_InsertData.sql
+    → Thêm dữ liệu mẫu với GUID cố định
+
+4️⃣  Kiểm tra file ảnh trong folder:
+    D:\Website_Cosmetics\Website_Cosmetics\Website_Cosmetics\wwwroot\public\images\products\
+    
+    Cần có 3 file:
+    ✅ cay-son-superstay-135.jpg
+    ✅ nguoi-mau-superstay-135.jpg
+    ✅ moi-mau-superstay-135.jpg
+
+5️⃣  Khởi động website:
+    cd D:\Website_Cosmetics\Website_Cosmetics\Website_Cosmetics
+    dotnet run
+
+6️⃣  Test Virtual Try-On:
+    URL: http://localhost:5210/Products/Details/7ADE93DF-3D89-47FA-B490-58C6CA4C2706
+    Click nút "Virtual Try-On"
+
+═══════════════════════════════════════════════════════════════════════════════
+
+🔑 THÔNG TIN QUAN TRỌNG:
+
+ProductId MAYBELLINE SUPERSTAY (CỐ ĐỊNH - KHÔNG ĐỔI):
+7ADE93DF-3D89-47FA-B490-58C6CA4C2706
+
+Makeup Reference Image:
+/public/images/products/nguoi-mau-superstay-135.jpg
+
+Admin Login:
+- Username: admin
+- Email: admin@cosmetics.com
+- Password: Admin@123
+
+═══════════════════════════════════════════════════════════════════════════════
+
+📊 DỮ LIỆU SAU KHI CHẠY SCRIPT:
+
+✅ 5 Brands (Maybelline, L'Oréal, MAC, NYX, Revlon)
+✅ 5 Categories (Lipstick, Foundation, Mascara, Eyeshadow, Blush)
+✅ 10 Products
+✅ 12 Product Images (3 cho Maybelline + 9 placeholder)
+✅ 1 User (admin)
+✅ 3 Roles (Admin, Manager, Customer)
+✅ 4 Permissions
+
+═══════════════════════════════════════════════════════════════════════════════
+
+💡 LƯU Ý:
+
+✅ TẤT CẢ GUID ĐÃ CỐ ĐỊNH
+   → ProductId KHÔNG thay đổi mỗi lần refresh!
+   → BrandId, CategoryId đều cố định!
+
+✅ An toàn để chạy lại nhiều lần
+   → Script tự động xóa và tạo lại database
+
+⚠️ LUÔN BACKUP trước khi chạy trong production!
+
+═══════════════════════════════════════════════════════════════════════════════
+
+🆘 GẶP VẤN ĐỀ?
+
+Đọc file: 00_README.md (có đầy đủ hướng dẫn và troubleshooting)
+
+═══════════════════════════════════════════════════════════════════════════════
+

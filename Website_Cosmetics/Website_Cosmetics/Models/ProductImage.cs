@@ -11,14 +11,21 @@ public partial class ProductImage
 {
     [Key]
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-    public Guid ProductImageId { get; set; }
+    public int ProductImageId { get; set; }
 
-    public Guid ProductId { get; set; }
+    public int ProductId { get; set; }
 
-    [StringLength(255)]
+    [Required]
+    [StringLength(500)]
     public string Url { get; set; } = null!;
 
-    public bool? IsCover { get; set; }
+    [StringLength(255)]
+    public string? AltText { get; set; }
+
+    [StringLength(50)]
+    public string ImageType { get; set; } = "gallery"; // 'cover', 'gallery', 'demo', 'video'
+
+    public int DisplayOrder { get; set; } = 0;
 
     [Column(TypeName = "datetime2")]
     public DateTime CreatedAt { get; set; }

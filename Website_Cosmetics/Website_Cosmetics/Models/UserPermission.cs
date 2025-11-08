@@ -6,15 +6,16 @@ namespace Website_Cosmetics.Models
     public class UserPermission
     {
         [Key]
-        public Guid UID { get; set; } = Guid.NewGuid();
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public int UserPermissionId { get; set; }
 
         [Required]
-        public Guid UserUID { get; set; }
+        public int UserId { get; set; }
 
         [Required]
-        public Guid PermissionUID { get; set; }
+        public int PermissionId { get; set; }
 
-        public Guid? GrantedBy { get; set; }
+        public int? GrantedBy { get; set; }
 
         [Column(TypeName = "datetime2(7)")]
         public DateTime GrantedAt { get; set; } = DateTime.UtcNow;
@@ -31,10 +32,10 @@ namespace Website_Cosmetics.Models
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
         // Navigation properties
-        [ForeignKey("UserUID")]
+        [ForeignKey("UserId")]
         public virtual User User { get; set; } = null!;
 
-        [ForeignKey("PermissionUID")]
+        [ForeignKey("PermissionId")]
         public virtual Permission Permission { get; set; } = null!;
 
         [ForeignKey("GrantedBy")]

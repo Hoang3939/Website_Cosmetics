@@ -7,7 +7,8 @@ namespace Website_Cosmetics.Models
     public class User
     {
         [Key]
-        public Guid UID { get; set; } = Guid.NewGuid();
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public int UserId { get; set; }
 
         [Required]
         [StringLength(50, MinimumLength = 3)]
@@ -51,6 +52,20 @@ namespace Website_Cosmetics.Models
         public virtual ICollection<EmailConfirmationToken> EmailConfirmationTokens { get; set; } = new List<EmailConfirmationToken>();
         public virtual ICollection<UserPermission> UserPermissions { get; set; } = new List<UserPermission>();
         public virtual ICollection<UserPermission> GrantedPermissions { get; set; } = new List<UserPermission>();
+        
+        // Shopping & Orders
+        [InverseProperty("User")]
+        public virtual ICollection<ShoppingCart> ShoppingCarts { get; set; } = new List<ShoppingCart>();
+        
+        [InverseProperty("User")]
+        public virtual ICollection<Order> Orders { get; set; } = new List<Order>();
+        
+        // Reviews & Likes
+        [InverseProperty("User")]
+        public virtual ICollection<ProductReview> ProductReviews { get; set; } = new List<ProductReview>();
+        
+        [InverseProperty("User")]
+        public virtual ICollection<ProductLike> ProductLikes { get; set; } = new List<ProductLike>();
 
         // Computed properties
         [NotMapped]

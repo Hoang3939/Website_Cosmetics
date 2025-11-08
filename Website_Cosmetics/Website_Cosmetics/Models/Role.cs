@@ -7,7 +7,8 @@ namespace Website_Cosmetics.Models
     public class Role
     {
         [Key]
-        public Guid UID { get; set; } = Guid.NewGuid();
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public int RoleId { get; set; }
 
         [Required]
         [StringLength(50, MinimumLength = 2)]

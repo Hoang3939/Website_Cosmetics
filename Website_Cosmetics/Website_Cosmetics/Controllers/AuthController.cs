@@ -55,13 +55,13 @@ namespace Website_Cosmetics.Controllers
             // Create claims
             var claims = new List<Claim>
             {
-                new Claim(ClaimTypes.NameIdentifier, user.UID.ToString()),
+                new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()),
                 new Claim(ClaimTypes.Name, user.Username),
                 new Claim(ClaimTypes.Email, user.Email)
             };
 
             // Add roles
-            var roles = await _authService.GetUserRolesAsync(user.UID);
+            var roles = await _authService.GetUserRolesAsync(user.UserId);
             foreach (var role in roles)
             {
                 claims.Add(new Claim(ClaimTypes.Role, role.RoleName));
@@ -81,7 +81,7 @@ namespace Website_Cosmetics.Controllers
             }
 
             // Redirect based on user role
-            var userRoles = await _authService.GetUserRolesAsync(user.UID);
+            var userRoles = await _authService.GetUserRolesAsync(user.UserId);
             if (userRoles.Any(r => r.RoleName == "Admin"))
             {
                 return RedirectToAction("Index", "Dashboard", new { area = "Admin" });
@@ -120,7 +120,7 @@ namespace Website_Cosmetics.Controllers
             }
 
             // Generate email confirmation token
-            var token = await _authService.GenerateEmailConfirmationTokenAsync(user.UID);
+            var token = await _authService.GenerateEmailConfirmationTokenAsync(user.UserId);
             
             // Send confirmation email
             try
@@ -194,7 +194,7 @@ namespace Website_Cosmetics.Controllers
                 var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == model.Email);
                 if (user != null)
                 {
-                    var resetToken = await _authService.GeneratePasswordResetTokenAsync(user.UID);
+                    var resetToken = await _authService.GeneratePasswordResetTokenAsync(user.UserId);
                     try
                     {
                         await _emailService.SendPasswordResetAsync(user.Email, user.Username, resetToken);

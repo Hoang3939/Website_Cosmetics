@@ -6,10 +6,11 @@ namespace Website_Cosmetics.Models
     public class PasswordResetToken
     {
         [Key]
-        public Guid UID { get; set; } = Guid.NewGuid();
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public int TokenId { get; set; }
 
         [Required]
-        public Guid UserUID { get; set; }
+        public int UserId { get; set; }
 
         [Required]
         [StringLength(255)]
@@ -27,7 +28,7 @@ namespace Website_Cosmetics.Models
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
         // Navigation properties
-        [ForeignKey("UserUID")]
+        [ForeignKey("UserId")]
         public virtual User User { get; set; } = null!;
     }
 }

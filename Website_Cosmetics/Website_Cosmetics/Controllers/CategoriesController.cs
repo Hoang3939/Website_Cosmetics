@@ -26,7 +26,7 @@ namespace Website_Cosmetics.Controllers
         }
 
         // 3. Get details (GET: /Categories/Details/5)
-        public async Task<IActionResult> Details(Guid id)
+        public async Task<IActionResult> Details(int id)
         {
             var category = await _categoryRepository.GetByIdAsync(id);
             if (category == null)
@@ -56,7 +56,7 @@ namespace Website_Cosmetics.Controllers
         }
 
         // 6. Edit (GET: /Categories/Edit/5)
-        public async Task<IActionResult> Edit(Guid id)
+        public async Task<IActionResult> Edit(int id)
         {
             var category = await _categoryRepository.GetByIdAsync(id);
             if (category == null)
@@ -69,7 +69,7 @@ namespace Website_Cosmetics.Controllers
         // 7. Edit (POST: /Categories/Edit/5)
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(Guid id, Category category)
+        public async Task<IActionResult> Edit(int id, Category category)
         {
             if (id != category.CategoryId)
             {
@@ -85,7 +85,7 @@ namespace Website_Cosmetics.Controllers
         }
 
         // 8. Delete (GET: /Categories/Delete/5)
-        public async Task<IActionResult> Delete(Guid id)
+        public async Task<IActionResult> Delete(int id)
         {
             var category = await _categoryRepository.GetByIdAsync(id);
             if (category == null)
@@ -98,7 +98,7 @@ namespace Website_Cosmetics.Controllers
         // 9. Delete (POST: /Categories/Delete/5)
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(Guid id)
+        public async Task<IActionResult> DeleteConfirmed(int id)
         {
             await _categoryRepository.DeleteAsync(id);
             return RedirectToAction(nameof(Index));

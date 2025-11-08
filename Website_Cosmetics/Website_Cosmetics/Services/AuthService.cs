@@ -12,11 +12,11 @@ namespace Website_Cosmetics.Services
         Task<bool> ForgotPasswordAsync(string email);
         Task<bool> ResetPasswordAsync(string token, string email, string newPassword);
         Task<bool> ConfirmEmailAsync(string token);
-        Task<string> GeneratePasswordResetTokenAsync(Guid userId);
-        Task<string> GenerateEmailConfirmationTokenAsync(Guid userId);
+        Task<string> GeneratePasswordResetTokenAsync(int userId);
+        Task<string> GenerateEmailConfirmationTokenAsync(int userId);
         Task<User?> GetUserByEmailAsync(string email);
         Task<User?> GetUserByUsernameAsync(string username);
-        Task<List<Role>> GetUserRolesAsync(Guid userId);
+        Task<List<Role>> GetUserRolesAsync(int userId);
     }
 
     public class AuthService : IAuthService
@@ -85,8 +85,8 @@ namespace Website_Cosmetics.Services
                 {
                     _context.UserRoles.Add(new UserRole
                     {
-                        UserUID = user.UID,
-                        RoleUID = userRole.UID
+                        UserId = user.UserId,
+                        RoleId = userRole.RoleId
                     });
                     await _context.SaveChangesAsync();
                 }
@@ -108,7 +108,7 @@ namespace Website_Cosmetics.Services
                 if (user == null || !user.IsActive)
                     return false;
 
-                var token = await GeneratePasswordResetTokenAsync(user.UID);
+                var token = await GeneratePasswordResetTokenAsync(user.UserId);
                 
                 // TODO: Send email with reset link
                 // For now, just log the token (in production, send email)
@@ -175,12 +175,12 @@ namespace Website_Cosmetics.Services
             }
         }
 
-        public async Task<string> GeneratePasswordResetTokenAsync(Guid userId)
+        public async Task<string> GeneratePasswordResetTokenAsync(int userId)
         {
             var token = Guid.NewGuid().ToString();
             var resetToken = new PasswordResetToken
             {
-                UserUID = userId,
+                UserId = userId,
                 Token = token,
                 ExpiresAt = DateTime.UtcNow.AddHours(24) // Token expires in 24 hours
             };
@@ -191,12 +191,12 @@ namespace Website_Cosmetics.Services
             return token;
         }
 
-        public async Task<string> GenerateEmailConfirmationTokenAsync(Guid userId)
+        public async Task<string> GenerateEmailConfirmationTokenAsync(int userId)
         {
             var token = Guid.NewGuid().ToString();
             var confirmationToken = new EmailConfirmationToken
             {
-                UserUID = userId,
+                UserId = userId,
                 Token = token,
                 ExpiresAt = DateTime.UtcNow.AddDays(7) // Token expires in 7 days
             };
@@ -217,10 +217,10 @@ namespace Website_Cosmetics.Services
             return await _context.Users.FirstOrDefaultAsync(u => u.Username == username);
         }
 
-        public async Task<List<Role>> GetUserRolesAsync(Guid userId)
+        public async Task<List<Role>> GetUserRolesAsync(int userId)
         {
             return await _context.UserRoles
-                .Where(ur => ur.UserUID == userId)
+                .Where(ur => ur.UserId == userId)
                 .Include(ur => ur.Role)
                 .Select(ur => ur.Role)
                 .ToListAsync();

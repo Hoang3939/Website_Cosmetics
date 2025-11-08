@@ -17,7 +17,7 @@ namespace Website_Cosmetics.Attributes
         public async Task OnAuthorizationAsync(AuthorizationFilterContext context)
         {
             var userIdClaim = context.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier);
-            if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
+            if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out var userId))
             {
                 context.Result = new UnauthorizedResult();
                 return;
@@ -45,7 +45,7 @@ namespace Website_Cosmetics.Attributes
         public async Task OnAuthorizationAsync(AuthorizationFilterContext context)
         {
             var userIdClaim = context.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier);
-            if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
+            if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out var userId))
             {
                 context.Result = new UnauthorizedResult();
                 return;
@@ -73,7 +73,7 @@ namespace Website_Cosmetics.Attributes
         public async Task OnAuthorizationAsync(AuthorizationFilterContext context)
         {
             var userIdClaim = context.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier);
-            if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
+            if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out var userId))
             {
                 context.Result = new UnauthorizedResult();
                 return;
