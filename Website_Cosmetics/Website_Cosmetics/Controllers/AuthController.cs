@@ -42,12 +42,17 @@ namespace Website_Cosmetics.Controllers
             var user = await _authService.LoginAsync(model.UsernameOrEmail, model.Password);
             if (user == null)
             {
+                _logger.LogWarning("Login failed: Invalid username or password for {UsernameOrEmail}", model.UsernameOrEmail);
                 ModelState.AddModelError(string.Empty, "Invalid username or password.");
                 return View(model);
             }
 
+            _logger.LogInformation("User {UserId} ({Username}) logged in successfully. IsEmailConfirmed: {IsEmailConfirmed}", 
+                user.UserId, user.Username, user.IsEmailConfirmed);
+
             if (!user.IsEmailConfirmed)
             {
+                _logger.LogWarning("Login blocked: User {UserId} ({Username}) has not confirmed email", user.UserId, user.Username);
                 ModelState.AddModelError(string.Empty, "Please confirm your email before logging in.");
                 return View(model);
             }
@@ -62,6 +67,9 @@ namespace Website_Cosmetics.Controllers
 
             // Add roles
             var roles = await _authService.GetUserRolesAsync(user.UserId);
+            _logger.LogInformation("User {UserId} has {RoleCount} roles: {Roles}", 
+                user.UserId, roles.Count, string.Join(", ", roles.Select(r => r.RoleName)));
+            
             foreach (var role in roles)
             {
                 claims.Add(new Claim(ClaimTypes.Role, role.RoleName));
@@ -77,21 +85,28 @@ namespace Website_Cosmetics.Controllers
 
             if (!string.IsNullOrEmpty(model.ReturnUrl) && Url.IsLocalUrl(model.ReturnUrl))
             {
+                _logger.LogInformation("Redirecting to returnUrl: {ReturnUrl}", model.ReturnUrl);
                 return Redirect(model.ReturnUrl);
             }
 
             // Redirect based on user role
             var userRoles = await _authService.GetUserRolesAsync(user.UserId);
+            var roleNames = userRoles.Select(r => r.RoleName).ToList();
+            
             if (userRoles.Any(r => r.RoleName == "Admin"))
             {
+                _logger.LogInformation("Redirecting Admin user {UserId} to Admin Dashboard", user.UserId);
                 return RedirectToAction("Index", "Dashboard", new { area = "Admin" });
             }
             else if (userRoles.Any(r => r.RoleName == "Staff"))
             {
+                _logger.LogInformation("Redirecting Staff user {UserId} to Staff Dashboard", user.UserId);
                 return RedirectToAction("Index", "StaffDashboard", new { area = "Admin" });
             }
             else
             {
+                _logger.LogInformation("Redirecting regular user {UserId} to Products page. User roles: {Roles}", 
+                    user.UserId, string.Join(", ", roleNames));
                 // Regular users go to products page
                 return RedirectToAction("Index", "Products");
             }
