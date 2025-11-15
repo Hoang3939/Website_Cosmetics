@@ -19,3 +19,7 @@
 /* Pages */
 @import url("pages/home.css");
 @import url("pages/product-details.css");
+@import url("pages/cart.css");
+@import url("pages/orders.css");
+@import url("pages/checkout.css");
+@import url("pages/addresses.css");

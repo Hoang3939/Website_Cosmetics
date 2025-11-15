@@ -1,0 +1,114 @@
+@model IEnumerable<Website_Cosmetics.Models.CartItem>
+@{
+    ViewData["Title"] = "Shopping Cart";
+}
+
+<section class="section">
+    <div class="container">
+        <div class="section__hd">
+            <h1>Shopping Cart</h1>
+            <p>Review your items before checkout.</p>
+        </div>
+
+        @await Html.PartialAsync("_Alerts")
+
+        @if (Model == null || !Model.Any())
+        {
+            <div class="cart-empty">
+                <div class="cart-empty__icon">
+                    <i data-lucide="shopping-cart"></i>
+                </div>
+                <h2 class="cart-empty__title">Your cart is empty</h2>
+                <p class="cart-empty__text">Start adding products to your cart!</p>
+                <a asp-controller="Home" asp-action="Index" class="btn btn--brand">Browse Products</a>
+            </div>
+        }
+        else
+        {
+            <div class="cart">
+                <div class="cart__items">
+                    @foreach (var item in Model)
+                    {
+                        var variant = item.ProductVariant;
+                        var product = variant.Product;
+                        var productImage = variant.ProductVariantImages?.FirstOrDefault(pi => pi.IsPrimary)?.Url 
+                            ?? variant.ProductVariantImages?.FirstOrDefault()?.Url 
+                            ?? product.ProductImages?.FirstOrDefault()?.Url 
+                            ?? "/public/images/products/img-cart-lip.png";
+                        var price = item.Price;
+                        var subtotal = item.Subtotal;
+
+                        <div class="cart-item" data-cart-item-id="@item.CartItemId">
+                            <div class="cart-item__image">
+                                <a asp-controller="Products" asp-action="Details" asp-route-id="@product.ProductId">
+                                    <img src="@productImage" alt="@product.Name" />
+                                </a>
+                            </div>
+                            <div class="cart-item__details">
+                                <h3 class="cart-item__title">
+                                    <a asp-controller="Products" asp-action="Details" asp-route-id="@product.ProductId">@product.Name</a>
+                                </h3>
+                                <div class="cart-item__brand">@(product.Brand?.Name?.ToUpper() ?? "UNKNOWN")</div>
+                                <div class="cart-item__variant">@variant.VariantName</div>
+                                <div class="cart-item__price">$@price.ToString("0.00")</div>
+                            </div>
+                            <div class="cart-item__quantity">
+                                <label class="cart-item__quantity-label">Quantity</label>
+                                <div class="quantity-control">
+                                    <button type="button" class="quantity-control__btn quantity-control__btn--decrease" data-cart-item-id="@item.CartItemId">-</button>
+                                    <input type="number" class="quantity-control__input" value="@item.Quantity" min="1" max="@variant.Stock" data-cart-item-id="@item.CartItemId" data-stock="@variant.Stock" />
+                                    <button type="button" class="quantity-control__btn quantity-control__btn--increase" data-cart-item-id="@item.CartItemId" data-stock="@variant.Stock">+</button>
+                                </div>
+                                @if (variant.Stock < 10 && variant.Stock > 0)
+                                {
+                                    <div class="cart-item__stock-warning">Only @variant.Stock left in stock</div>
+                                }
+                                @if (variant.Stock == 0)
+                                {
+                                    <div class="cart-item__stock-error">Out of stock</div>
+                                }
+                            </div>
+                            <div class="cart-item__subtotal">
+                                <div class="cart-item__subtotal-label">Subtotal</div>
+                                <div class="cart-item__subtotal-value">$@subtotal.ToString("0.00")</div>
+                                <button type="button" class="cart-item__remove" data-cart-item-id="@item.CartItemId" aria-label="Remove item">
+                                    <i data-lucide="x"></i>
+                                </button>
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <div class="cart__summary">
+                    <div class="cart-summary">
+                        <h2 class="cart-summary__title">Order Summary</h2>
+                        <div class="cart-summary__row">
+                            <span>Subtotal</span>
+                            <span class="cart-summary__subtotal">$@Model.Sum(i => i.Subtotal).ToString("0.00")</span>
+                        </div>
+                        <div class="cart-summary__row">
+                            <span>Shipping</span>
+                            <span>Calculated at checkout</span>
+                        </div>
+                        <div class="cart-summary__divider"></div>
+                        <div class="cart-summary__row cart-summary__row--total">
+                            <span>Total</span>
+                            <span class="cart-summary__total">$@Model.Sum(i => i.Subtotal).ToString("0.00")</span>
+                        </div>
+                        <a asp-controller="Orders" asp-action="Checkout" class="btn btn--brand btn--block cart-summary__checkout">Proceed to Checkout</a>
+                        <a asp-controller="Home" asp-action="Index" class="btn btn--secondary btn--block">Continue Shopping</a>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</section>
+
+@section Styles {
+    <link rel="stylesheet" href="~/public/css/pages/cart.css" asp-append-version="true" />
+}
+
+@section Scripts {
+    <script src="~/public/js/components/cart.js" asp-append-version="true"></script>
+}
+

@@ -67,6 +67,10 @@ namespace Website_Cosmetics.Models
         [InverseProperty("User")]
         public virtual ICollection<ProductLike> ProductLikes { get; set; } = new List<ProductLike>();
 
+        // Addresses
+        [InverseProperty("User")]
+        public virtual ICollection<UserAddress> UserAddresses { get; set; } = new List<UserAddress>();
+
         // Computed properties
         [NotMapped]
         public string FullName => $"{FirstName} {LastName}".Trim();

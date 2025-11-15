@@ -1,0 +1,197 @@
+@{
+    ViewData["Title"] = "Checkout";
+    var cart = ViewBag.Cart as Website_Cosmetics.Models.ShoppingCart;
+    var user = ViewBag.User as Website_Cosmetics.Models.User;
+    var addresses = ViewBag.Addresses as IEnumerable<Website_Cosmetics.Models.UserAddress> ?? new List<Website_Cosmetics.Models.UserAddress>();
+}
+
+<section class="section">
+    <div class="container">
+        <div class="section__hd">
+            <h1>Checkout</h1>
+            <p>Review your order and complete your purchase.</p>
+        </div>
+
+        @await Html.PartialAsync("_Alerts")
+
+        @if (cart == null || !cart.CartItems.Any())
+        {
+            <div class="checkout-empty">
+                <p>Your cart is empty.</p>
+                <a asp-controller="Cart" asp-action="Index" class="btn btn--brand">View Cart</a>
+            </div>
+        }
+        else
+        {
+            <form id="checkoutForm" class="checkout">
+                <div class="checkout__main">
+                    <div class="checkout__section">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                            <h2 class="checkout__section-title" style="margin: 0;">Shipping Address</h2>
+                            <a asp-controller="Address" asp-action="Create" class="btn btn--sm btn--secondary">Add New Address</a>
+                        </div>
+                        
+                        @if (addresses.Any())
+                        {
+                            <div class="address-selection">
+                                @foreach (var address in addresses)
+                                {
+                                    <label class="address-option @(address.IsDefault ? "address-option--selected" : "")">
+                                        <input type="radio" name="selectedAddressId" value="@address.AddressId" @(address.IsDefault ? "checked" : "") />
+                                        <div class="address-option__content">
+                                            <div class="address-option__header">
+                                                <strong>@address.FullName</strong>
+                                                @if (address.IsDefault)
+                                                {
+                                                    <span class="address-option__badge">Default</span>
+                                                }
+                                            </div>
+                                            <div class="address-option__details">
+                                                <div>@address.AddressLine1</div>
+                                                @if (!string.IsNullOrEmpty(address.AddressLine2))
+                                                {
+                                                    <div>@address.AddressLine2</div>
+                                                }
+                                                <div>@address.City, @(string.IsNullOrEmpty(address.State) ? "" : address.State + " ")@address.PostalCode</div>
+                                                <div>@address.Country</div>
+                                                @if (!string.IsNullOrEmpty(address.PhoneNumber))
+                                                {
+                                                    <div class="address-option__phone">Phone: @address.PhoneNumber</div>
+                                                }
+                                            </div>
+                                        </div>
+                                    </label>
+                                }
+                            </div>
+                            <input type="hidden" id="selectedAddressText" name="shippingAddress" />
+                        }
+                        else
+                        {
+                            <div class="address-empty-state">
+                                <p>No saved addresses. Please add an address to continue.</p>
+                                <a asp-controller="Address" asp-action="Create" class="btn btn--brand">Add Address</a>
+                            </div>
+                        }
+                    </div>
+
+                    <div class="checkout__section">
+                        <h2 class="checkout__section-title">Shipping Method</h2>
+                        <div class="form-group">
+                            <div class="radio-group">
+                                <label class="radio">
+                                    <input type="radio" name="shippingMethod" value="Standard" checked />
+                                    <span class="radio__label">
+                                        <strong>Standard Shipping</strong>
+                                        <span class="radio__description">5-7 business days - $5.00</span>
+                                    </span>
+                                </label>
+                                <label class="radio">
+                                    <input type="radio" name="shippingMethod" value="Express" />
+                                    <span class="radio__label">
+                                        <strong>Express Shipping</strong>
+                                        <span class="radio__description">2-3 business days - $15.00</span>
+                                    </span>
+                                </label>
+                                <label class="radio">
+                                    <input type="radio" name="shippingMethod" value="Same-Day" />
+                                    <span class="radio__label">
+                                        <strong>Same-Day Delivery</strong>
+                                        <span class="radio__description">Same day - $25.00</span>
+                                    </span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="checkout__section">
+                        <h2 class="checkout__section-title">Payment Method</h2>
+                        <div class="form-group">
+                            <div class="radio-group">
+                                <label class="radio">
+                                    <input type="radio" name="paymentMethod" value="Credit Card" checked />
+                                    <span class="radio__label">
+                                        <strong>Credit Card</strong>
+                                    </span>
+                                </label>
+                                <label class="radio">
+                                    <input type="radio" name="paymentMethod" value="PayPal" />
+                                    <span class="radio__label">
+                                        <strong>PayPal</strong>
+                                    </span>
+                                </label>
+                                <label class="radio">
+                                    <input type="radio" name="paymentMethod" value="Cash on Delivery" />
+                                    <span class="radio__label">
+                                        <strong>Cash on Delivery</strong>
+                                    </span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="checkout__section">
+                        <h2 class="checkout__section-title">Order Notes (Optional)</h2>
+                        <div class="form-group">
+                            <textarea id="notes" name="notes" class="form-control" rows="3" placeholder="Any special instructions for your order..."></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="checkout__sidebar">
+                    <div class="checkout-summary">
+                        <h2 class="checkout-summary__title">Order Summary</h2>
+                        <div class="checkout-summary__items">
+                            @foreach (var item in cart.CartItems)
+                            {
+                                var variant = item.ProductVariant;
+                                var product = variant.Product;
+                                var productImage = variant.ProductVariantImages?.FirstOrDefault(pi => pi.IsPrimary)?.Url 
+                                    ?? variant.ProductVariantImages?.FirstOrDefault()?.Url 
+                                    ?? product.ProductImages?.FirstOrDefault()?.Url 
+                                    ?? "/public/images/products/img-cart-lip.png";
+
+                                <div class="checkout-summary__item">
+                                    <div class="checkout-summary__item-image">
+                                        <img src="@productImage" alt="@product.Name" />
+                                    </div>
+                                    <div class="checkout-summary__item-details">
+                                        <div class="checkout-summary__item-name">@product.Name</div>
+                                        <div class="checkout-summary__item-variant">@variant.VariantName</div>
+                                        <div class="checkout-summary__item-quantity">Qty: @item.Quantity</div>
+                                    </div>
+                                    <div class="checkout-summary__item-price">$@item.Subtotal.ToString("0.00")</div>
+                                </div>
+                            }
+                        </div>
+                        <div class="checkout-summary__totals">
+                            <div class="checkout-summary__row">
+                                <span>Subtotal</span>
+                                <span class="checkout-summary__subtotal">$@cart.CartItems.Sum(i => i.Subtotal).ToString("0.00")</span>
+                            </div>
+                            <div class="checkout-summary__row">
+                                <span>Shipping</span>
+                                <span class="checkout-summary__shipping" id="shippingFee">$5.00</span>
+                            </div>
+                            <div class="checkout-summary__divider"></div>
+                            <div class="checkout-summary__row checkout-summary__row--total">
+                                <span>Total</span>
+                                <strong class="checkout-summary__total" id="orderTotal">$@((cart.CartItems.Sum(i => i.Subtotal) + 5.00m).ToString("0.00"))</strong>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn--brand btn--block checkout-summary__submit">Place Order</button>
+                        <a asp-controller="Cart" asp-action="Index" class="btn btn--secondary btn--block">Back to Cart</a>
+                    </div>
+                </div>
+            </form>
+        }
+    </div>
+</section>
+
+@section Styles {
+    <link rel="stylesheet" href="~/public/css/pages/checkout.css" asp-append-version="true" />
+}
+
+@section Scripts {
+    <script src="~/public/js/components/checkout.js" asp-append-version="true"></script>
+}
+

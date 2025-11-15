@@ -1,0 +1,205 @@
+@model Website_Cosmetics.Models.Order
+@{
+    ViewData["Title"] = "Order Details";
+}
+
+<section class="section">
+    <div class="container">
+        <div class="section__hd">
+            <div class="order-details-header">
+                <div>
+                    <h1>Order #@Model.OrderNumber</h1>
+                    <p>Placed on @Model.CreatedAt.ToString("MMMM dd, yyyy 'at' hh:mm tt")</p>
+                </div>
+                <div class="order-details-header__status">
+                    <span class="order-status order-status--@Model.Status.ToLower()">@Model.Status</span>
+                </div>
+            </div>
+        </div>
+
+        @await Html.PartialAsync("_Alerts")
+
+        <div class="order-details">
+            <div class="order-details__main">
+                <div class="order-details__section">
+                    <h2 class="order-details__section-title">Order Items</h2>
+                    <div class="order-items">
+                        @foreach (var item in Model.OrderItems)
+                        {
+                            var variant = item.ProductVariant;
+                            var product = variant?.Product;
+                            var productImage = variant?.ProductVariantImages?.FirstOrDefault(pi => pi.IsPrimary)?.Url 
+                                ?? variant?.ProductVariantImages?.FirstOrDefault()?.Url 
+                                ?? product?.ProductImages?.FirstOrDefault()?.Url 
+                                ?? "/public/images/products/img-cart-lip.png";
+
+                            <div class="order-item">
+                                <div class="order-item__image">
+                                    <img src="@productImage" alt="@item.ProductName" />
+                                </div>
+                                <div class="order-item__details">
+                                    <h3 class="order-item__name">@item.ProductName</h3>
+                                    <div class="order-item__variant">@item.ColorName</div>
+                                    <div class="order-item__quantity">Quantity: @item.Quantity</div>
+                                </div>
+                                <div class="order-item__price">
+                                    <div class="order-item__unit-price">$@item.UnitPrice.ToString("0.00") each</div>
+                                    <div class="order-item__subtotal">$@item.Subtotal.ToString("0.00")</div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <div class="order-details__sidebar">
+                <div class="order-details__section">
+                    <h2 class="order-details__section-title">Shipping Information</h2>
+                    <div class="order-info">
+                        <div class="order-info__row">
+                            <span class="order-info__label">Address:</span>
+                            <span class="order-info__value">@Model.ShippingAddress</span>
+                        </div>
+                        <div class="order-info__row">
+                            <span class="order-info__label">Method:</span>
+                            <span class="order-info__value">@(Model.ShippingMethod ?? "Standard")</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="order-details__section">
+                    <h2 class="order-details__section-title">Payment Information</h2>
+                    <div class="order-info">
+                        <div class="order-info__row">
+                            <span class="order-info__label">Method:</span>
+                            <span class="order-info__value">@Model.PaymentMethod</span>
+                        </div>
+                        <div class="order-info__row">
+                            <span class="order-info__label">Status:</span>
+                            <span class="order-info__value">@Model.PaymentStatus</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="order-details__section">
+                    <h2 class="order-details__section-title">Order Summary</h2>
+                    <div class="order-summary">
+                        <div class="order-summary__row">
+                            <span>Subtotal</span>
+                            <span>$@Model.SubTotal.ToString("0.00")</span>
+                        </div>
+                        <div class="order-summary__row">
+                            <span>Shipping</span>
+                            <span>$@Model.ShippingFee.ToString("0.00")</span>
+                        </div>
+                        @if (Model.Discount > 0)
+                        {
+                            <div class="order-summary__row">
+                                <span>Discount</span>
+                                <span>-$@Model.Discount.ToString("0.00")</span>
+                            </div>
+                        }
+                        <div class="order-summary__divider"></div>
+                        <div class="order-summary__row order-summary__row--total">
+                            <span>Total</span>
+                            <strong>$@Model.Total.ToString("0.00")</strong>
+                        </div>
+                    </div>
+                </div>
+
+                @if (!string.IsNullOrWhiteSpace(Model.Notes))
+                {
+                    <div class="order-details__section">
+                        <h2 class="order-details__section-title">Notes</h2>
+                        <p class="order-notes">@Model.Notes</p>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div class="order-details__actions">
+            <a asp-controller="Orders" asp-action="Index" class="btn btn--secondary">Back to Orders</a>
+            @if (Model.Status == "Pending" || Model.Status == "Processing")
+            {
+                <form asp-controller="Orders" asp-action="Cancel" method="post" class="order-cancel-form" data-order-id="@Model.OrderId" style="display: inline;">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="id" value="@Model.OrderId" />
+                    <button type="submit" class="btn btn--danger">Cancel Order</button>
+                </form>
+            }
+        </div>
+    </div>
+</section>
+
+@section Styles {
+    <link rel="stylesheet" href="~/public/css/pages/orders.css" asp-append-version="true" />
+}
+
+@section Scripts {
+    <script>
+        // Handle order cancellation with AJAX
+        document.addEventListener('DOMContentLoaded', function() {
+            const cancelForm = document.querySelector('.order-cancel-form');
+            
+            if (cancelForm) {
+                cancelForm.addEventListener('submit', async function(e) {
+                    e.preventDefault();
+                    
+                    if (!confirm('Are you sure you want to cancel this order?')) {
+                        return;
+                    }
+                    
+                    const submitBtn = cancelForm.querySelector('button[type="submit"]');
+                    const originalText = submitBtn.textContent;
+                    submitBtn.disabled = true;
+                    submitBtn.textContent = 'Cancelling...';
+                    
+                    try {
+                        const formData = new FormData(cancelForm);
+                        const response = await fetch('/Orders/Cancel', {
+                            method: 'POST',
+                            body: formData
+                        });
+                        
+                        const data = await response.json();
+                        
+                        if (data.success) {
+                            // Show success toast
+                            if (typeof Toast !== 'undefined' && typeof Toast.show === 'function') {
+                                Toast.show(data.message || 'Order cancelled successfully', 'success');
+                            } else {
+                                alert(data.message || 'Order cancelled successfully');
+                            }
+                            
+                            // Reload page after a short delay to show the toast
+                            setTimeout(() => {
+                                window.location.reload();
+                            }, 1000);
+                        } else {
+                            // Show error toast
+                            if (typeof Toast !== 'undefined' && typeof Toast.show === 'function') {
+                                Toast.show(data.message || 'Failed to cancel order', 'error');
+                            } else {
+                                alert(data.message || 'Failed to cancel order');
+                            }
+                            
+                            submitBtn.disabled = false;
+                            submitBtn.textContent = originalText;
+                        }
+                    } catch (error) {
+                        console.error('Error cancelling order:', error);
+                        if (typeof Toast !== 'undefined' && typeof Toast.show === 'function') {
+                            Toast.show('An error occurred. Please try again.', 'error');
+                        } else {
+                            alert('An error occurred. Please try again.');
+                        }
+                        
+                        submitBtn.disabled = false;
+                        submitBtn.textContent = originalText;
+                    }
+                });
+            }
+        });
+    </script>
+}
+

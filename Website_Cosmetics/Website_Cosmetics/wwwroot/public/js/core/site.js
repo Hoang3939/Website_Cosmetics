@@ -7,9 +7,15 @@
         QuickView.init();
         
         // Initialize Lucide icons if library is loaded
-        if (typeof lucide !== 'undefined') {
-            lucide.createIcons();
+        function initLucideIcons() {
+            if (typeof lucide !== 'undefined' && typeof lucide.createIcons === 'function') {
+                lucide.createIcons();
+            } else {
+                // Retry if Lucide is not ready yet
+                setTimeout(initLucideIcons, 50);
+            }
         }
+        initLucideIcons();
         
         // Initialize user menu dropdown
         initUserMenu();
