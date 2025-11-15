@@ -1,0 +1,85 @@
+@model IEnumerable<Website_Cosmetics.Models.ProductLike>
+@{
+    ViewData["Title"] = "My Wishlist";
+}
+
+<section class="section">
+    <div class="container">
+        <div class="section__hd">
+            <h1>My Wishlist</h1>
+            <p>Your favorite products saved for later.</p>
+        </div>
+
+        @await Html.PartialAsync("_Alerts")
+
+        @if (Model == null || !Model.Any())
+        {
+            <div class="wishlist-empty">
+                <div class="wishlist-empty__icon">
+                    <i data-lucide="heart"></i>
+                </div>
+                <h2 class="wishlist-empty__title">Your wishlist is empty</h2>
+                <p class="wishlist-empty__text">Start adding products you love to your wishlist!</p>
+                <a asp-controller="Home" asp-action="Index" class="btn btn--brand">Browse Products</a>
+            </div>
+        }
+        else
+        {
+            <div class="grid grid--products">
+                @foreach (var item in Model)
+                {
+                    var product = item.Product;
+                    var productImage = product.ProductImages?.FirstOrDefault()?.Url ?? "/public/images/products/img-cart-lip.png";
+                    var defaultVariant = product.ProductVariants?.FirstOrDefault(v => v.IsDefault == true) ?? product.ProductVariants?.FirstOrDefault();
+                    var currentPrice = defaultVariant?.Price ?? product.BasePrice;
+                    var comparePrice = defaultVariant?.CompareAtPrice ?? product.BasePrice * 1.33m;
+
+                    <div class="card product" data-product-id="@product.ProductId">
+                        <div class="product__header">
+                            <a asp-controller="Products" asp-action="Details" asp-route-id="@product.ProductId" class="product__img">
+                                <img src="@productImage" alt="@product.Name" />
+                            </a>
+                            <button type="button" class="product__wishlist-btn product__wishlist-btn--active" data-product-id="@product.ProductId" aria-label="Remove from wishlist">
+                                <i data-lucide="heart" class="wishlist-icon"></i>
+                            </button>
+                        </div>
+                        <div class="product__body">
+                            <div class="product__brand">@(product.Brand?.Name?.ToUpper() ?? "UNKNOWN")</div>
+                            <h3 class="product__title">
+                                <a asp-controller="Products" asp-action="Details" asp-route-id="@product.ProductId">@product.Name</a>
+                            </h3>
+                            <div class="rating">
+                                <img class="icon icon--star" src="/public/images/icons/star.png" alt="" aria-hidden="true" />
+                                <span class="rating__score">@(product.Rating?.ToString("0.0") ?? "4.8")</span>
+                                <span class="rating__count">(@product.ReviewCount reviews)</span>
+                            </div>
+                            <div class="product__price">
+                                <span class="price--now">$@currentPrice.ToString("0.00")</span>
+                                @if (comparePrice > currentPrice)
+                                {
+                                    <span class="price--old">$@comparePrice.ToString("0.00")</span>
+                                }
+                            </div>
+                            <div class="product__actions">
+                                <a asp-controller="Products" asp-action="Details" asp-route-id="@product.ProductId" class="btn btn--brand">View Details</a>
+                                <form asp-controller="Wishlist" asp-action="Remove" method="post" class="wishlist-remove-form" onsubmit="return confirm('Are you sure you want to remove this item from your wishlist?');">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="likeId" value="@item.LikeId" />
+                                    <button type="submit" class="btn btn--danger">Remove</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+</section>
+
+@section Styles {
+    <link rel="stylesheet" href="~/public/css/pages/wishlist.css" asp-append-version="true" />
+}
+
+@section Scripts {
+    <script src="~/public/js/components/wishlist.js" asp-append-version="true"></script>
+}

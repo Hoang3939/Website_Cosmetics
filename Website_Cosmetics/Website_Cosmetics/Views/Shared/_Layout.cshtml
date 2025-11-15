@@ -22,14 +22,64 @@
             <div class="header__actions">
                 @if (User.Identity?.IsAuthenticated == true)
                 {
-                    <span class="header__welcome">Hello, @User.Identity.Name!</span>
-                    <form asp-controller="Auth" asp-action="LogoutConfirmed" method="post" style="display: inline;">
-                        @Html.AntiForgeryToken()
-                        <button type="submit" class="btn">Logout</button>
-                    </form>
+                    var userName = User.Identity.Name ?? "User";
+                    var userInitial = !string.IsNullOrEmpty(userName) ? userName.Substring(0, 1).ToUpper() : "U";
+                    var userEmail = User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value ?? "";
+                    <!-- Authenticated user: Show user menu dropdown -->
+                    <div class="user-menu">
+                        <button class="user-menu__trigger" type="button" aria-label="User menu" aria-expanded="false">
+                            <div class="user-menu__avatar">
+                                <span class="user-menu__avatar-text">@userInitial</span>
+                            </div>
+                            <span class="user-menu__name">@userName</span>
+                            <i data-lucide="chevron-down" class="user-menu__chevron"></i>
+                        </button>
+                        <div class="user-menu__dropdown">
+                            <div class="user-menu__header">
+                                <div class="user-menu__avatar user-menu__avatar--large">
+                                    <span class="user-menu__avatar-text">@userInitial</span>
+                                </div>
+                                <div class="user-menu__info">
+                                    <div class="user-menu__username">@userName</div>
+                                    @if (!string.IsNullOrEmpty(userEmail))
+                                    {
+                                        <div class="user-menu__email">@userEmail</div>
+                                    }
+                                </div>
+                            </div>
+                            <div class="user-menu__divider"></div>
+                            <div class="user-menu__items">
+                                <a asp-controller="Account" asp-action="Profile" class="user-menu__item">
+                                    <i data-lucide="user"></i>
+                                    <span>My Profile</span>
+                                </a>
+                                <a asp-controller="Wishlist" asp-action="Index" class="user-menu__item">
+                                    <i data-lucide="heart"></i>
+                                    <span>My Wishlist</span>
+                                </a>
+                                <a asp-controller="Orders" asp-action="Index" class="user-menu__item">
+                                    <i data-lucide="package"></i>
+                                    <span>My Orders</span>
+                                </a>
+                                <a asp-controller="Account" asp-action="Settings" class="user-menu__item">
+                                    <i data-lucide="settings"></i>
+                                    <span>Settings</span>
+                                </a>
+                                <div class="user-menu__divider"></div>
+                                <form asp-controller="Auth" asp-action="LogoutConfirmed" method="post" class="user-menu__logout-form">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="user-menu__item user-menu__item--logout">
+                                        <i data-lucide="log-out"></i>
+                                        <span>Logout</span>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
                 }
                 else
                 {
+                    <!-- Unauthenticated user: Show sign in and sign up buttons -->
                     <a class="btn" asp-controller="Auth" asp-action="Login">Sign in</a>
                     <a class="btn btn--brand" asp-controller="Auth" asp-action="Register">Sign up</a>
                 }
@@ -101,6 +151,7 @@
     <script src="~/public/js/components/modal.js" asp-append-version="true"></script>
     <script src="~/public/js/components/toast.js" asp-append-version="true"></script>
     <script src="~/public/js/components/quickview.js" asp-append-version="true"></script>
+    <script src="~/public/js/components/wishlist.js" asp-append-version="true"></script>
     <script src="~/public/js/core/site.js" asp-append-version="true"></script>
     
     @RenderSection("Scripts", required: false)

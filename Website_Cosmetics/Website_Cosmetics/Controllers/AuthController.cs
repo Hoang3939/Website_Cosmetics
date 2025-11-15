@@ -105,10 +105,10 @@ namespace Website_Cosmetics.Controllers
             }
             else
             {
-                _logger.LogInformation("Redirecting regular user {UserId} to Products page. User roles: {Roles}", 
+                _logger.LogInformation("Redirecting regular user {UserId} to Home page. User roles: {Roles}", 
                     user.UserId, string.Join(", ", roleNames));
-                // Regular users go to products page
-                return RedirectToAction("Index", "Products");
+                // Regular users go to home page
+                return RedirectToAction("Index", "Home");
             }
         }
 

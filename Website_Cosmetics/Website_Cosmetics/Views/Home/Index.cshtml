@@ -27,9 +27,17 @@
             var productImage = product.ProductImages?.FirstOrDefault()?.Url ?? "/public/images/products/img-cart-lip.png";
             var oldPrice = product.BasePrice * 1.33m; // Calculate 25% discount for demo
             <div class="card product" data-product-id="@product.ProductId" data-details="@Url.Action("Details", "Products", new { id = product.ProductId })">
-                <a asp-controller="Products" asp-action="Details" asp-route-id="@product.ProductId" class="product__img">
-                    <img src="@productImage" alt="@product.Name" />
-                </a>
+                <div class="product__header">
+                    <a asp-controller="Products" asp-action="Details" asp-route-id="@product.ProductId" class="product__img">
+                        <img src="@productImage" alt="@product.Name" />
+                    </a>
+                    @if (User.Identity?.IsAuthenticated == true)
+                    {
+                        <button type="button" class="product__wishlist-btn" data-product-id="@product.ProductId" aria-label="Add to wishlist">
+                            <i data-lucide="heart" class="wishlist-icon"></i>
+                        </button>
+                    }
+                </div>
                 <div class="product__body">
                     <div class="product__brand">@(product.Brand?.Name?.ToUpper() ?? "UNKNOWN")</div>
                     <h3 class="product__title">@product.Name</h3>
