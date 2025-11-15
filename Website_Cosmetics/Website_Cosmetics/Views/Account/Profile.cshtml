@@ -1,0 +1,68 @@
+@model Website_Cosmetics.Models.User
+@{
+    ViewData["Title"] = "My Profile";
+}
+
+<section class="section">
+    <div class="container">
+        <div class="section__hd">
+            <h1>My Profile</h1>
+            <p>Manage your personal information.</p>
+        </div>
+
+        @await Html.PartialAsync("_Alerts")
+
+        <form asp-action="Profile" method="post" class="profile-form">
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="UserId" />
+            <input type="hidden" asp-for="Username" />
+            <input type="hidden" asp-for="Email" />
+
+            <div class="profile-form__section">
+                <h2 class="profile-form__section-title">Personal Information</h2>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label asp-for="FirstName" class="form-label">First Name</label>
+                        <input asp-for="FirstName" class="form-control" placeholder="First name" />
+                        <span asp-validation-for="FirstName" class="validation-error"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label asp-for="LastName" class="form-label">Last Name</label>
+                        <input asp-for="LastName" class="form-control" placeholder="Last name" />
+                        <span asp-validation-for="LastName" class="validation-error"></span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Email</label>
+                    <input type="email" class="form-control" value="@Model.Email" disabled />
+                    <small class="form-text">Email cannot be changed</small>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Username</label>
+                    <input type="text" class="form-control" value="@Model.Username" disabled />
+                    <small class="form-text">Username cannot be changed</small>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="PhoneNumber" class="form-label">Phone Number</label>
+                    <input asp-for="PhoneNumber" class="form-control" placeholder="1234567890" />
+                    <span asp-validation-for="PhoneNumber" class="validation-error"></span>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn--brand">Save Changes</button>
+                <a asp-controller="Home" asp-action="Index" class="btn btn--secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</section>
+
+@section Styles {
+    <link rel="stylesheet" href="~/public/css/pages/profile.css" asp-append-version="true" />
+}
+

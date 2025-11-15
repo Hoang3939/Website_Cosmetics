@@ -10,26 +10,34 @@
         <p>Discover our premium collection of beauty products (@Model.Count() products)</p>
     </div>
 
-    <div class="product-filters">
+    <form asp-action="Index" method="get" class="product-filters" id="filterForm">
         <div class="filter-group">
             <label>Category:</label>
-            <select class="filter-select">
+            <select name="categoryId" class="filter-select" id="categoryFilter">
                 <option value="">All</option>
-                <option value="makeup">Makeup</option>
-                <option value="skincare">Skincare</option>
-                <option value="tools">Tools</option>
+                @{
+                    var categories = ViewBag.Categories as IEnumerable<Website_Cosmetics.Models.Category> ?? new List<Website_Cosmetics.Models.Category>();
+                    var selectedCategoryId = ViewBag.CategoryId as int?;
+                }
+                @foreach (var category in categories)
+                {
+                    <option value="@category.CategoryId" selected="@(selectedCategoryId == category.CategoryId)">@category.Name</option>
+                }
             </select>
         </div>
         <div class="filter-group">
             <label>Sort by:</label>
-            <select class="filter-select">
-                <option value="newest">Newest</option>
-                <option value="price-low">Price: Low to High</option>
-                <option value="price-high">Price: High to Low</option>
-                <option value="popular">Most Popular</option>
+            <select name="sortBy" class="filter-select" id="sortFilter">
+                <option value="newest" selected="@(ViewBag.SortBy == "newest" || ViewBag.SortBy == null)">Newest</option>
+                <option value="price-low" selected="@(ViewBag.SortBy == "price-low")">Price: Low to High</option>
+                <option value="price-high" selected="@(ViewBag.SortBy == "price-high")">Price: High to Low</option>
+                <option value="popular" selected="@(ViewBag.SortBy == "popular")">Most Popular</option>
             </select>
         </div>
-    </div>
+        <div class="filter-group">
+            <button type="submit" class="btn btn--brand filter-btn">Filter</button>
+        </div>
+    </form>
 
     <div class="product-grid">
         @foreach (var product in Model)
@@ -82,7 +90,10 @@
             @* Previous button *@
             @if (ViewBag.CurrentPage > 1)
             {
-                <a asp-action="Index" asp-route-page="@(ViewBag.CurrentPage - 1)" class="btn btn--outline">Previous</a>
+                var prevRouteValues = new Dictionary<string, string> { { "page", (ViewBag.CurrentPage - 1).ToString() } };
+                if (ViewBag.CategoryId != null) prevRouteValues.Add("categoryId", ViewBag.CategoryId.ToString());
+                if (ViewBag.SortBy != null) prevRouteValues.Add("sortBy", ViewBag.SortBy.ToString());
+                <a asp-action="Index" asp-all-route-data="prevRouteValues" class="btn btn--outline">Previous</a>
             }
             else
             {
@@ -93,13 +104,17 @@
                 @* Hiển thị các số trang *@
                 @for (int i = 1; i <= ViewBag.TotalPages; i++)
                 {
+                    var routeValues = new Dictionary<string, string> { { "page", i.ToString() } };
+                    if (ViewBag.CategoryId != null) routeValues.Add("categoryId", ViewBag.CategoryId.ToString());
+                    if (ViewBag.SortBy != null) routeValues.Add("sortBy", ViewBag.SortBy.ToString());
+                    
                     @if (i == ViewBag.CurrentPage)
                     {
                         <button class="page-number active">@i</button>
                     }
                     else
                     {
-                        <a asp-action="Index" asp-route-page="@i" class="page-number">@i</a>
+                        <a asp-action="Index" asp-all-route-data="routeValues" class="page-number">@i</a>
                     }
                 }
             </span>
@@ -107,7 +122,10 @@
             @* Next button *@
             @if (ViewBag.CurrentPage < ViewBag.TotalPages)
             {
-                <a asp-action="Index" asp-route-page="@(ViewBag.CurrentPage + 1)" class="btn btn--outline">Next</a>
+                var nextRouteValues = new Dictionary<string, string> { { "page", (ViewBag.CurrentPage + 1).ToString() } };
+                if (ViewBag.CategoryId != null) nextRouteValues.Add("categoryId", ViewBag.CategoryId.ToString());
+                if (ViewBag.SortBy != null) nextRouteValues.Add("sortBy", ViewBag.SortBy.ToString());
+                <a asp-action="Index" asp-all-route-data="nextRouteValues" class="btn btn--outline">Next</a>
             }
             else
             {
