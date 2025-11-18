@@ -82,6 +82,24 @@ CREATE TABLE EmailConfirmationTokens (
     FOREIGN KEY (UserId) REFERENCES Users(UserId) ON DELETE CASCADE
 );
 
+-- Create UserAddress table (Sổ địa chỉ)
+CREATE TABLE UserAddress (
+    AddressId INT PRIMARY KEY IDENTITY(1,1),
+    UserId INT NOT NULL,
+    FullName NVARCHAR(100) NOT NULL,
+    PhoneNumber NVARCHAR(20),
+    AddressLine1 NVARCHAR(200) NOT NULL,
+    AddressLine2 NVARCHAR(200) NULL,
+    City NVARCHAR(100) NOT NULL,
+    State NVARCHAR(100) NULL,
+    PostalCode NVARCHAR(20) NULL,
+    Country NVARCHAR(100) DEFAULT 'United States',
+    IsDefault BIT NOT NULL DEFAULT 0,
+    CreatedAt DATETIME2(7) NOT NULL DEFAULT GETDATE(),
+    UpdatedAt DATETIME2(7) NOT NULL DEFAULT GETDATE(),
+    FOREIGN KEY (UserId) REFERENCES Users(UserId) ON DELETE CASCADE
+);
+
 -- =============================================
 -- Permission System Tables
 -- =============================================
@@ -362,6 +380,8 @@ CREATE INDEX IX_EmailConfirmationTokens_Token ON EmailConfirmationTokens(Token);
 CREATE INDEX IX_EmailConfirmationTokens_UserId ON EmailConfirmationTokens(UserId);
 CREATE INDEX IX_UserRoles_UserId ON UserRoles(UserId);
 CREATE INDEX IX_UserRoles_RoleId ON UserRoles(RoleId);
+CREATE INDEX IX_UserAddress_UserId ON UserAddress(UserId);
+CREATE INDEX IX_UserAddress_IsDefault ON UserAddress(UserId, IsDefault);
 
 -- Permission indexes
 CREATE INDEX IX_Permissions_PermissionName ON Permissions(PermissionName);
@@ -407,10 +427,10 @@ PRINT '=============================================';
 PRINT 'All tables created successfully!';
 PRINT '=============================================';
 PRINT 'Database: WebsiteCosmetic';
-PRINT 'Total tables: 23';
+PRINT 'Total tables: 24';
 PRINT '';
 PRINT 'Core Tables:';
-PRINT '- Authentication: Users, Roles, UserRoles (7 tables)';
+PRINT '- Authentication: Users, Roles, UserRoles, UserAddress (8 tables)';
 PRINT '- Permissions: Permissions, RolePermissions, UserPermissions (3 tables)';
 PRINT '- Products: Brand, Category, Product, ProductVariant (4 tables)';
 PRINT '- Images: ProductImage, ProductVariantImage (2 tables)';

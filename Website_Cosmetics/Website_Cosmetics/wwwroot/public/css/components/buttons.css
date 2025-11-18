@@ -28,3 +28,40 @@
     height: 36px;
     padding: 0
 }
+
+.btn--secondary {
+    background: var(--panel);
+    color: var(--ink);
+    border-color: var(--line);
+}
+
+.btn--secondary:hover {
+    background: var(--line);
+    border-color: var(--muted);
+}
+
+.btn--sm {
+    padding: 0.4rem 0.8rem;
+    font-size: var(--fs-sm);
+    height: auto;
+}
+
+.btn--link {
+    background: transparent;
+    border: none;
+    color: var(--brand);
+    text-decoration: underline;
+    padding: 0.4rem 0.8rem;
+}
+
+.btn--link:hover {
+    background: transparent;
+    color: var(--accent);
+    box-shadow: none;
+    transform: none;
+}
+
+.btn--block {
+    width: 100%;
+    display: flex;
+}

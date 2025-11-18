@@ -37,6 +37,9 @@ namespace Website_Cosmetics.Data
         public DbSet<ProductReview> ProductReviews { get; set; }
         public DbSet<ProductLike> ProductLikes { get; set; }
 
+        // User Addresses
+        public DbSet<UserAddress> UserAddresses { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -342,6 +345,23 @@ namespace Website_Cosmetics.Data
                 entity.HasOne(d => d.ProductVariant)
                     .WithMany(p => p.OrderItems)
                     .HasForeignKey(d => d.VariantId);
+            });
+
+            // Configure UserAddress entity
+            modelBuilder.Entity<UserAddress>(entity =>
+            {
+                entity.HasKey(e => e.AddressId);
+                entity.HasIndex(e => e.UserId);
+                entity.HasIndex(e => new { e.UserId, e.IsDefault });
+                entity.Property(e => e.CreatedAt).HasColumnType("datetime2(7)").HasDefaultValueSql("GETDATE()");
+                entity.Property(e => e.UpdatedAt).HasColumnType("datetime2(7)").HasDefaultValueSql("GETDATE()");
+                entity.Property(e => e.IsDefault).HasDefaultValue(false);
+                entity.Property(e => e.Country).HasDefaultValue("United States");
+
+                entity.HasOne(d => d.User)
+                    .WithMany(p => p.UserAddresses)
+                    .HasForeignKey(d => d.UserId)
+                    .OnDelete(DeleteBehavior.Cascade);
             });
 
             // Configure ProductReview entity

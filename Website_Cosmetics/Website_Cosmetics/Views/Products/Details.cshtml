@@ -306,7 +306,9 @@
 
                 <!-- Actions -->
                 <div class="product-details__actions">
-                    <button class="btn btn--primary btn--add-to-cart" @(currentVariant?.Stock <= 0 ? "disabled" : "")>
+                    <button class="btn btn--primary btn--add-to-cart" 
+                            data-variant-id="@(currentVariant?.VariantId ?? 0)"
+                            @(currentVariant?.Stock <= 0 ? "disabled" : "")>
                         <span>Add to Cart</span>
                     </button>
 
@@ -623,11 +625,12 @@
                     if (this.disabled) return;
                     
                     const variantId = this.dataset.variantId;
+                    const stock = parseInt(this.dataset.stock) || 0;
+                    updateAddToCartButton(variantId, stock);
                     const colorName = this.dataset.colorName;
                     const size = this.dataset.size;
                     const price = parseFloat(this.dataset.price);
                     const comparePrice = this.dataset.comparePrice ? parseFloat(this.dataset.comparePrice) : null;
-                    const stock = parseInt(this.dataset.stock);
                     
                     // Update active state
                     this.closest('.variant-options').querySelectorAll('.variant-option').forEach(opt => {
@@ -840,20 +843,31 @@
                 });
             });
 
+            // Update add to cart button when variant changes
+            function updateAddToCartButton(variantId, stock) {
+                if (addToCartBtn) {
+                    addToCartBtn.setAttribute('data-variant-id', variantId);
+                    addToCartBtn.disabled = stock <= 0;
+                }
+            }
+
             // Add to cart button
             if (addToCartBtn) {
                 addToCartBtn.addEventListener('click', function() {
-                    const variantId = selectedVariantInput.value;
-                    const quantity = quantityInput.value;
+                    const variantId = this.getAttribute('data-variant-id') || selectedVariantInput.value;
+                    const quantity = quantityInput ? parseInt(quantityInput.value) : 1;
                     
                     if (!variantId || variantId === '0') {
                         alert('Please select a variant');
                         return;
                     }
                     
-                    // TODO: Implement cart functionality
-                    alert(`Added ${quantity} item(s) to cart!`);
-                    console.log('Add to cart:', { variantId, quantity });
+                    // Add to cart using Cart component
+                    if (typeof Cart !== 'undefined' && typeof Cart.addToCart === 'function') {
+                        Cart.addToCart(parseInt(variantId), quantity);
+                    } else {
+                        alert(`Added ${quantity} item(s) to cart!`);
+                    }
                 });
             }
 
@@ -868,9 +882,14 @@
                         return;
                     }
                     
-                    // TODO: Implement buy now functionality
-                    alert(`Proceeding to checkout with ${quantity} item(s)`);
-                    console.log('Buy now:', { variantId, quantity });
+                    // Buy now: Add to cart and redirect to checkout
+                    if (typeof Cart !== 'undefined' && typeof Cart.addToCart === 'function') {
+                        Cart.addToCart(variantId, quantity).then(() => {
+                            window.location.href = '/Orders/Checkout';
+                        });
+                    } else {
+                        window.location.href = '/Orders/Checkout';
+                    }
                 });
             }
         });
