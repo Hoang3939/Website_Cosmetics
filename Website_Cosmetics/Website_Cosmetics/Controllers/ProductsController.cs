@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 using Website_Cosmetics.Repositories;
 using Website_Cosmetics.Models;
 using Website_Cosmetics.Services;
+using Website_Cosmetics.Data;
 using Microsoft.EntityFrameworkCore;
 
 namespace Website_Cosmetics.Controllers
@@ -17,19 +18,29 @@ namespace Website_Cosmetics.Controllers
     {
         private readonly IProductRepository _productRepository;
         private readonly VirtualMakeupService _virtualMakeupService;
+        private readonly ApplicationDbContext _context;
 
         public ProductsController(
             IProductRepository productRepository,
-            VirtualMakeupService virtualMakeupService)
+            VirtualMakeupService virtualMakeupService,
+            ApplicationDbContext context)
         {
             _productRepository = productRepository;
             _virtualMakeupService = virtualMakeupService;
+            _context = context;
         }
 
         // GET: /Products
-        public async Task<IActionResult> Index(int page = 1, int? categoryId = null, string? search = null)
+        public async Task<IActionResult> Index(int page = 1, int? categoryId = null, string? search = null, string? sortBy = null)
         {
             const int pageSize = 9; // 9 sản phẩm mỗi trang
+            
+            // Load categories for filter dropdown
+            var categories = await _context.Categories
+                .Where(c => c.IsActive == true)
+                .OrderBy(c => c.Name)
+                .ToListAsync();
+            ViewBag.Categories = categories;
             
             IEnumerable<Product> allProducts;
             
@@ -47,6 +58,33 @@ namespace Website_Cosmetics.Controllers
             else
             {
                 allProducts = await _productRepository.GetAllAsync();
+            }
+            
+            // Apply sorting
+            if (!string.IsNullOrWhiteSpace(sortBy))
+            {
+                switch (sortBy.ToLower())
+                {
+                    case "price-low":
+                        allProducts = allProducts.OrderBy(p => p.BasePrice);
+                        break;
+                    case "price-high":
+                        allProducts = allProducts.OrderByDescending(p => p.BasePrice);
+                        break;
+                    case "popular":
+                        allProducts = allProducts.OrderByDescending(p => p.LikeCount).ThenByDescending(p => p.Rating ?? 0);
+                        break;
+                    case "newest":
+                    default:
+                        allProducts = allProducts.OrderByDescending(p => p.CreatedAt);
+                        break;
+                }
+                ViewBag.SortBy = sortBy;
+            }
+            else
+            {
+                // Default: newest first
+                allProducts = allProducts.OrderByDescending(p => p.CreatedAt);
             }
             
             var totalProducts = allProducts.Count();

@@ -1,0 +1,156 @@
+/* ---------- Catalog Page ---------- */
+.catalog-count {
+    font-size: var(--fs-sm);
+    color: var(--muted);
+    margin-top: 8px;
+}
+
+.catalog-empty {
+    text-align: center;
+    padding: 60px 20px;
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+.catalog-empty__icon {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: var(--panel);
+    color: var(--muted);
+}
+
+.catalog-empty__icon i {
+    width: 40px;
+    height: 40px;
+}
+
+.catalog-empty__title {
+    font-size: var(--fs-2xl);
+    font-weight: 700;
+    margin: 0 0 12px;
+    color: var(--ink);
+}
+
+.catalog-empty__text {
+    font-size: var(--fs-md);
+    color: var(--muted);
+    margin: 0 0 32px;
+}
+
+.product__badge {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    background: var(--brand);
+    color: #fff;
+    font-size: var(--fs-xs);
+    font-weight: 600;
+    padding: 4px 8px;
+    border-radius: 4px;
+    text-transform: uppercase;
+    z-index: 1;
+}
+
+.product__badge--sale {
+    background: var(--err);
+}
+
+/* Pagination */
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    margin-top: 48px;
+    padding-top: 32px;
+    border-top: 1px solid var(--line);
+}
+
+.pagination__link {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--bg);
+    color: var(--ink);
+    text-decoration: none;
+    font-size: var(--fs-sm);
+    transition: all var(--t-fast) var(--ease);
+}
+
+.pagination__link:hover {
+    border-color: var(--brand);
+    background: var(--panel);
+    color: var(--brand);
+}
+
+.pagination__link i {
+    width: 16px;
+    height: 16px;
+}
+
+.pagination__pages {
+    display: flex;
+    gap: 4px;
+}
+
+.pagination__page {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 40px;
+    height: 40px;
+    padding: 0 12px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--bg);
+    color: var(--ink);
+    text-decoration: none;
+    font-size: var(--fs-sm);
+    font-weight: 500;
+    transition: all var(--t-fast) var(--ease);
+}
+
+.pagination__page:hover {
+    border-color: var(--brand);
+    background: var(--panel);
+    color: var(--brand);
+}
+
+.pagination__page--active {
+    background: var(--brand);
+    border-color: var(--brand);
+    color: #fff;
+    cursor: default;
+}
+
+.pagination__page--active:hover {
+    background: var(--brand);
+    color: #fff;
+}
+
+@media (max-width: 768px) {
+    .pagination {
+        flex-wrap: wrap;
+    }
+
+    .pagination__link {
+        padding: 6px 12px;
+        font-size: var(--fs-xs);
+    }
+
+    .pagination__page {
+        min-width: 36px;
+        height: 36px;
+        padding: 0 8px;
+        font-size: var(--fs-xs);
+    }
+}
+

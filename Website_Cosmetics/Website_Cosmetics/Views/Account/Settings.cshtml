@@ -1,0 +1,161 @@
+@{
+    ViewData["Title"] = "Settings";
+    var user = ViewBag.User as Website_Cosmetics.Models.User;
+}
+
+<section class="section">
+    <div class="container">
+        <div class="section__hd">
+            <h1>Settings</h1>
+            <p>Manage your account settings and preferences.</p>
+        </div>
+
+        @await Html.PartialAsync("_Alerts")
+
+        <div class="settings">
+            <div class="settings__section">
+                <h2 class="settings__section-title">Change Password</h2>
+                <p class="settings__section-description">Update your password to keep your account secure.</p>
+                
+                <form id="changePasswordForm" class="settings-form">
+                    @Html.AntiForgeryToken()
+                    <div class="form-group">
+                        <label for="currentPassword" class="form-label">Current Password</label>
+                        <input type="password" id="currentPassword" name="currentPassword" class="form-control" required />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="newPassword" class="form-label">New Password</label>
+                        <input type="password" id="newPassword" name="newPassword" class="form-control" required minlength="6" />
+                        <small class="form-text">Password must be at least 6 characters long</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="confirmPassword" class="form-label">Confirm New Password</label>
+                        <input type="password" id="confirmPassword" name="confirmPassword" class="form-control" required minlength="6" />
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn--brand">Change Password</button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="settings__section">
+                <h2 class="settings__section-title">Account Information</h2>
+                <div class="settings-info">
+                    <div class="settings-info__row">
+                        <span class="settings-info__label">Email:</span>
+                        <span class="settings-info__value">@user?.Email</span>
+                    </div>
+                    <div class="settings-info__row">
+                        <span class="settings-info__label">Username:</span>
+                        <span class="settings-info__value">@user?.Username</span>
+                    </div>
+                    <div class="settings-info__row">
+                        <span class="settings-info__label">Member Since:</span>
+                        <span class="settings-info__value">@user?.CreatedAt.ToString("MMMM dd, yyyy")</span>
+                    </div>
+                    <div class="settings-info__row">
+                        <span class="settings-info__label">Email Verified:</span>
+                        <span class="settings-info__value">
+                            @if (user?.IsEmailConfirmed == true)
+                            {
+                                <span class="badge badge--success">Verified</span>
+                            }
+                            else
+                            {
+                                <span class="badge badge--warning">Not Verified</span>
+                            }
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Styles {
+    <link rel="stylesheet" href="~/public/css/pages/settings.css" asp-append-version="true" />
+}
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('changePasswordForm');
+            if (form) {
+                form.addEventListener('submit', async function(e) {
+                    e.preventDefault();
+                    
+                    const currentPassword = document.getElementById('currentPassword').value;
+                    const newPassword = document.getElementById('newPassword').value;
+                    const confirmPassword = document.getElementById('confirmPassword').value;
+                    
+                    if (newPassword !== confirmPassword) {
+                        if (typeof Toast !== 'undefined' && typeof Toast.show === 'function') {
+                            Toast.show('New password and confirm password do not match', 'error');
+                        } else {
+                            alert('New password and confirm password do not match');
+                        }
+                        return;
+                    }
+                    
+                    const submitBtn = form.querySelector('button[type="submit"]');
+                    const originalText = submitBtn.textContent;
+                    submitBtn.disabled = true;
+                    submitBtn.textContent = 'Changing...';
+                    
+                    try {
+                        let token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+                        if (!token) {
+                            token = document.querySelector('meta[name="__RequestVerificationToken"]')?.content;
+                        }
+                        
+                        const formData = new FormData();
+                        formData.append('currentPassword', currentPassword);
+                        formData.append('newPassword', newPassword);
+                        formData.append('confirmPassword', confirmPassword);
+                        if (token) {
+                            formData.append('__RequestVerificationToken', token);
+                        }
+                        
+                        const response = await fetch('/Account/ChangePassword', {
+                            method: 'POST',
+                            body: formData
+                        });
+                        
+                        const data = await response.json();
+                        
+                        if (data.success) {
+                            if (typeof Toast !== 'undefined' && typeof Toast.show === 'function') {
+                                Toast.show(data.message || 'Password changed successfully', 'success');
+                            } else {
+                                alert(data.message || 'Password changed successfully');
+                            }
+                            
+                            // Clear form
+                            form.reset();
+                        } else {
+                            if (typeof Toast !== 'undefined' && typeof Toast.show === 'function') {
+                                Toast.show(data.message || 'Failed to change password', 'error');
+                            } else {
+                                alert(data.message || 'Failed to change password');
+                            }
+                        }
+                    } catch (error) {
+                        console.error('Error changing password:', error);
+                        if (typeof Toast !== 'undefined' && typeof Toast.show === 'function') {
+                            Toast.show('An error occurred. Please try again.', 'error');
+                        } else {
+                            alert('An error occurred. Please try again.');
+                        }
+                    } finally {
+                        submitBtn.disabled = false;
+                        submitBtn.textContent = originalText;
+                    }
+                });
+            }
+        });
+    </script>
+}
+
