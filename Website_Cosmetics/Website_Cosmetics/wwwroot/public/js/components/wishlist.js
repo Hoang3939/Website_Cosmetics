@@ -20,6 +20,18 @@
                         this.toggleWishlist(parseInt(productId), wishlistBtn);
                     }
                 }
+                
+                // Handle remove button from wishlist page
+                const removeBtn = e.target.closest('.wishlist-remove-btn');
+                if (removeBtn) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const likeId = removeBtn.getAttribute('data-like-id');
+                    const productName = removeBtn.getAttribute('data-product-name') || 'this item';
+                    if (likeId) {
+                        this.showRemoveConfirmation(parseInt(likeId), productName, removeBtn);
+                    }
+                }
             });
         },
 
@@ -138,16 +150,14 @@
                             icon.removeAttribute('fill');
                         }
                         
-                        // Show success message
-                        this.showToast('Removed from wishlist', 'success');
-
                         // Handle page-specific behavior after removal
                         const currentPath = window.location.pathname.toLowerCase();
                         const isDetailsPage = currentPath.includes('/products/details');
                         const isWishlistPage = currentPath.includes('/wishlist');
                         
-                        // If on wishlist page, remove the product card with animation
+                        // If on wishlist page, show inline alert and remove card with animation
                         if (isWishlistPage) {
+                            this.showInlineAlert('Removed from wishlist', 'success');
                             const productCard = button.closest('.product');
                             if (productCard) {
                                 productCard.style.transition = 'opacity 0.3s ease';
@@ -158,19 +168,25 @@
                                     // Check if wishlist is empty
                                     const remainingProducts = document.querySelectorAll('.product');
                                     if (remainingProducts.length === 0) {
-                                        location.reload();
+                                        setTimeout(() => {
+                                            location.reload();
+                                        }, 500);
                                     }
                                 }, 300);
                             }
                         }
-                        // If on product listing pages (not Details page), reload to update all wishlist buttons
+                        // If on product listing pages (not Details page), show toast and reload
                         else if (!isDetailsPage) {
+                            this.showToast('Removed from wishlist', 'success');
                             // Reload page after a short delay to show the toast message
                             setTimeout(() => {
                                 location.reload();
                             }, 500);
                         }
-                        // On Details page, just update the current button (no reload needed)
+                        // On Details page, show toast and just update the current button (no reload needed)
+                        else {
+                            this.showToast('Removed from wishlist', 'success');
+                        }
                     }
 
                     // Reinitialize Lucide icons
@@ -190,6 +206,150 @@
             } finally {
                 button.disabled = false;
             }
+        },
+
+        showRemoveConfirmation: function(likeId, productName, button) {
+            if (typeof Modal === 'undefined') {
+                // Fallback to native confirm if Modal is not available
+                if (confirm(`Are you sure you want to remove "${productName}" from your wishlist?`)) {
+                    this.submitRemoveForm(likeId, button);
+                }
+                return;
+            }
+
+            // Create confirmation modal content
+            const modalContent = document.createElement('div');
+            modalContent.className = 'modal--confirm';
+            modalContent.innerHTML = `
+                <div class="modal__icon modal__icon--warning">
+                    <i data-lucide="alert-triangle"></i>
+                </div>
+                <h3 class="modal__title">Remove from Wishlist?</h3>
+                <p class="modal__message">Are you sure you want to remove "${productName}" from your wishlist? This action cannot be undone.</p>
+                <div class="modal__actions">
+                    <button type="button" class="btn btn--danger" data-action="confirm">Remove</button>
+                    <button type="button" class="btn btn--cancel" data-action="cancel">Cancel</button>
+                </div>
+            `;
+
+            // Initialize Lucide icons
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
+
+            // Open modal
+            Modal.open(modalContent);
+            
+            // Hide navigation arrows for confirmation modal
+            // Use setTimeout to ensure overlay is created
+            setTimeout(() => {
+                const overlay = document.querySelector('.modal-overlay');
+                if (overlay) {
+                    overlay.classList.add('is-confirm');
+                }
+            }, 0);
+
+            // Handle button clicks
+            modalContent.querySelector('[data-action="cancel"]').addEventListener('click', () => {
+                Modal.close();
+            });
+
+            modalContent.querySelector('[data-action="confirm"]').addEventListener('click', () => {
+                Modal.close();
+                this.submitRemoveForm(likeId, button);
+            });
+        },
+
+        submitRemoveForm: async function(likeId, button) {
+            // Get anti-forgery token
+            let token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+            if (!token) {
+                token = document.querySelector('meta[name="__RequestVerificationToken"]')?.content;
+            }
+
+            const formData = new FormData();
+            formData.append('likeId', likeId);
+            if (token) {
+                formData.append('__RequestVerificationToken', token);
+            }
+
+            // Disable button during request
+            if (button) {
+                button.disabled = true;
+            }
+
+            try {
+                const response = await fetch('/Wishlist/Remove', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (response.ok) {
+                    // Show toast notification instead of inline alert
+                    this.showToast('Item removed from wishlist.', 'success');
+                    
+                    // Remove product card with animation
+                    const productCard = button ? button.closest('.product') : null;
+                    if (productCard) {
+                        productCard.style.transition = 'opacity 0.3s ease';
+                        productCard.style.opacity = '0';
+                        setTimeout(() => {
+                            productCard.remove();
+                            
+                            // Check if wishlist is empty
+                            const remainingProducts = document.querySelectorAll('.product');
+                            if (remainingProducts.length === 0) {
+                                setTimeout(() => {
+                                    location.reload();
+                                }, 500);
+                            }
+                        }, 300);
+                    } else {
+                        // Fallback: reload page
+                        setTimeout(() => {
+                            location.reload();
+                        }, 500);
+                    }
+                } else {
+                    this.showInlineAlert('An error occurred while removing the item. Please try again.', 'error');
+                    if (button) {
+                        button.disabled = false;
+                    }
+                }
+            } catch (error) {
+                console.error('Error removing wishlist item:', error);
+                this.showInlineAlert('An error occurred. Please try again.', 'error');
+                if (button) {
+                    button.disabled = false;
+                }
+            }
+        },
+
+        showInlineAlert: function(message, type) {
+            const container = document.getElementById('wishlist-alert-container');
+            if (!container) return;
+
+            // Remove existing alerts
+            container.innerHTML = '';
+
+            // Create alert element
+            const alert = document.createElement('div');
+            alert.className = `alert alert--${type}`;
+            alert.textContent = message;
+            alert.setAttribute('role', 'alert');
+
+            container.appendChild(alert);
+
+            // Auto remove after 5 seconds
+            setTimeout(() => {
+                alert.style.transition = 'opacity 0.3s ease';
+                alert.style.opacity = '0';
+                setTimeout(() => {
+                    if (alert.parentNode) {
+                        alert.remove();
+                    }
+                }, 300);
+            }, 5000);
         },
 
         showToast: function(message, type) {

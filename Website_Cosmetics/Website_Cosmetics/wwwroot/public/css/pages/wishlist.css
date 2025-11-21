@@ -42,14 +42,81 @@
 
 /* Wishlist product cards adjustments */
 .wishlist .product__actions {
+    display: flex;
     flex-direction: column;
     gap: 8px;
+    width: 100%;
+    margin-top: 10px;
 }
 
-.wishlist .product__actions .btn {
+/* Unified styling for both View Details and Remove buttons */
+.wishlist .product__actions .btn,
+.wishlist .product__actions .wishlist-remove-btn {
     width: 100%;
+    height: 44px;
+    min-height: 44px;
+    max-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 !important;
+    margin: 0 !important;
+    gap: 0 !important;
+    font-size: 14px !important;
+    font-weight: 500 !important;
+    line-height: 1 !important;
+    white-space: nowrap !important;
+    text-align: center;
+    box-sizing: border-box !important;
+    border-radius: var(--r-sm);
+    cursor: pointer;
+    transition: transform var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease);
+    flex-shrink: 0;
+    overflow: hidden;
 }
 
-.wishlist-remove-form {
-    width: 100%;
+/* View Details button styling */
+.wishlist .product__actions .btn.btn--brand {
+    background: var(--brand) !important;
+    color: #fff !important;
+    border: 1px solid var(--brand) !important;
+}
+
+.wishlist .product__actions .btn.btn--brand:hover {
+    box-shadow: var(--shadow-1);
+    transform: translateY(-1px);
+}
+
+/* Remove button styling - override .btn--danger from product.css */
+.wishlist .product__actions .wishlist-remove-btn.btn--danger {
+    background: #fff !important;
+    color: var(--err) !important;
+    border: 1px solid var(--err) !important;
+}
+
+.wishlist .product__actions .wishlist-remove-btn.btn--danger:hover {
+    background: rgba(239, 68, 68, 0.05) !important;
+    color: var(--err) !important;
+    box-shadow: var(--shadow-1);
+    transform: translateY(-1px);
+}
+
+/* Alert container for inline messages */
+#wishlist-alert-container {
+    margin-bottom: 16px;
+}
+
+#wishlist-alert-container .alert {
+    animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }

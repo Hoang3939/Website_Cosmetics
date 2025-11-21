@@ -10,6 +10,7 @@
             <p>Your favorite products saved for later.</p>
         </div>
 
+        <div id="wishlist-alert-container"></div>
         @await Html.PartialAsync("_Alerts")
 
         @if (Model == null || !Model.Any())
@@ -62,11 +63,7 @@
                             </div>
                             <div class="product__actions">
                                 <a asp-controller="Products" asp-action="Details" asp-route-id="@product.ProductId" class="btn btn--brand">View Details</a>
-                                <form asp-controller="Wishlist" asp-action="Remove" method="post" class="wishlist-remove-form" onsubmit="return confirm('Are you sure you want to remove this item from your wishlist?');">
-                                    @Html.AntiForgeryToken()
-                                    <input type="hidden" name="likeId" value="@item.LikeId" />
-                                    <button type="submit" class="btn btn--danger">Remove</button>
-                                </form>
+                                <button type="button" class="btn btn--danger wishlist-remove-btn" data-like-id="@item.LikeId" data-product-name="@product.Name">Remove</button>
                             </div>
                         </div>
                     </div>
