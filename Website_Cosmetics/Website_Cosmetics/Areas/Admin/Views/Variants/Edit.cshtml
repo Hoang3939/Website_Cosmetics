@@ -1,466 +1,260 @@
 @model Website_Cosmetics.Models.ProductVariant
 @{
-    ViewData["Title"] = "Sửa Variant";
+    ViewData["Title"] = "Edit Variant";
     var product = ViewBag.Product as Website_Cosmetics.Models.Product;
     var productId = (int)ViewBag.ProductId;
 }
 
 <div class="page-header">
-    <h1>Sửa Variant: @Model.VariantName</h1>
-    <a asp-action="Index" asp-route-productId="@productId" class="btn btn-secondary">← Quay lại</a>
+    <div class="page-header__title">
+        <h1>Edit Variant: @Model.VariantName</h1>
+    </div>
+    <a asp-action="Index" asp-route-productId="@productId" class="btn btn-secondary">← Back to Variants</a>
 </div>
 
-<div class="alert alert-info mb-3">
-    <strong>Sản phẩm:</strong> @product?.Name
+<div class="card product-info-card">
+    <div class="product-info-card__header">
+        <h3>Product Information</h3>
+    </div>
+    <div class="product-info-card__body">
+        <div class="product-info-card__row">
+            <div class="product-info-card__item">
+                <span class="product-info-card__label">Product Name:</span>
+                <span class="product-info-card__value">@product?.Name</span>
+            </div>
+            <div class="product-info-card__item">
+                <span class="product-info-card__label">Brand:</span>
+                <span class="product-info-card__value">@(product?.Brand?.Name ?? "N/A")</span>
+            </div>
+            <div class="product-info-card__item">
+                <span class="product-info-card__label">Base Price:</span>
+                <span class="product-info-card__value">@product?.BasePrice.ToString("C")</span>
+            </div>
+        </div>
+    </div>
 </div>
 
-<form asp-action="Edit" method="post" enctype="multipart/form-data">
-    @Html.AntiForgeryToken()
-    <input type="hidden" asp-for="VariantId" />
-    <input type="hidden" asp-for="ProductId" />
+<div class="card">
+    <form asp-action="Edit" method="post" enctype="multipart/form-data" class="form">
+        @Html.AntiForgeryToken()
+        <input type="hidden" asp-for="VariantId" />
+        <input type="hidden" asp-for="ProductId" />
 
-    <div class="form-group">
-        <label asp-for="VariantName">Tên Variant *</label>
-        <input asp-for="VariantName" class="form-control" required />
-        <span asp-validation-for="VariantName" class="text-danger"></span>
-    </div>
+        <div class="form__section">
+            <h3 class="form__section-title">Basic Information</h3>
+            
+            <div class="form__group">
+                <label asp-for="VariantName" class="form__label">Variant Name <span class="form__required">*</span></label>
+                <input asp-for="VariantName" class="form__input" required />
+                <span asp-validation-for="VariantName" class="form__error"></span>
+            </div>
+        </div>
 
-    <hr />
-    <h4>Thông tin Màu sắc</h4>
+        <div class="form__section">
+            <h3 class="form__section-title">Color Information</h3>
+            
+            <div class="form__row">
+                <div class="form__group form__group--third">
+                    <label asp-for="ColorName" class="form__label">Color Name</label>
+                    <input asp-for="ColorName" class="form__input" />
+                </div>
+                <div class="form__group form__group--third">
+                    <label asp-for="ColorCode" class="form__label">Color Code (Hex)</label>
+                    <input asp-for="ColorCode" type="color" class="form__input form__input--color" />
+                </div>
+                <div class="form__group form__group--third">
+                    <label asp-for="ColorFamily" class="form__label">Color Family</label>
+                    <input asp-for="ColorFamily" class="form__input" />
+                </div>
+            </div>
+        </div>
 
-    <div class="row">
-        <div class="col-md-4">
-            <div class="form-group">
-                <label asp-for="ColorName">Tên màu</label>
-                <input asp-for="ColorName" class="form-control" />
+        <div class="form__section">
+            <h3 class="form__section-title">Size Information</h3>
+            
+            <div class="form__row">
+                <div class="form__group form__group--third">
+                    <label asp-for="Size" class="form__label">Size</label>
+                    <input asp-for="Size" class="form__input" />
+                </div>
+                <div class="form__group form__group--third">
+                    <label asp-for="SizeValue" class="form__label">Numeric Value</label>
+                    <input asp-for="SizeValue" type="number" step="0.01" class="form__input" />
+                </div>
+                <div class="form__group form__group--third">
+                    <label asp-for="SizeUnit" class="form__label">Unit</label>
+                    <input asp-for="SizeUnit" class="form__input" />
+                </div>
             </div>
-        </div>
-        <div class="col-md-4">
-            <div class="form-group">
-                <label asp-for="ColorCode">Mã màu (Hex)</label>
-                <input asp-for="ColorCode" type="color" class="form-control" style="height: 38px;" />
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="form-group">
-                <label asp-for="ColorFamily">Nhóm màu</label>
-                <input asp-for="ColorFamily" class="form-control" />
-            </div>
-        </div>
-    </div>
 
-    <hr />
-    <h4>Thông tin Kích thước</h4>
+            <div class="form__group">
+                <label asp-for="VariantType" class="form__label">Variant Type</label>
+                <input asp-for="VariantType" class="form__input" />
+            </div>
+        </div>
 
-    <div class="row">
-        <div class="col-md-4">
-            <div class="form-group">
-                <label asp-for="Size">Kích thước</label>
-                <input asp-for="Size" class="form-control" />
+        <div class="form__section">
+            <h3 class="form__section-title">Sales Information</h3>
+            
+            <div class="form__row">
+                <div class="form__group form__group--third">
+                    <label asp-for="SKU" class="form__label">SKU Code</label>
+                    <input asp-for="SKU" class="form__input" />
+                </div>
+                <div class="form__group form__group--third">
+                    <label asp-for="Barcode" class="form__label">Barcode</label>
+                    <input asp-for="Barcode" class="form__input" />
+                </div>
+                <div class="form__group form__group--third">
+                    <label asp-for="Price" class="form__label">Price (Override Base Price)</label>
+                    <input asp-for="Price" type="number" step="0.01" class="form__input" />
+                </div>
             </div>
-        </div>
-        <div class="col-md-4">
-            <div class="form-group">
-                <label asp-for="SizeValue">Giá trị số</label>
-                <input asp-for="SizeValue" type="number" step="0.01" class="form-control" />
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="form-group">
-                <label asp-for="SizeUnit">Đơn vị</label>
-                <input asp-for="SizeUnit" class="form-control" />
-            </div>
-        </div>
-    </div>
 
-    <div class="form-group">
-        <label asp-for="VariantType">Loại/Type</label>
-        <input asp-for="VariantType" class="form-control" />
-    </div>
+            <div class="form__row">
+                <div class="form__group form__group--third">
+                    <label asp-for="CompareAtPrice" class="form__label">Compare At Price</label>
+                    <input asp-for="CompareAtPrice" type="number" step="0.01" class="form__input" />
+                </div>
+                <div class="form__group form__group--third">
+                    <label asp-for="Stock" class="form__label">Stock</label>
+                    <input asp-for="Stock" type="number" class="form__input" />
+                </div>
+                <div class="form__group form__group--third">
+                    <label asp-for="LowStockThreshold" class="form__label">Low Stock Threshold</label>
+                    <input asp-for="LowStockThreshold" type="number" class="form__input" />
+                </div>
+            </div>
+        </div>
 
-    <hr />
-    <h4>Thông tin Bán hàng</h4>
+        <div class="form__section">
+            <h3 class="form__section-title">Settings</h3>
+            
+            <div class="form__row">
+                <div class="form__group form__group--third">
+                    <label asp-for="IsActive" class="form__label">Status</label>
+                    <select asp-for="IsActive" class="form__select">
+                        @if (Model.IsActive == true)
+                        {
+                            <option value="true" selected>Active</option>
+                            <option value="false">Inactive</option>
+                        }
+                        else
+                        {
+                            <option value="true">Active</option>
+                            <option value="false" selected>Inactive</option>
+                        }
+                    </select>
+                </div>
+                <div class="form__group form__group--third">
+                    <label asp-for="IsDefault" class="form__label">Set as Default</label>
+                    <select asp-for="IsDefault" class="form__select">
+                        @if (Model.IsDefault == true)
+                        {
+                            <option value="false">No</option>
+                            <option value="true" selected>Yes</option>
+                        }
+                        else
+                        {
+                            <option value="false" selected>No</option>
+                            <option value="true">Yes</option>
+                        }
+                    </select>
+                </div>
+                <div class="form__group form__group--third">
+                    <label asp-for="DisplayOrder" class="form__label">Display Order</label>
+                    <input asp-for="DisplayOrder" type="number" class="form__input" />
+                </div>
+            </div>
+        </div>
 
-    <div class="row">
-        <div class="col-md-4">
-            <div class="form-group">
-                <label asp-for="SKU">Mã SKU</label>
-                <input asp-for="SKU" class="form-control" />
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="form-group">
-                <label asp-for="Barcode">Mã vạch</label>
-                <input asp-for="Barcode" class="form-control" />
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="form-group">
-                <label asp-for="Price">Giá (override giá cơ bản)</label>
-                <input asp-for="Price" type="number" step="0.01" class="form-control" />
-            </div>
-        </div>
-    </div>
-
-    <div class="row">
-        <div class="col-md-4">
-            <div class="form-group">
-                <label asp-for="CompareAtPrice">Giá gốc</label>
-                <input asp-for="CompareAtPrice" type="number" step="0.01" class="form-control" />
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="form-group">
-                <label asp-for="Stock">Tồn kho</label>
-                <input asp-for="Stock" type="number" class="form-control" />
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="form-group">
-                <label asp-for="LowStockThreshold">Ngưỡng cảnh báo</label>
-                <input asp-for="LowStockThreshold" type="number" class="form-control" />
-            </div>
-        </div>
-    </div>
-
-    <div class="row">
-        <div class="col-md-4">
-            <div class="form-group">
-                <label asp-for="IsActive">Trạng thái</label>
-                <select asp-for="IsActive" class="form-control">
-                    <option value="true" selected="@(Model.IsActive == true)">Active</option>
-                    <option value="false" selected="@(Model.IsActive == false)">Inactive</option>
-                </select>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="form-group">
-                <label asp-for="IsDefault">Đặt làm mặc định</label>
-                <select asp-for="IsDefault" class="form-control">
-                    <option value="false" selected="@(Model.IsDefault == false)">Không</option>
-                    <option value="true" selected="@(Model.IsDefault == true)">Có</option>
-                </select>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="form-group">
-                <label asp-for="DisplayOrder">Thứ tự hiển thị</label>
-                <input asp-for="DisplayOrder" type="number" class="form-control" />
-            </div>
-        </div>
-    </div>
-
-    <hr />
-    <h4>Ảnh Variant *</h4>
-    <p class="text-muted"><small>💡 Kéo thả ảnh để sắp xếp thứ tự hiển thị. <strong>Bắt buộc:</strong> Phải có ít nhất 1 ảnh và đánh dấu 1 ảnh làm ảnh chính (Primary).</small></p>
-    
-    @if (!ViewData.ModelState.IsValid && ViewData.ModelState[""]?.Errors != null && ViewData.ModelState[""]?.Errors.Count > 0)
-    {
-        <div class="alert alert-danger">
-            @foreach (var error in ViewData.ModelState[""]!.Errors)
+        <div class="form__section">
+            <h3 class="form__section-title">Variant Images <span class="form__required">*</span></h3>
+            <p class="form__help">💡 Drag and drop images to reorder. <strong>Required:</strong> At least 1 image must be marked as primary.</p>
+            
+            @if (!ViewData.ModelState.IsValid && ViewData.ModelState[""]?.Errors != null && ViewData.ModelState[""]?.Errors.Count > 0)
             {
-                <p>@error.ErrorMessage</p>
-            }
-        </div>
-    }
-
-    @if (Model.ProductVariantImages != null && Model.ProductVariantImages.Any())
-    {
-        <div class="row mb-3" id="existingImages" style="min-height: 100px;">
-            @for (int i = 0; i < Model.ProductVariantImages.Count; i++)
-            {
-                var image = Model.ProductVariantImages.ElementAt(i);
-                <div class="col-md-3 mb-3 image-item" 
-                     data-image-id="@image.ImageId" 
-                     draggable="true"
-                     style="cursor: move; position: relative;">
-                    <div class="card" style="border: 2px solid #ddd;">
-                        <div style="position: absolute; top: 5px; right: 5px; background: rgba(0,0,0,0.5); color: white; padding: 2px 8px; border-radius: 3px; font-size: 12px;">
-                            Thứ tự: <span class="order-number">@(i + 1)</span>
-                        </div>
-                        <img src="@image.Url" class="card-img-top" style="height: 200px; object-fit: cover;" draggable="false" />
-                        <div class="card-body">
-                            <input type="hidden" name="existingImageIds" class="image-id-input" value="@image.ImageId" />
-                            <input type="hidden" name="existingDisplayOrder" class="display-order-input" value="@i" />
-                            
-                            <div class="form-check">
-                                <input class="form-check-input existing-primary-checkbox" 
-                                       type="checkbox" 
-                                       name="existingIsPrimary" 
-                                       value="@i" 
-                                       id="existing_primary_@i"
-                                       @(image.IsPrimary ? "checked" : "")>
-                                <label class="form-check-label" for="existing_primary_@i">
-                                    Ảnh chính
-                                </label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input existing-makeup-checkbox" 
-                                       type="checkbox" 
-                                       name="existingIsMakeupReference" 
-                                       value="@i" 
-                                       id="existing_makeup_@i"
-                                       @(image.IsMakeupReference ? "checked" : "")>
-                                <label class="form-check-label" for="existing_makeup_@i">
-                                    Virtual Try-On
-                                </label>
-                            </div>
-                            <button type="button" class="btn btn-sm btn-danger mt-2" onclick="deleteImage(@image.ImageId, this)">
-                                Xóa ảnh
-                            </button>
-                        </div>
-                    </div>
+                <div class="form__error-box">
+                    @foreach (var error in ViewData.ModelState[""]!.Errors)
+                    {
+                        <p>@error.ErrorMessage</p>
+                    }
                 </div>
             }
-        </div>
-    }
-    else
-    {
-        <p class="text-muted">Chưa có ảnh nào</p>
-    }
 
-    <hr />
-    <h4>Thêm Ảnh Mới</h4>
-
-    <div class="form-group">
-        <label>Upload Ảnh Mới</label>
-        <input type="file" name="newVariantImages" multiple accept="image/*,.avif,.webp,image/avif,image/webp" class="form-control" id="imageUpload" />
-    </div>
-
-    <div id="imagePreview" class="row mt-3"></div>
-
-    <div class="form-actions mt-4">
-        <button type="submit" class="btn btn-primary">Lưu Thay đổi</button>
-        <a asp-action="Index" asp-route-productId="@productId" class="btn btn-secondary">Hủy</a>
-    </div>
-</form>
-
-@section Scripts {
-    <script>
-        let selectedPrimaryIndex = null;
-        let selectedMakeupIndex = null;
-        let draggedElement = null;
-
-        // ========== DRAG & DROP FUNCTIONALITY ==========
-        document.addEventListener('DOMContentLoaded', function() {
-            const container = document.getElementById('existingImages');
-            if (!container) return;
-
-            const items = container.querySelectorAll('.image-item');
-            
-            items.forEach(item => {
-                item.addEventListener('dragstart', function(e) {
-                    draggedElement = this;
-                    this.style.opacity = '0.5';
-                    e.dataTransfer.effectAllowed = 'move';
-                });
-
-                item.addEventListener('dragend', function(e) {
-                    this.style.opacity = '1';
-                    items.forEach(i => i.classList.remove('drag-over'));
-                });
-
-                item.addEventListener('dragover', function(e) {
-                    if (e.preventDefault) {
-                        e.preventDefault();
-                    }
-                    e.dataTransfer.dropEffect = 'move';
-                    this.classList.add('drag-over');
-                    return false;
-                });
-
-                item.addEventListener('dragleave', function(e) {
-                    this.classList.remove('drag-over');
-                });
-
-                item.addEventListener('drop', function(e) {
-                    if (e.stopPropagation) {
-                        e.stopPropagation();
-                    }
-                    this.classList.remove('drag-over');
-
-                    if (draggedElement !== this) {
-                        const container = this.parentNode;
-                        const allItems = Array.from(container.querySelectorAll('.image-item'));
-                        const draggedIndex = allItems.indexOf(draggedElement);
-                        const targetIndex = allItems.indexOf(this);
-
-                        if (draggedIndex < targetIndex) {
-                            container.insertBefore(draggedElement, this.nextSibling);
-                        } else {
-                            container.insertBefore(draggedElement, this);
-                        }
-
-                        updateImageOrder();
-                    }
-
-                    return false;
-                });
-            });
-        });
-
-        function updateImageOrder() {
-            const items = document.querySelectorAll('#existingImages .image-item');
-            items.forEach((item, index) => {
-                // Update order number display
-                const orderNumber = item.querySelector('.order-number');
-                if (orderNumber) {
-                    orderNumber.textContent = index + 1;
-                }
-
-                // Update hidden input for display order
-                const displayOrderInput = item.querySelector('.display-order-input');
-                if (displayOrderInput) {
-                    displayOrderInput.value = index;
-                }
-
-                // Update checkbox values to match new index
-                const primaryCheckbox = item.querySelector('.existing-primary-checkbox');
-                const makeupCheckbox = item.querySelector('.existing-makeup-checkbox');
-                if (primaryCheckbox) {
-                    primaryCheckbox.value = index;
-                    primaryCheckbox.id = `existing_primary_${index}`;
-                    primaryCheckbox.setAttribute('for', `existing_primary_${index}`);
-                }
-                if (makeupCheckbox) {
-                    makeupCheckbox.value = index;
-                    makeupCheckbox.id = `existing_makeup_${index}`;
-                    makeupCheckbox.setAttribute('for', `existing_makeup_${index}`);
-                }
-            });
-        }
-
-        // ========== CHECKBOX HANDLERS ==========
-        // Handle existing image checkboxes
-        document.querySelectorAll('.existing-primary-checkbox').forEach(checkbox => {
-            checkbox.addEventListener('change', function() {
-                if (this.checked) {
-                    document.querySelectorAll('.existing-primary-checkbox').forEach(cb => {
-                        if (cb !== this) cb.checked = false;
-                    });
-                }
-            });
-        });
-
-        document.querySelectorAll('.existing-makeup-checkbox').forEach(checkbox => {
-            checkbox.addEventListener('change', function() {
-                if (this.checked) {
-                    document.querySelectorAll('.existing-makeup-checkbox').forEach(cb => {
-                        if (cb !== this) cb.checked = false;
-                    });
-                }
-            });
-        });
-
-        // Handle new image upload
-        document.getElementById('imageUpload').addEventListener('change', function(e) {
-            const preview = document.getElementById('imagePreview');
-            preview.innerHTML = '';
-            
-            const files = e.target.files;
-            for (let i = 0; i < files.length; i++) {
-                const file = files[i];
-                const reader = new FileReader();
-                
-                reader.onload = function(e) {
-                    const col = document.createElement('div');
-                    col.className = 'col-md-3 mb-3';
-                    
-                    col.innerHTML = `
-                        <div class="card">
-                            <img src="${e.target.result}" class="card-img-top" style="height: 200px; object-fit: cover;" />
-                            <div class="card-body">
+            @if (Model.ProductVariantImages != null && Model.ProductVariantImages.Any())
+            {
+                <div class="image-gallery" id="existingImages">
+                    @for (int i = 0; i < Model.ProductVariantImages.Count; i++)
+                    {
+                        var image = Model.ProductVariantImages.ElementAt(i);
+                        <div class="image-card image-item" 
+                             data-image-id="@image.ImageId" 
+                             draggable="true">
+                            <img src="@image.Url" class="image-card__img" draggable="false" />
+                            <div class="image-card__body" style="position: relative;">
+                                <div style="position: absolute; top: 5px; right: 5px; background: rgba(0,0,0,0.5); color: white; padding: 2px 8px; border-radius: 3px; font-size: 12px;">
+                                    Order: <span class="order-number">@(i + 1)</span>
+                                </div>
+                                <input type="hidden" name="existingImageIds" class="image-id-input" value="@image.ImageId" />
+                                <input type="hidden" name="existingDisplayOrder" class="display-order-input" value="@i" />
+                                
                                 <div class="form-check">
-                                    <input class="form-check-input primary-checkbox" 
+                                    <input class="form-check-input existing-primary-checkbox" 
                                            type="checkbox" 
-                                           name="primaryImageIndices" 
-                                           value="${i}" 
-                                           id="primary_${i}">
-                                    <label class="form-check-label" for="primary_${i}">
-                                        Ảnh chính
+                                           name="existingIsPrimary" 
+                                           value="@i" 
+                                           id="existing_primary_@i"
+                                           @(image.IsPrimary ? "checked" : "")>
+                                    <label class="form-check-label" for="existing_primary_@i">
+                                        Primary Image
                                     </label>
                                 </div>
                                 <div class="form-check">
-                                    <input class="form-check-input makeup-checkbox" 
+                                    <input class="form-check-input existing-makeup-checkbox" 
                                            type="checkbox" 
-                                           name="makeupReferenceIndices" 
-                                           value="${i}" 
-                                           id="makeup_${i}">
-                                    <label class="form-check-label" for="makeup_${i}">
+                                           name="existingIsMakeupReference" 
+                                           value="@i" 
+                                           id="existing_makeup_@i"
+                                           @(image.IsMakeupReference ? "checked" : "")>
+                                    <label class="form-check-label" for="existing_makeup_@i">
                                         Virtual Try-On
                                     </label>
                                 </div>
+                                <button type="button" 
+                                        class="btn btn-sm btn-danger btn-delete-image" 
+                                        data-image-id="@image.ImageId"
+                                        data-delete-url="@Url.Action("DeleteImage", "Variants")">
+                                    Delete Image
+                                </button>
                             </div>
                         </div>
-                    `;
-                    
-                    preview.appendChild(col);
-                };
-                
-                reader.readAsDataURL(file);
+                    }
+                </div>
+            }
+            else
+            {
+                <p class="form__help">No images uploaded yet</p>
             }
 
-            setTimeout(() => {
-                attachCheckboxListeners();
-            }, 100);
-        });
+            <hr style="margin: var(--space-lg) 0;" />
+            <h4>Add New Images</h4>
 
-        function attachCheckboxListeners() {
-            document.querySelectorAll('.primary-checkbox').forEach(checkbox => {
-                checkbox.addEventListener('change', function() {
-                    if (this.checked) {
-                        document.querySelectorAll('.primary-checkbox, .existing-primary-checkbox').forEach(cb => {
-                            if (cb !== this) cb.checked = false;
-                        });
-                    }
-                });
-            });
+            <div class="form__group">
+                <label class="form__label">Upload New Images</label>
+                <input type="file" name="newVariantImages" multiple accept="image/*,.avif,.webp,image/avif,image/webp" class="form__input" id="imageUpload" />
+            </div>
 
-            document.querySelectorAll('.makeup-checkbox').forEach(checkbox => {
-                checkbox.addEventListener('change', function() {
-                    if (this.checked) {
-                        document.querySelectorAll('.makeup-checkbox, .existing-makeup-checkbox').forEach(cb => {
-                            if (cb !== this) cb.checked = false;
-                        });
-                    }
-                });
-            });
-        }
+            <div id="imagePreview" class="image-preview"></div>
+        </div>
 
-        function deleteImage(imageId, button) {
-            if (!confirm('Bạn có chắc muốn xóa ảnh này?')) {
-                return;
-            }
+        <div class="form__actions">
+            <button type="submit" class="btn btn-primary">Save Changes</button>
+            <a asp-action="Index" asp-route-productId="@productId" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
 
-            fetch('@Url.Action("DeleteImage", "Variants")', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ imageId: imageId })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    button.closest('.image-item').remove();
-                    updateImageOrder(); // Update order after deletion
-                } else {
-                    alert('Lỗi khi xóa ảnh: ' + data.message);
-                }
-            })
-            .catch(error => {
-                alert('Lỗi khi xóa ảnh: ' + error);
-            });
-        }
-    </script>
-    <style>
-        .image-item.drag-over {
-            border: 2px dashed #007bff !important;
-            background-color: #f0f8ff;
-        }
-        .image-item[draggable="true"]:hover {
-            opacity: 0.8;
-        }
-    </style>
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
 }
-

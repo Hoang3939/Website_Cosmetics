@@ -21,15 +21,55 @@ namespace Website_Cosmetics.Areas.Admin.Controllers
         }
 
         // GET: Admin/Products
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string searchTerm, int? brandId, int? categoryId, bool? isActive)
         {
-            var products = await _context.Products
+            var query = _context.Products
                 .Include(p => p.Brand)
                 .Include(p => p.Category)
                 .Include(p => p.ProductVariants)
-                    .ThenInclude(v => v.ProductVariantImages.Where(img => img.IsPrimary))
+                    .ThenInclude(v => v.ProductVariantImages)
+                .AsQueryable();
+
+            // Search filter
+            if (!string.IsNullOrWhiteSpace(searchTerm))
+            {
+                query = query.Where(p => 
+                    p.Name.Contains(searchTerm) || 
+                    (p.Description != null && p.Description.Contains(searchTerm)) ||
+                    (p.BrandId != null && p.Brand != null && p.Brand.Name.Contains(searchTerm)) ||
+                    (p.CategoryId != null && p.Category != null && p.Category.Name.Contains(searchTerm)));
+            }
+
+            // Brand filter
+            if (brandId.HasValue)
+            {
+                query = query.Where(p => p.BrandId == brandId.Value);
+            }
+
+            // Category filter
+            if (categoryId.HasValue)
+            {
+                query = query.Where(p => p.CategoryId == categoryId.Value);
+            }
+
+            // Status filter
+            if (isActive.HasValue)
+            {
+                query = query.Where(p => p.IsActive == isActive.Value);
+            }
+
+            var products = await query
                 .OrderByDescending(p => p.CreatedAt)
                 .ToListAsync();
+
+            // Populate filter dropdowns
+            ViewBag.Brands = await _context.Brands.Where(b => b.IsActive == true).OrderBy(b => b.Name).ToListAsync();
+            ViewBag.Categories = await _context.Categories.Where(c => c.IsActive == true).OrderBy(c => c.Name).ToListAsync();
+            ViewBag.SearchTerm = searchTerm;
+            ViewBag.SelectedBrandId = brandId;
+            ViewBag.SelectedCategoryId = categoryId;
+            ViewBag.SelectedIsActive = isActive;
+            ViewBag.HasActiveFilters = !string.IsNullOrWhiteSpace(searchTerm) || brandId.HasValue || categoryId.HasValue || isActive.HasValue;
 
             return View(products);
         }

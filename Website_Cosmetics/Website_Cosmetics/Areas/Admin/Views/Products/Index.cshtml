@@ -1,68 +1,199 @@
 @model IEnumerable<Website_Cosmetics.Models.Product>
 @{
     ViewData["Title"] = "Products Management";
+    var hasActiveFilters = ViewBag.HasActiveFilters as bool? ?? false;
+    var searchTerm = ViewBag.SearchTerm as string ?? "";
+    var selectedBrandId = ViewBag.SelectedBrandId as int?;
+    var selectedCategoryId = ViewBag.SelectedCategoryId as int?;
+    var selectedIsActive = ViewBag.SelectedIsActive as bool?;
 }
 
 <div class="page-header">
-    <h1>Products Management</h1>
+    <div class="page-header__title">
+        <h1>Products Management</h1>
+        <span class="page-header__count">@Model.Count() product(s)</span>
+    </div>
     <a asp-action="Create" class="btn btn-primary">Create New Product</a>
 </div>
 
-<table class="table">
-    <thead>
-        <tr>
-            <th>Image</th>
-            <th>Name</th>
-            <th>Brand</th>
-            <th>Category</th>
-            <th>Base Price</th>
-            <th>Variants</th>
-            <th>Status</th>
-            <th>Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var product in Model)
-        {
-            var primaryImage = product.ProductVariants
-                .SelectMany(v => v.ProductVariantImages)
-                .FirstOrDefault(img => img.IsPrimary);
-            
-            <tr>
-                <td>
-                    @if (primaryImage != null)
-                    {
-                        <img src="@primaryImage.Url" alt="@product.Name" style="width: 80px; height: 80px; object-fit: cover;" />
-                    }
-                    else
-                    {
-                        <div style="width: 80px; height: 80px; background: #f0f0f0; display: flex; align-items: center; justify-content: center;">
-                            No Image
-                        </div>
-                    }
-                </td>
-                <td>@product.Name</td>
-                <td>@(product.Brand?.Name ?? "N/A")</td>
-                <td>@(product.Category?.Name ?? "N/A")</td>
-                <td>@product.BasePrice.ToString("C")</td>
-                <td>@product.ProductVariants.Count()</td>
-                <td>
-                    @if (product.IsActive == true)
-                    {
-                        <span class="badge badge-success">Active</span>
-                    }
-                    else
-                    {
-                        <span class="badge badge-danger">Inactive</span>
-                    }
-                </td>
-                <td>
-                    <a asp-action="Edit" asp-route-id="@product.ProductId" class="btn btn-sm btn-primary">Sửa</a>
-                    <a asp-controller="Variants" asp-action="Index" asp-route-productId="@product.ProductId" class="btn btn-sm btn-info">Quản Lý Variants</a>
-                    <a asp-action="Delete" asp-route-id="@product.ProductId" class="btn btn-sm btn-danger">Xóa</a>
-                </td>
-            </tr>
-        }
-    </tbody>
-</table>
+<!-- Search and Filter Section -->
+<div class="card filter-section">
+    <form method="get" asp-action="Index" class="filter-form">
+        <div class="filter-form__row">
+            <!-- Search Input -->
+            <div class="filter-form__group filter-form__group--search">
+                <input 
+                    type="text" 
+                    name="searchTerm" 
+                    value="@searchTerm" 
+                    placeholder="Search products by name, description, brand, or category..." 
+                    class="filter-form__input filter-form__input--search" />
+            </div>
 
+            <!-- Brand Filter -->
+            <div class="filter-form__group">
+                <select name="brandId" class="filter-form__select">
+                    <option value="">All Brands</option>
+                    @if (ViewBag.Brands != null)
+                    {
+                        var brands = ViewBag.Brands as IEnumerable<Website_Cosmetics.Models.Brand>;
+                        @if (brands != null)
+                        {
+                            @foreach (var brand in brands)
+                            {
+                                @if (selectedBrandId == brand.BrandId)
+                                {
+                                    <option value="@brand.BrandId" selected>@brand.Name</option>
+                                }
+                                else
+                                {
+                                    <option value="@brand.BrandId">@brand.Name</option>
+                                }
+                            }
+                        }
+                    }
+                </select>
+            </div>
+
+            <!-- Category Filter -->
+            <div class="filter-form__group">
+                <select name="categoryId" class="filter-form__select">
+                    <option value="">All Categories</option>
+                    @if (ViewBag.Categories != null)
+                    {
+                        var categories = ViewBag.Categories as IEnumerable<Website_Cosmetics.Models.Category>;
+                        @if (categories != null)
+                        {
+                            @foreach (var category in categories)
+                            {
+                                @if (selectedCategoryId == category.CategoryId)
+                                {
+                                    <option value="@category.CategoryId" selected>@category.Name</option>
+                                }
+                                else
+                                {
+                                    <option value="@category.CategoryId">@category.Name</option>
+                                }
+                            }
+                        }
+                    }
+                </select>
+            </div>
+
+            <!-- Status Filter -->
+            <div class="filter-form__group">
+                <select name="isActive" class="filter-form__select">
+                    <option value="">All Status</option>
+                    @if (selectedIsActive == true)
+                    {
+                        <option value="true" selected>Active</option>
+                        <option value="false">Inactive</option>
+                    }
+                    else if (selectedIsActive == false)
+                    {
+                        <option value="true">Active</option>
+                        <option value="false" selected>Inactive</option>
+                    }
+                    else
+                    {
+                        <option value="true">Active</option>
+                        <option value="false">Inactive</option>
+                    }
+                </select>
+            </div>
+
+            <!-- Filter Button -->
+            <div class="filter-form__group filter-form__group--actions">
+                <button type="submit" class="btn btn-primary btn-icon" data-tooltip="Apply Filters">
+                    <i data-lucide="filter"></i>
+                </button>
+                @if (hasActiveFilters)
+                {
+                    <a asp-action="Index" class="btn btn-secondary filter-clear btn-icon" data-tooltip="Clear All Filters">
+                        <i data-lucide="x"></i>
+                    </a>
+                }
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- Products Table -->
+<div class="card">
+    @if (!Model.Any())
+    {
+        <div class="empty-state">
+            <p>No products found.</p>
+            @if (hasActiveFilters)
+            {
+                <a asp-action="Index" class="link">Clear filters to see all products</a>
+            }
+            else
+            {
+                <a asp-action="Create" class="link">Create your first product</a>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="table table--products">
+            <div class="table__row table__row--hd">
+                <div>Image</div>
+                <div>Name</div>
+                <div>Brand</div>
+                <div>Category</div>
+                <div>Base Price</div>
+                <div>Variants</div>
+                <div>Status</div>
+                <div>Actions</div>
+            </div>
+            @foreach (var product in Model)
+            {
+                var primaryImage = product.ProductVariants
+                    .SelectMany(v => v.ProductVariantImages)
+                    .FirstOrDefault(img => img.IsPrimary);
+                
+                <div class="table__row">
+                    <div class="table__cell table__cell--image">
+                        @if (primaryImage != null)
+                        {
+                            <img src="@primaryImage.Url" alt="@product.Name" class="product-image" />
+                        }
+                        else
+                        {
+                            <div class="product-image product-image--placeholder">No Image</div>
+                        }
+                    </div>
+                    <div class="table__cell table__cell--name">
+                        <strong>@product.Name</strong>
+                    </div>
+                    <div class="table__cell">@(product.Brand?.Name ?? "N/A")</div>
+                    <div class="table__cell">@(product.Category?.Name ?? "N/A")</div>
+                    <div class="table__cell">@product.BasePrice.ToString("C")</div>
+                    <div class="table__cell">@product.ProductVariants.Count()</div>
+                    <div class="table__cell">
+                        @if (product.IsActive == true)
+                        {
+                            <span class="badge badge--success">Active</span>
+                        }
+                        else
+                        {
+                            <span class="badge badge--danger">Inactive</span>
+                        }
+                    </div>
+                    <div class="table__cell table__cell--actions">
+                        <a asp-action="Edit" asp-route-id="@product.ProductId" class="btn btn-sm btn-primary btn-icon" data-tooltip="Edit Product">
+                            <i data-lucide="pencil"></i>
+                        </a>
+                        <a asp-controller="Variants" asp-action="Index" asp-route-productId="@product.ProductId" class="btn btn-sm btn-secondary btn-icon" data-tooltip="Manage Variants">
+                            <i data-lucide="layers"></i>
+                        </a>
+                        <a asp-action="Delete" asp-route-id="@product.ProductId" class="btn btn-sm btn-danger btn-icon" data-tooltip="Delete Product">
+                            <i data-lucide="trash-2"></i>
+                        </a>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>

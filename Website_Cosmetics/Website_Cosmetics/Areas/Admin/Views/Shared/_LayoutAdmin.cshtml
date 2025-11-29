@@ -11,6 +11,7 @@
     <title>@title - Cosmetic Admin</title>
 
     <link rel="stylesheet" href="~/admin/css/site-admin.css" asp-append-version="true" />
+    <script src="https://unpkg.com/lucide@latest"></script>
     @RenderSection("Styles", required: false)
 </head>
 <body data-page="@(ViewContext.RouteData.Values["controller"]?.ToString()?.ToLower()?.Trim()?.Replace("controller", "") + " ." + ViewContext.RouteData.Values["action"]?.ToString()?.ToLower())">
@@ -80,5 +81,18 @@
     </div>
 
     @RenderSection("Scripts", required: false)
+    
+    <!-- Admin JS -->
+    <script src="~/admin/js/products.js" asp-append-version="true"></script>
+    <script src="~/admin/js/variants.js" asp-append-version="true"></script>
+    
+    <!-- Initialize Lucide Icons -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            if (typeof lucide !== 'undefined' && typeof lucide.createIcons === 'function') {
+                lucide.createIcons();
+            }
+        });
+    </script>
 </body>
 </html>

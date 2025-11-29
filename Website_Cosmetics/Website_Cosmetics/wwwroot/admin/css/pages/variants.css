@@ -1,0 +1,45 @@
+.variant-image {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 1px solid var(--stroke);
+}
+
+.variant-image--placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg);
+    color: var(--muted);
+    font-size: 11px;
+    text-align: center;
+}
+
+.table-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.table-header h3 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.image-item {
+    cursor: move;
+    position: relative;
+}
+
+.image-item.drag-over {
+    border: 2px dashed var(--brand) !important;
+    background-color: rgba(110, 159, 255, 0.1);
+}
+
+.image-item[draggable="true"]:hover {
+    opacity: 0.8;
+}
+

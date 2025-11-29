@@ -1,16 +1,37 @@
 ﻿.table {
-    display: grid;
     border: 1px solid var(--stroke);
     border-radius: 12px;
-    overflow: hidden
+    overflow: hidden;
 }
 
+/* Default table row (for Dashboard and other tables) - keep original flex layout */
 .table__row {
-    display: grid;
-    grid-template-columns: 180px 1fr 120px 140px 160px;
+    display: flex;
     gap: 12px;
-    padding: 10px 12px;
-    border-bottom: 1px solid var(--stroke)
+    padding: 12px;
+    border-bottom: 1px solid var(--stroke);
+    align-items: center;
+}
+
+/* Products and Variants tables use grid layout */
+.table--products,
+.table--variants {
+    display: grid;
+}
+
+.table--products .table__row,
+.table--variants .table__row {
+    display: grid;
+}
+
+/* Products table: Image, Name, Brand, Category, Base Price, Variants, Status, Actions */
+.table--products .table__row {
+    grid-template-columns: 100px 2fr 1fr 1fr 120px 80px 100px 1fr;
+}
+
+/* Variants table: Checkbox, Image, Name, Color, Size, Price, Stock, Status, Default, Actions */
+.table--variants .table__row {
+    grid-template-columns: 40px 80px 2fr 1.5fr 100px 100px 80px 100px 100px 1fr;
 }
 
     .table__row:last-child {
@@ -25,23 +46,59 @@
     letter-spacing: .06em
 }
 
-@media (max-width:900px) {
-    .table__row {
-        grid-template-columns: 140px 1fr 100px 120px 120px
+.table__cell {
+    display: flex;
+    align-items: center;
+}
+
+.table__cell--checkbox {
+    justify-content: center;
+}
+
+.table__cell--image {
+    justify-content: center;
+}
+
+.table__cell--name {
+    font-weight: 500;
+}
+
+.table__cell--actions {
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+@media (max-width: 1200px) {
+    .table--products .table__row {
+        grid-template-columns: 80px 1.5fr 1fr 1fr 100px 60px 90px 1fr;
+    }
+
+    .table--variants .table__row {
+        grid-template-columns: 40px 60px 1.5fr 1fr 80px 80px 70px 80px 80px 1fr;
     }
 }
 
-@media (max-width:640px) {
-    .table__row {
-        grid-template-columns: 1fr
+@media (max-width: 768px) {
+    /* Only apply mobile layout to Products and Variants tables */
+    .table--products .table__row,
+    .table--variants .table__row {
+        grid-template-columns: 1fr !important;
+        gap: 8px;
     }
 
-        .table__row > div {
-            padding: 6px 0;
-            border-bottom: 1px dashed var(--stroke)
-        }
+    .table--products .table__row--hd,
+    .table--variants .table__row--hd {
+        display: none;
+    }
 
-            .table__row > div:last-child {
-                border-bottom: 0
-            }
+    .table--products .table__cell,
+    .table--variants .table__cell {
+        padding: 6px 0;
+        border-bottom: 1px dashed var(--stroke);
+    }
+
+    .table--products .table__cell:last-child,
+    .table--variants .table__cell:last-child {
+        border-bottom: 0;
+    }
 }

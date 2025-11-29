@@ -1,202 +1,269 @@
 @model IEnumerable<Website_Cosmetics.Models.ProductVariant>
 @{
-    ViewData["Title"] = "Quản Lý Variants";
+    ViewData["Title"] = "Variants Management";
     var product = ViewBag.Product as Website_Cosmetics.Models.Product;
     var productId = (int)ViewBag.ProductId;
+    var hasActiveFilters = ViewBag.HasActiveFilters as bool? ?? false;
+    var searchTerm = ViewBag.SearchTerm as string ?? "";
+    var selectedIsActive = ViewBag.SelectedIsActive as bool?;
+    var selectedIsDefault = ViewBag.SelectedIsDefault as bool?;
 }
 
 <div class="page-header">
-    <h1>Quản Lý Variants</h1>
-    <div>
-        <a asp-controller="Products" asp-action="Index" class="btn btn-secondary">← Quay lại Danh sách Sản phẩm</a>
-        <a asp-action="Create" asp-route-productId="@productId" class="btn btn-primary">+ Thêm Variant Mới</a>
+    <div class="page-header__title">
+        <h1>Variants Management</h1>
+        <span class="page-header__count">@Model.Count() variant(s)</span>
+    </div>
+    <div class="page-header__actions">
+        <a asp-controller="Products" asp-action="Index" class="btn btn-secondary">← Back to Products</a>
+        <a asp-action="Create" asp-route-productId="@productId" class="btn btn-primary">+ Add New Variant</a>
     </div>
 </div>
 
 @if (ViewBag.SuccessMessage != null)
 {
-    <div class="alert alert-success alert-dismissible fade show" role="alert">
+    <div class="alert alert-success">
         @ViewBag.SuccessMessage
-        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-        </button>
     </div>
 }
 
-<div class="card mb-4">
-    <div class="card-header">
-        <h3>Thông tin Sản phẩm</h3>
+<!-- Product Info Card -->
+<div class="card product-info-card">
+    <div class="product-info-card__header">
+        <h3>Product Information</h3>
     </div>
-    <div class="card-body">
-        <p><strong>Tên sản phẩm:</strong> @product?.Name</p>
-        <p><strong>Thương hiệu:</strong> @(product?.Brand?.Name ?? "N/A")</p>
-        <p><strong>Danh mục:</strong> @(product?.Category?.Name ?? "N/A")</p>
-        <p><strong>Giá cơ bản:</strong> @product?.BasePrice.ToString("C")</p>
-    </div>
-</div>
-
-<div class="d-flex justify-content-between align-items-center mb-3">
-    <h3>Danh sách Variants (@Model.Count())</h3>
-    @if (Model.Any())
-    {
-        <div>
-            <button type="button" class="btn btn-danger" id="bulkDeleteBtn" disabled onclick="bulkDelete()">
-                Xóa đã chọn (<span id="selectedCount">0</span>)
-            </button>
+    <div class="product-info-card__body">
+        <div class="product-info-card__row">
+            <div class="product-info-card__item">
+                <span class="product-info-card__label">Product Name:</span>
+                <span class="product-info-card__value">@product?.Name</span>
+            </div>
+            <div class="product-info-card__item">
+                <span class="product-info-card__label">Brand:</span>
+                <span class="product-info-card__value">@(product?.Brand?.Name ?? "N/A")</span>
+            </div>
+            <div class="product-info-card__item">
+                <span class="product-info-card__label">Category:</span>
+                <span class="product-info-card__value">@(product?.Category?.Name ?? "N/A")</span>
+            </div>
+            <div class="product-info-card__item">
+                <span class="product-info-card__label">Base Price:</span>
+                <span class="product-info-card__value">@product?.BasePrice.ToString("C")</span>
+            </div>
         </div>
-    }
+    </div>
 </div>
 
+<!-- Search and Filter Section -->
+<div class="card filter-section">
+    <form method="get" asp-action="Index" asp-route-productId="@productId" class="filter-form">
+        <input type="hidden" name="productId" value="@productId" />
+        <div class="filter-form__row">
+            <!-- Search Input -->
+            <div class="filter-form__group filter-form__group--search">
+                <input 
+                    type="text" 
+                    name="searchTerm" 
+                    value="@searchTerm" 
+                    placeholder="Search variants by name, color, SKU, or barcode..." 
+                    class="filter-form__input filter-form__input--search" />
+            </div>
+
+            <!-- Status Filter -->
+            <div class="filter-form__group">
+                <select name="isActive" class="filter-form__select">
+                    <option value="">All Status</option>
+                    @if (selectedIsActive == true)
+                    {
+                        <option value="true" selected>Active</option>
+                        <option value="false">Inactive</option>
+                    }
+                    else if (selectedIsActive == false)
+                    {
+                        <option value="true">Active</option>
+                        <option value="false" selected>Inactive</option>
+                    }
+                    else
+                    {
+                        <option value="true">Active</option>
+                        <option value="false">Inactive</option>
+                    }
+                </select>
+            </div>
+
+            <!-- Default Filter -->
+            <div class="filter-form__group">
+                <select name="isDefault" class="filter-form__select">
+                    <option value="">All Variants</option>
+                    @if (selectedIsDefault == true)
+                    {
+                        <option value="true" selected>Default Only</option>
+                        <option value="false">Non-Default Only</option>
+                    }
+                    else if (selectedIsDefault == false)
+                    {
+                        <option value="true">Default Only</option>
+                        <option value="false" selected>Non-Default Only</option>
+                    }
+                    else
+                    {
+                        <option value="true">Default Only</option>
+                        <option value="false">Non-Default Only</option>
+                    }
+                </select>
+            </div>
+
+            <!-- Filter Button -->
+            <div class="filter-form__group filter-form__group--actions">
+                <button type="submit" class="btn btn-primary btn-icon" data-tooltip="Apply Filters">
+                    <i data-lucide="filter"></i>
+                </button>
+                @if (hasActiveFilters)
+                {
+                    <a asp-action="Index" asp-route-productId="@productId" class="btn btn-secondary filter-clear btn-icon" data-tooltip="Clear All Filters">
+                        <i data-lucide="x"></i>
+                    </a>
+                }
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- Variants Table -->
 @if (!Model.Any())
 {
-    <div class="alert alert-warning">
-        Sản phẩm này chưa có variant nào. Vui lòng tạo variant đầu tiên.
+    <div class="card">
+        <div class="empty-state">
+            <p>No variants found for this product.</p>
+            @if (hasActiveFilters)
+            {
+                <a asp-action="Index" asp-route-productId="@productId" class="link">Clear filters to see all variants</a>
+            }
+            else
+            {
+                <a asp-action="Create" asp-route-productId="@productId" class="link">Create your first variant</a>
+            }
+        </div>
     </div>
 }
 else
 {
-    <form id="variantsForm">
-        <table class="table">
-            <thead>
-                <tr>
-                    <th width="40">
+    <div class="card">
+        <div class="table-header">
+            <h3>Variants List</h3>
+            <button type="button" class="btn btn-danger" id="bulkDeleteBtn" disabled onclick="bulkDelete()" data-delete-url="@Url.Action("BulkDelete", "Variants")">
+                Delete Selected (<span id="selectedCount">0</span>)
+            </button>
+        </div>
+
+        <form id="variantsForm">
+            <div class="table table--variants">
+                <div class="table__row table__row--hd">
+                    <div class="table__cell--checkbox">
                         <input type="checkbox" id="selectAll" onchange="toggleSelectAll(this)" />
-                    </th>
-                    <th>Ảnh</th>
-                    <th>Tên Variant</th>
-                    <th>Màu sắc</th>
-                    <th>Kích thước</th>
-                    <th>Giá</th>
-                    <th>Tồn kho</th>
-                    <th>Trạng thái</th>
-                    <th>Mặc định</th>
-                    <th>Thao tác</th>
-                </tr>
-            </thead>
-            <tbody>
+                    </div>
+                    <div>Image</div>
+                    <div>Variant Name</div>
+                    <div>Color</div>
+                    <div>Size</div>
+                    <div>Price</div>
+                    <div>Stock</div>
+                    <div>Status</div>
+                    <div>Default</div>
+                    <div>Actions</div>
+                </div>
                 @foreach (var variant in Model)
                 {
                     var primaryImage = variant.ProductVariantImages?.FirstOrDefault(img => img.IsPrimary);
                     
-                    <tr>
-                        <td>
+                    <div class="table__row">
+                        <div class="table__cell table__cell--checkbox">
                             <input type="checkbox" class="variant-checkbox" value="@variant.VariantId" onchange="updateSelectedCount()" />
-                        </td>
-                        <td>
+                        </div>
+                        <div class="table__cell table__cell--image">
                             @if (primaryImage != null)
                             {
-                                <img src="@primaryImage.Url" alt="@variant.VariantName" style="width: 60px; height: 60px; object-fit: cover;" />
+                                <img src="@primaryImage.Url" alt="@variant.VariantName" class="variant-image" />
                             }
                             else
                             {
-                                <div style="width: 60px; height: 60px; background: #f0f0f0; display: flex; align-items: center; justify-content: center; font-size: 10px;">
-                                    No Image
-                                </div>
+                                <div class="variant-image variant-image--placeholder">No Image</div>
                             }
-                        </td>
-                        <td>@variant.VariantName</td>
-                        <td>
+                        </div>
+                        <div class="table__cell table__cell--name">
+                            <strong>@variant.VariantName</strong>
+                        </div>
+                        <div class="table__cell">
                             @if (!string.IsNullOrEmpty(variant.ColorName))
                             {
-                                <span>@variant.ColorName</span>
-                                @if (!string.IsNullOrEmpty(variant.ColorCode))
-                                {
-                                    <span style="display: inline-block; width: 20px; height: 20px; background-color: @variant.ColorCode; border: 1px solid #ccc; margin-left: 5px;"></span>
-                                }
+                                <div class="color-display">
+                                    <span>@variant.ColorName</span>
+                                    @if (!string.IsNullOrEmpty(variant.ColorCode))
+                                    {
+                                        <span class="color-swatch" style="background-color: @variant.ColorCode;"></span>
+                                    }
+                                </div>
                             }
                             else
                             {
                                 <span class="text-muted">N/A</span>
                             }
-                        </td>
-                        <td>@(variant.Size ?? "N/A")</td>
-                        <td>
+                        </div>
+                        <div class="table__cell">@(variant.Size ?? "N/A")</div>
+                        <div class="table__cell">
                             @if (variant.Price.HasValue)
                             {
                                 @variant.Price.Value.ToString("C")
                             }
                             else
                             {
-                                <span class="text-muted">Dùng giá cơ bản</span>
+                                <span class="text-muted">Use base price</span>
                             }
-                        </td>
-                        <td>@variant.Stock</td>
-                        <td>
+                        </div>
+                        <div class="table__cell">@variant.Stock</div>
+                        <div class="table__cell">
                             @if (variant.IsActive == true)
                             {
-                                <span class="badge badge-success">Active</span>
+                                <span class="badge badge--success">Active</span>
                             }
                             else
                             {
-                                <span class="badge badge-danger">Inactive</span>
+                                <span class="badge badge--danger">Inactive</span>
                             }
-                        </td>
-                        <td>
+                        </div>
+                        <div class="table__cell">
                             @if (variant.IsDefault)
                             {
-                                <span class="badge badge-primary">Mặc định</span>
+                                <span class="badge badge--primary">Default</span>
                             }
-                        </td>
-                        <td>
-                            <a asp-action="Edit" asp-route-id="@variant.VariantId" class="btn btn-sm btn-primary">Sửa</a>
-                            <a asp-action="Delete" asp-route-id="@variant.VariantId" class="btn btn-sm btn-danger">Xóa</a>
-                        </td>
-                    </tr>
+                            else
+                            {
+                                <span class="text-muted">-</span>
+                            }
+                        </div>
+                        <div class="table__cell table__cell--actions">
+                            <a asp-action="Edit" asp-route-id="@variant.VariantId" class="btn btn-sm btn-primary btn-icon" data-tooltip="Edit Variant">
+                                <i data-lucide="pencil"></i>
+                            </a>
+                            <a asp-action="Delete" asp-route-id="@variant.VariantId" class="btn btn-sm btn-danger btn-icon" data-tooltip="Delete Variant">
+                                <i data-lucide="trash-2"></i>
+                            </a>
+                        </div>
+                    </div>
                 }
-            </tbody>
-        </table>
-    </form>
+            </div>
+        </form>
+    </div>
 }
 
 @section Scripts {
     <script>
-        function toggleSelectAll(checkbox) {
-            const checkboxes = document.querySelectorAll('.variant-checkbox');
-            checkboxes.forEach(cb => cb.checked = checkbox.checked);
-            updateSelectedCount();
-        }
-
-        function updateSelectedCount() {
-            const selected = document.querySelectorAll('.variant-checkbox:checked');
-            const count = selected.length;
-            document.getElementById('selectedCount').textContent = count;
-            document.getElementById('bulkDeleteBtn').disabled = count === 0;
-        }
-
-        function bulkDelete() {
-            const selected = Array.from(document.querySelectorAll('.variant-checkbox:checked'))
-                .map(cb => parseInt(cb.value));
-            
-            if (selected.length === 0) {
-                alert('Vui lòng chọn ít nhất 1 variant để xóa');
-                return;
+        // Set bulk delete URL
+        document.addEventListener('DOMContentLoaded', function() {
+            const bulkDeleteBtn = document.getElementById('bulkDeleteBtn');
+            if (bulkDeleteBtn) {
+                bulkDeleteBtn.setAttribute('data-delete-url', '@Url.Action("BulkDelete", "Variants")');
             }
-
-            if (!confirm(`Bạn có chắc muốn xóa ${selected.length} variant(s) đã chọn? Hành động này không thể hoàn tác.`)) {
-                return;
-            }
-
-            fetch('@Url.Action("BulkDelete", "Variants")', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''
-                },
-                body: JSON.stringify({ variantIds: selected })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    alert(data.message);
-                    location.reload();
-                } else {
-                    alert('Lỗi: ' + data.message);
-                }
-            })
-            .catch(error => {
-                alert('Lỗi khi xóa: ' + error);
-            });
-        }
+        });
     </script>
 }
-

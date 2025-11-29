@@ -20,7 +20,7 @@ namespace Website_Cosmetics.Areas.Admin.Controllers
         }
 
         // GET: Admin/Variants?productId=5
-        public async Task<IActionResult> Index(int productId)
+        public async Task<IActionResult> Index(int productId, string searchTerm, bool? isActive, bool? isDefault)
         {
             var product = await _context.Products
                 .Include(p => p.Brand)
@@ -32,15 +32,44 @@ namespace Website_Cosmetics.Areas.Admin.Controllers
                 return NotFound();
             }
 
-            var variants = await _context.ProductVariants
+            var query = _context.ProductVariants
                 .Include(v => v.ProductVariantImages.OrderBy(img => img.DisplayOrder))
                 .Where(v => v.ProductId == productId)
+                .AsQueryable();
+
+            // Search filter
+            if (!string.IsNullOrWhiteSpace(searchTerm))
+            {
+                query = query.Where(v => 
+                    v.VariantName.Contains(searchTerm) || 
+                    (v.ColorName != null && v.ColorName.Contains(searchTerm)) ||
+                    (v.SKU != null && v.SKU.Contains(searchTerm)) ||
+                    (v.Barcode != null && v.Barcode.Contains(searchTerm)));
+            }
+
+            // Status filter
+            if (isActive.HasValue)
+            {
+                query = query.Where(v => v.IsActive == isActive.Value);
+            }
+
+            // Default filter
+            if (isDefault.HasValue)
+            {
+                query = query.Where(v => v.IsDefault == isDefault.Value);
+            }
+
+            var variants = await query
                 .OrderBy(v => v.DisplayOrder)
                 .ThenBy(v => v.VariantId)
                 .ToListAsync();
 
             ViewBag.Product = product;
             ViewBag.ProductId = productId;
+            ViewBag.SearchTerm = searchTerm;
+            ViewBag.SelectedIsActive = isActive;
+            ViewBag.SelectedIsDefault = isDefault;
+            ViewBag.HasActiveFilters = !string.IsNullOrWhiteSpace(searchTerm) || isActive.HasValue || isDefault.HasValue;
 
             // Hiển thị thông báo nếu có
             if (TempData["SuccessMessage"] != null)
