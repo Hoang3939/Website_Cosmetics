@@ -1,21 +1,22 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
-using Website_Cosmetics.Attributes;
 using Website_Cosmetics.Data;
 using Website_Cosmetics.Models;
 using Website_Cosmetics.Services;
+using CustomAuth = Website_Cosmetics.Services;
 
 namespace Website_Cosmetics.Areas.Admin.Controllers
 {
     [Area("Admin")]
-    [RequirePermission("Admin.Staff.Manage")]
+    [Authorize(Roles = "Admin")]
     public class StaffController : Controller
     {
         private readonly ApplicationDbContext _context;
-        private readonly IAuthorizationService _authService;
+        private readonly CustomAuth.IAuthorizationService _authService;
         private readonly ILogger<StaffController> _logger;
 
-        public StaffController(ApplicationDbContext context, IAuthorizationService authService, ILogger<StaffController> logger)
+        public StaffController(ApplicationDbContext context, CustomAuth.IAuthorizationService authService, ILogger<StaffController> logger)
         {
             _context = context;
             _authService = authService;
