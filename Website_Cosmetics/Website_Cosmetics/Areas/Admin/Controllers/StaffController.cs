@@ -23,15 +23,122 @@ namespace Website_Cosmetics.Areas.Admin.Controllers
         }
 
         // GET: /Admin/Staff/
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(
+            string? search = null,
+            string? status = null,
+            string? role = null,
+            int page = 1,
+            int pageSize = 10)
         {
-            var staff = await _context.UserRoles
+            // Lấy tất cả users có role Staff
+            var staffQuery = _context.UserRoles
                 .Where(ur => ur.Role.RoleName == "Staff")
                 .Include(ur => ur.User)
-                .Select(ur => ur.User)
+                .Include(ur => ur.Role)
+                .Select(ur => ur.User);
+
+            // Filter theo search (tên, username, email)
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                search = search.Trim();
+                staffQuery = staffQuery.Where(u =>
+                    u.Username.Contains(search) ||
+                    u.Email.Contains(search) ||
+                    (u.FirstName != null && u.FirstName.Contains(search)) ||
+                    (u.LastName != null && u.LastName.Contains(search)) ||
+                    (u.FirstName + " " + u.LastName).Contains(search)
+                );
+            }
+
+            // Filter theo trạng thái (Active/Inactive)
+            if (!string.IsNullOrWhiteSpace(status))
+            {
+                if (status.ToLower() == "active")
+                {
+                    staffQuery = staffQuery.Where(u => u.IsActive == true);
+                }
+                else if (status.ToLower() == "inactive")
+                {
+                    staffQuery = staffQuery.Where(u => u.IsActive == false);
+                }
+            }
+
+            // Filter theo role (nếu có nhiều role trong tương lai)
+            if (!string.IsNullOrWhiteSpace(role))
+            {
+                staffQuery = staffQuery.Where(u => u.UserRoles.Any(ur => ur.Role.RoleName == role));
+            }
+
+            // Lấy tổng số để phân trang
+            var totalCount = await staffQuery.CountAsync();
+            var totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
+
+            // Validate page number
+            if (page < 1) page = 1;
+            if (page > totalPages && totalPages > 0) page = totalPages;
+
+            // Phân trang
+            var staff = await staffQuery
+                .OrderByDescending(u => u.CreatedAt)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
                 .ToListAsync();
 
+            // Load roles cho mỗi staff
+            foreach (var user in staff)
+            {
+                await _context.Entry(user)
+                    .Collection(u => u.UserRoles)
+                    .Query()
+                    .Include(ur => ur.Role)
+                    .LoadAsync();
+            }
+
+            // Truyền filter parameters vào ViewBag
+            ViewBag.Search = search;
+            ViewBag.Status = status;
+            ViewBag.Role = role;
+            ViewBag.CurrentPage = page;
+            ViewBag.TotalPages = totalPages;
+            ViewBag.TotalCount = totalCount;
+            ViewBag.PageSize = pageSize;
+
             return View(staff);
+        }
+
+        // GET: /Admin/Staff/Details/{id}
+        public async Task<IActionResult> Details(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var user = await _context.Users
+                .Include(u => u.UserRoles)
+                    .ThenInclude(ur => ur.Role)
+                .Include(u => u.UserPermissions)
+                    .ThenInclude(up => up.Permission)
+                .Include(u => u.UserAddresses)
+                .FirstOrDefaultAsync(u => u.UserId == id);
+
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            // Kiểm tra xem user có role Staff không
+            var hasStaffRole = user.UserRoles.Any(ur => ur.Role.RoleName == "Staff");
+            if (!hasStaffRole)
+            {
+                return NotFound();
+            }
+
+            // Load permissions
+            var permissions = await _authService.GetUserPermissionsAsync(user.UserId);
+            ViewBag.Permissions = permissions;
+
+            return View(user);
         }
 
         // GET: /Admin/Staff/Create
@@ -45,48 +152,245 @@ namespace Website_Cosmetics.Areas.Admin.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(User model)
         {
-            if (ModelState.IsValid)
+            try
             {
-                // Check if user already exists
-                if (await _context.Users.AnyAsync(u => u.Username == model.Username || u.Email == model.Email))
+                if (ModelState.IsValid)
                 {
-                    ModelState.AddModelError(string.Empty, "Username or email already exists.");
-                    return View(model);
-                }
-
-                // Create new user
-                var user = new User
-                {
-                    Username = model.Username,
-                    Email = model.Email,
-                    PasswordHash = BCrypt.Net.BCrypt.HashPassword("Staff123!"), // Default password
-                    FirstName = model.FirstName,
-                    LastName = model.LastName,
-                    PhoneNumber = model.PhoneNumber,
-                    IsEmailConfirmed = true, // Admin creates, so auto-confirm
-                    IsActive = true
-                };
-
-                _context.Users.Add(user);
-                await _context.SaveChangesAsync();
-
-                // Assign Staff role
-                var staffRole = await _context.Roles.FirstOrDefaultAsync(r => r.RoleName == "Staff");
-                if (staffRole != null)
-                {
-                    _context.UserRoles.Add(new UserRole
+                    // Check if username already exists
+                    if (await _context.Users.AnyAsync(u => u.Username == model.Username))
                     {
-                        UserId = user.UserId,
-                        RoleId = staffRole.RoleId
-                    });
-                    await _context.SaveChangesAsync();
-                }
+                        ModelState.AddModelError(nameof(model.Username), "Username đã tồn tại. Vui lòng chọn username khác.");
+                        return View(model);
+                    }
 
-                TempData["SuccessMessage"] = "Staff created successfully!";
-                return RedirectToAction("Index");
+                    // Check if email already exists
+                    if (await _context.Users.AnyAsync(u => u.Email == model.Email))
+                    {
+                        ModelState.AddModelError(nameof(model.Email), "Email đã tồn tại. Vui lòng sử dụng email khác.");
+                        return View(model);
+                    }
+
+                    // Create new user
+                    var user = new User
+                    {
+                        Username = model.Username,
+                        Email = model.Email,
+                        PasswordHash = BCrypt.Net.BCrypt.HashPassword("Staff123!"), // Default password
+                        FirstName = model.FirstName,
+                        LastName = model.LastName,
+                        PhoneNumber = model.PhoneNumber,
+                        IsEmailConfirmed = true, // Admin creates, so auto-confirm
+                        IsActive = true,
+                        CreatedAt = DateTime.UtcNow,
+                        UpdatedAt = DateTime.UtcNow
+                    };
+
+                    _context.Users.Add(user);
+                    await _context.SaveChangesAsync();
+
+                    // Assign Staff role
+                    var staffRole = await _context.Roles.FirstOrDefaultAsync(r => r.RoleName == "Staff");
+                    if (staffRole != null)
+                    {
+                        _context.UserRoles.Add(new UserRole
+                        {
+                            UserId = user.UserId,
+                            RoleId = staffRole.RoleId,
+                            CreatedAt = DateTime.UtcNow,
+                            UpdatedAt = DateTime.UtcNow
+                        });
+                        await _context.SaveChangesAsync();
+                    }
+
+                    TempData["SuccessMessage"] = $"Nhân viên '{user.FullName}' đã được tạo thành công. Mật khẩu mặc định: Staff123!";
+                    return RedirectToAction(nameof(Index));
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error creating staff");
+                ModelState.AddModelError("", $"Lỗi khi tạo nhân viên: {ex.Message}");
             }
 
             return View(model);
+        }
+
+        // GET: /Admin/Staff/Edit/{id}
+        public async Task<IActionResult> Edit(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var user = await _context.Users
+                .Include(u => u.UserRoles)
+                    .ThenInclude(ur => ur.Role)
+                .FirstOrDefaultAsync(u => u.UserId == id);
+
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            // Kiểm tra xem user có role Staff không
+            var hasStaffRole = user.UserRoles.Any(ur => ur.Role.RoleName == "Staff");
+            if (!hasStaffRole)
+            {
+                return NotFound();
+            }
+
+            return View(user);
+        }
+
+        // POST: /Admin/Staff/Edit/{id}
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(int id, User model)
+        {
+            if (id != model.UserId)
+            {
+                return NotFound();
+            }
+
+            try
+            {
+                if (ModelState.IsValid)
+                {
+                    var user = await _context.Users
+                        .Include(u => u.UserRoles)
+                            .ThenInclude(ur => ur.Role)
+                        .FirstOrDefaultAsync(u => u.UserId == id);
+
+                    if (user == null)
+                    {
+                        return NotFound();
+                    }
+
+                    // Kiểm tra xem user có role Staff không
+                    var hasStaffRole = user.UserRoles.Any(ur => ur.Role.RoleName == "Staff");
+                    if (!hasStaffRole)
+                    {
+                        return NotFound();
+                    }
+
+                    // Check if username already exists (khác user hiện tại)
+                    if (await _context.Users.AnyAsync(u => u.Username == model.Username && u.UserId != id))
+                    {
+                        ModelState.AddModelError(nameof(model.Username), "Username đã tồn tại. Vui lòng chọn username khác.");
+                        return View(model);
+                    }
+
+                    // Check if email already exists (khác user hiện tại)
+                    if (await _context.Users.AnyAsync(u => u.Email == model.Email && u.UserId != id))
+                    {
+                        ModelState.AddModelError(nameof(model.Email), "Email đã tồn tại. Vui lòng sử dụng email khác.");
+                        return View(model);
+                    }
+
+                    // Update user properties
+                    user.Username = model.Username;
+                    user.Email = model.Email;
+                    user.FirstName = model.FirstName;
+                    user.LastName = model.LastName;
+                    user.PhoneNumber = model.PhoneNumber;
+                    user.IsActive = model.IsActive;
+                    user.IsEmailConfirmed = model.IsEmailConfirmed;
+                    user.UpdatedAt = DateTime.UtcNow;
+
+                    await _context.SaveChangesAsync();
+
+                    TempData["SuccessMessage"] = $"Thông tin nhân viên '{user.FullName}' đã được cập nhật thành công.";
+                    return RedirectToAction(nameof(Index));
+                }
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!await StaffExists(id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error editing staff {StaffId}", id);
+                ModelState.AddModelError("", $"Lỗi khi cập nhật nhân viên: {ex.Message}");
+            }
+
+            return View(model);
+        }
+
+        // GET: /Admin/Staff/Delete/{id}
+        public async Task<IActionResult> Delete(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var user = await _context.Users
+                .Include(u => u.UserRoles)
+                    .ThenInclude(ur => ur.Role)
+                .FirstOrDefaultAsync(u => u.UserId == id);
+
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            // Kiểm tra xem user có role Staff không
+            var hasStaffRole = user.UserRoles.Any(ur => ur.Role.RoleName == "Staff");
+            if (!hasStaffRole)
+            {
+                return NotFound();
+            }
+
+            return View(user);
+        }
+
+        // POST: /Admin/Staff/Delete/{id}
+        [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteConfirmed(int id)
+        {
+            try
+            {
+                var user = await _context.Users
+                    .Include(u => u.UserRoles)
+                        .ThenInclude(ur => ur.Role)
+                    .FirstOrDefaultAsync(u => u.UserId == id);
+
+                if (user == null)
+                {
+                    return NotFound();
+                }
+
+                // Kiểm tra xem user có role Staff không
+                var hasStaffRole = user.UserRoles.Any(ur => ur.Role.RoleName == "Staff");
+                if (!hasStaffRole)
+                {
+                    return NotFound();
+                }
+
+                var userName = user.FullName;
+
+                // Xóa user (cascade sẽ xóa UserRoles, UserPermissions, etc.)
+                _context.Users.Remove(user);
+                await _context.SaveChangesAsync();
+
+                TempData["SuccessMessage"] = $"Nhân viên '{userName}' đã được xóa thành công.";
+                return RedirectToAction(nameof(Index));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error deleting staff {StaffId}", id);
+                TempData["ErrorMessage"] = $"Lỗi khi xóa nhân viên: {ex.Message}";
+                return RedirectToAction(nameof(Index));
+            }
         }
 
         // GET: /Admin/Staff/Permissions/{id}
@@ -148,38 +452,85 @@ namespace Website_Cosmetics.Areas.Admin.Controllers
             return RedirectToAction("Permissions", new { id = userId });
         }
 
-        // POST: /Admin/Staff/Deactivate
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Deactivate(int id)
-        {
-            var user = await _context.Users.FindAsync(id);
-            if (user != null)
-            {
-                user.IsActive = false;
-                user.UpdatedAt = DateTime.UtcNow;
-                await _context.SaveChangesAsync();
-                TempData["SuccessMessage"] = "Staff deactivated successfully!";
-            }
-
-            return RedirectToAction("Index");
-        }
-
         // POST: /Admin/Staff/Activate
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Activate(int id)
         {
-            var user = await _context.Users.FindAsync(id);
-            if (user != null)
+            try
             {
-                user.IsActive = true;
-                user.UpdatedAt = DateTime.UtcNow;
-                await _context.SaveChangesAsync();
-                TempData["SuccessMessage"] = "Staff activated successfully!";
+                var user = await _context.Users
+                    .Include(u => u.UserRoles)
+                        .ThenInclude(ur => ur.Role)
+                    .FirstOrDefaultAsync(u => u.UserId == id);
+
+                if (user != null)
+                {
+                    // Kiểm tra xem user có role Staff không
+                    var hasStaffRole = user.UserRoles.Any(ur => ur.Role.RoleName == "Staff");
+                    if (!hasStaffRole)
+                    {
+                        return NotFound();
+                    }
+
+                    user.IsActive = true;
+                    user.UpdatedAt = DateTime.UtcNow;
+                    await _context.SaveChangesAsync();
+                    TempData["SuccessMessage"] = $"Nhân viên '{user.FullName}' đã được kích hoạt thành công.";
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error activating staff {StaffId}", id);
+                TempData["ErrorMessage"] = $"Lỗi khi kích hoạt nhân viên: {ex.Message}";
             }
 
-            return RedirectToAction("Index");
+            return RedirectToAction(nameof(Index));
+        }
+
+        // POST: /Admin/Staff/Deactivate
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Deactivate(int id)
+        {
+            try
+            {
+                var user = await _context.Users
+                    .Include(u => u.UserRoles)
+                        .ThenInclude(ur => ur.Role)
+                    .FirstOrDefaultAsync(u => u.UserId == id);
+
+                if (user != null)
+                {
+                    // Kiểm tra xem user có role Staff không
+                    var hasStaffRole = user.UserRoles.Any(ur => ur.Role.RoleName == "Staff");
+                    if (!hasStaffRole)
+                    {
+                        return NotFound();
+                    }
+
+                    user.IsActive = false;
+                    user.UpdatedAt = DateTime.UtcNow;
+                    await _context.SaveChangesAsync();
+                    TempData["SuccessMessage"] = $"Nhân viên '{user.FullName}' đã được vô hiệu hóa thành công.";
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error deactivating staff {StaffId}", id);
+                TempData["ErrorMessage"] = $"Lỗi khi vô hiệu hóa nhân viên: {ex.Message}";
+            }
+
+            return RedirectToAction(nameof(Index));
+        }
+
+        // Helper method
+        private async Task<bool> StaffExists(int id)
+        {
+            return await _context.Users
+                .Include(u => u.UserRoles)
+                    .ThenInclude(ur => ur.Role)
+                .AnyAsync(u => u.UserId == id && u.UserRoles.Any(ur => ur.Role.RoleName == "Staff"));
         }
     }
 }
