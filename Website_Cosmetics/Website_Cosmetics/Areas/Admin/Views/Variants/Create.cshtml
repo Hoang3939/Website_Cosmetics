@@ -1,0 +1,284 @@
+@model Website_Cosmetics.Models.ProductVariant
+@{
+    ViewData["Title"] = "Thêm Variant Mới";
+    var product = ViewBag.Product as Website_Cosmetics.Models.Product;
+    var productId = (int)ViewBag.ProductId;
+}
+
+<div class="page-header">
+    <h1>Thêm Variant Mới</h1>
+    <a asp-action="Index" asp-route-productId="@productId" class="btn btn-secondary">← Quay lại</a>
+</div>
+
+<div class="alert alert-info mb-3">
+    <strong>Sản phẩm:</strong> @product?.Name
+</div>
+
+<form asp-action="Create" method="post" enctype="multipart/form-data">
+    @Html.AntiForgeryToken()
+    <input type="hidden" name="productId" value="@productId" />
+
+    <div class="form-group">
+        <label asp-for="VariantName">Tên Variant *</label>
+        <input asp-for="VariantName" class="form-control" required placeholder="VD: Midnight Lily, 100ml, Rose Pink - 10g" />
+        <span asp-validation-for="VariantName" class="text-danger"></span>
+        <small class="form-text text-muted">Tên đầy đủ của variant (màu sắc, kích thước, loại, etc.)</small>
+    </div>
+
+    <hr />
+    <h4>Thông tin Màu sắc</h4>
+
+    <div class="row">
+        <div class="col-md-4">
+            <div class="form-group">
+                <label asp-for="ColorName">Tên màu</label>
+                <input asp-for="ColorName" class="form-control" placeholder="VD: Midnight Lily, Rose Pink" />
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="form-group">
+                <label asp-for="ColorCode">Mã màu (Hex)</label>
+                <input asp-for="ColorCode" type="color" class="form-control" style="height: 38px;" />
+                <small class="form-text text-muted">Chọn màu để hiển thị</small>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="form-group">
+                <label asp-for="ColorFamily">Nhóm màu</label>
+                <input asp-for="ColorFamily" class="form-control" placeholder="VD: Red, Pink, Nude, Brown" />
+            </div>
+        </div>
+    </div>
+
+    <hr />
+    <h4>Thông tin Kích thước</h4>
+
+    <div class="row">
+        <div class="col-md-4">
+            <div class="form-group">
+                <label asp-for="Size">Kích thước</label>
+                <input asp-for="Size" class="form-control" placeholder="VD: 50ml, 100ml, 10g, 0.14 oz" />
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="form-group">
+                <label asp-for="SizeValue">Giá trị số</label>
+                <input asp-for="SizeValue" type="number" step="0.01" class="form-control" placeholder="VD: 50, 100, 10" />
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="form-group">
+                <label asp-for="SizeUnit">Đơn vị</label>
+                <input asp-for="SizeUnit" class="form-control" placeholder="VD: ml, g, oz, fl oz" />
+            </div>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="VariantType">Loại/Type</label>
+        <input asp-for="VariantType" class="form-control" placeholder="VD: For Oily Skin, For Dry Skin, Anti-Aging" />
+        <small class="form-text text-muted">Dùng cho sản phẩm skincare</small>
+    </div>
+
+    <hr />
+    <h4>Thông tin Bán hàng</h4>
+
+    <div class="row">
+        <div class="col-md-4">
+            <div class="form-group">
+                <label asp-for="SKU">Mã SKU</label>
+                <input asp-for="SKU" class="form-control" />
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="form-group">
+                <label asp-for="Barcode">Mã vạch</label>
+                <input asp-for="Barcode" class="form-control" />
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="form-group">
+                <label asp-for="Price">Giá (override giá cơ bản)</label>
+                <input asp-for="Price" type="number" step="0.01" class="form-control" />
+                <small class="form-text text-muted">Để trống nếu dùng giá cơ bản của sản phẩm</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4">
+            <div class="form-group">
+                <label asp-for="CompareAtPrice">Giá gốc (để hiển thị giảm giá)</label>
+                <input asp-for="CompareAtPrice" type="number" step="0.01" class="form-control" />
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="form-group">
+                <label asp-for="Stock">Tồn kho</label>
+                <input asp-for="Stock" type="number" value="0" class="form-control" />
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="form-group">
+                <label asp-for="LowStockThreshold">Ngưỡng cảnh báo hết hàng</label>
+                <input asp-for="LowStockThreshold" type="number" value="10" class="form-control" />
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4">
+            <div class="form-group">
+                <label asp-for="IsActive">Trạng thái</label>
+                <select asp-for="IsActive" class="form-control">
+                    <option value="true">Active</option>
+                    <option value="false">Inactive</option>
+                </select>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="form-group">
+                <label asp-for="IsDefault">Đặt làm mặc định</label>
+                <select asp-for="IsDefault" class="form-control">
+                    <option value="false">Không</option>
+                    <option value="true">Có</option>
+                </select>
+                <small class="form-text text-muted">Variant mặc định sẽ hiển thị khi vào trang sản phẩm</small>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="form-group">
+                <label asp-for="DisplayOrder">Thứ tự hiển thị</label>
+                <input asp-for="DisplayOrder" type="number" value="0" class="form-control" />
+            </div>
+        </div>
+    </div>
+
+    <hr />
+    <h4>Ảnh Variant *</h4>
+    <p class="text-muted">Upload nhiều ảnh. <strong>Bắt buộc:</strong> Phải có ít nhất 1 ảnh và đánh dấu 1 ảnh làm ảnh chính (Primary).</p>
+    
+    @if (!ViewData.ModelState.IsValid && ViewData.ModelState[""]?.Errors != null && ViewData.ModelState[""]?.Errors.Count > 0)
+    {
+        <div class="alert alert-danger">
+            @foreach (var error in ViewData.ModelState[""]!.Errors)
+            {
+                <p>@error.ErrorMessage</p>
+            }
+        </div>
+    }
+
+    <div class="form-group">
+        <label>Upload Ảnh *</label>
+        <input type="file" name="variantImages" multiple accept="image/*,.avif,.webp,image/avif,image/webp" class="form-control" id="imageUpload" required />
+        <small class="form-text text-muted">Có thể chọn nhiều ảnh cùng lúc. Ít nhất 1 ảnh phải được đánh dấu làm ảnh chính.</small>
+    </div>
+
+    <div id="imagePreview" class="row mt-3"></div>
+
+    <div class="form-actions mt-4">
+        <button type="submit" class="btn btn-primary">Tạo Variant</button>
+        <a asp-action="Index" asp-route-productId="@productId" class="btn btn-secondary">Hủy</a>
+    </div>
+</form>
+
+@section Scripts {
+    <script>
+        let selectedPrimaryIndex = null;
+        let selectedMakeupIndex = null;
+
+        document.getElementById('imageUpload').addEventListener('change', function(e) {
+            const preview = document.getElementById('imagePreview');
+            preview.innerHTML = '';
+            selectedPrimaryIndex = null;
+            selectedMakeupIndex = null;
+            
+            const files = e.target.files;
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    const col = document.createElement('div');
+                    col.className = 'col-md-3 mb-3';
+                    
+                    col.innerHTML = `
+                        <div class="card">
+                            <img src="${e.target.result}" class="card-img-top" style="height: 200px; object-fit: cover;" />
+                            <div class="card-body">
+                                <div class="form-check">
+                                    <input class="form-check-input primary-checkbox" 
+                                           type="checkbox" 
+                                           name="primaryImageIndices" 
+                                           value="${i}" 
+                                           id="primary_${i}"
+                                           data-index="${i}">
+                                    <label class="form-check-label" for="primary_${i}">
+                                        Đặt làm Ảnh chính
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input makeup-checkbox" 
+                                           type="checkbox" 
+                                           name="makeupReferenceIndices" 
+                                           value="${i}" 
+                                           id="makeup_${i}"
+                                           data-index="${i}">
+                                    <label class="form-check-label" for="makeup_${i}">
+                                        Dùng cho Virtual Try-On
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    
+                    preview.appendChild(col);
+                };
+                
+                reader.readAsDataURL(file);
+            }
+
+            // Attach event listeners after all images are loaded
+            setTimeout(() => {
+                attachCheckboxListeners();
+            }, 100);
+        });
+
+        function attachCheckboxListeners() {
+            // Handle primary image checkbox - only one can be selected
+            document.querySelectorAll('.primary-checkbox').forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    if (this.checked) {
+                        // Uncheck all other primary checkboxes
+                        document.querySelectorAll('.primary-checkbox').forEach(cb => {
+                            if (cb !== this) {
+                                cb.checked = false;
+                            }
+                        });
+                        selectedPrimaryIndex = parseInt(this.value);
+                    } else {
+                        selectedPrimaryIndex = null;
+                    }
+                });
+            });
+
+            // Handle makeup reference checkbox - only one can be selected
+            document.querySelectorAll('.makeup-checkbox').forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    if (this.checked) {
+                        // Uncheck all other makeup reference checkboxes
+                        document.querySelectorAll('.makeup-checkbox').forEach(cb => {
+                            if (cb !== this) {
+                                cb.checked = false;
+                            }
+                        });
+                        selectedMakeupIndex = parseInt(this.value);
+                    } else {
+                        selectedMakeupIndex = null;
+                    }
+                });
+            });
+        }
+    </script>
+}
+

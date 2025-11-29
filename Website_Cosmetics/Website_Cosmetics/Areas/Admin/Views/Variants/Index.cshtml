@@ -1,0 +1,202 @@
+@model IEnumerable<Website_Cosmetics.Models.ProductVariant>
+@{
+    ViewData["Title"] = "Quản Lý Variants";
+    var product = ViewBag.Product as Website_Cosmetics.Models.Product;
+    var productId = (int)ViewBag.ProductId;
+}
+
+<div class="page-header">
+    <h1>Quản Lý Variants</h1>
+    <div>
+        <a asp-controller="Products" asp-action="Index" class="btn btn-secondary">← Quay lại Danh sách Sản phẩm</a>
+        <a asp-action="Create" asp-route-productId="@productId" class="btn btn-primary">+ Thêm Variant Mới</a>
+    </div>
+</div>
+
+@if (ViewBag.SuccessMessage != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @ViewBag.SuccessMessage
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+}
+
+<div class="card mb-4">
+    <div class="card-header">
+        <h3>Thông tin Sản phẩm</h3>
+    </div>
+    <div class="card-body">
+        <p><strong>Tên sản phẩm:</strong> @product?.Name</p>
+        <p><strong>Thương hiệu:</strong> @(product?.Brand?.Name ?? "N/A")</p>
+        <p><strong>Danh mục:</strong> @(product?.Category?.Name ?? "N/A")</p>
+        <p><strong>Giá cơ bản:</strong> @product?.BasePrice.ToString("C")</p>
+    </div>
+</div>
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h3>Danh sách Variants (@Model.Count())</h3>
+    @if (Model.Any())
+    {
+        <div>
+            <button type="button" class="btn btn-danger" id="bulkDeleteBtn" disabled onclick="bulkDelete()">
+                Xóa đã chọn (<span id="selectedCount">0</span>)
+            </button>
+        </div>
+    }
+</div>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-warning">
+        Sản phẩm này chưa có variant nào. Vui lòng tạo variant đầu tiên.
+    </div>
+}
+else
+{
+    <form id="variantsForm">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th width="40">
+                        <input type="checkbox" id="selectAll" onchange="toggleSelectAll(this)" />
+                    </th>
+                    <th>Ảnh</th>
+                    <th>Tên Variant</th>
+                    <th>Màu sắc</th>
+                    <th>Kích thước</th>
+                    <th>Giá</th>
+                    <th>Tồn kho</th>
+                    <th>Trạng thái</th>
+                    <th>Mặc định</th>
+                    <th>Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var variant in Model)
+                {
+                    var primaryImage = variant.ProductVariantImages?.FirstOrDefault(img => img.IsPrimary);
+                    
+                    <tr>
+                        <td>
+                            <input type="checkbox" class="variant-checkbox" value="@variant.VariantId" onchange="updateSelectedCount()" />
+                        </td>
+                        <td>
+                            @if (primaryImage != null)
+                            {
+                                <img src="@primaryImage.Url" alt="@variant.VariantName" style="width: 60px; height: 60px; object-fit: cover;" />
+                            }
+                            else
+                            {
+                                <div style="width: 60px; height: 60px; background: #f0f0f0; display: flex; align-items: center; justify-content: center; font-size: 10px;">
+                                    No Image
+                                </div>
+                            }
+                        </td>
+                        <td>@variant.VariantName</td>
+                        <td>
+                            @if (!string.IsNullOrEmpty(variant.ColorName))
+                            {
+                                <span>@variant.ColorName</span>
+                                @if (!string.IsNullOrEmpty(variant.ColorCode))
+                                {
+                                    <span style="display: inline-block; width: 20px; height: 20px; background-color: @variant.ColorCode; border: 1px solid #ccc; margin-left: 5px;"></span>
+                                }
+                            }
+                            else
+                            {
+                                <span class="text-muted">N/A</span>
+                            }
+                        </td>
+                        <td>@(variant.Size ?? "N/A")</td>
+                        <td>
+                            @if (variant.Price.HasValue)
+                            {
+                                @variant.Price.Value.ToString("C")
+                            }
+                            else
+                            {
+                                <span class="text-muted">Dùng giá cơ bản</span>
+                            }
+                        </td>
+                        <td>@variant.Stock</td>
+                        <td>
+                            @if (variant.IsActive == true)
+                            {
+                                <span class="badge badge-success">Active</span>
+                            }
+                            else
+                            {
+                                <span class="badge badge-danger">Inactive</span>
+                            }
+                        </td>
+                        <td>
+                            @if (variant.IsDefault)
+                            {
+                                <span class="badge badge-primary">Mặc định</span>
+                            }
+                        </td>
+                        <td>
+                            <a asp-action="Edit" asp-route-id="@variant.VariantId" class="btn btn-sm btn-primary">Sửa</a>
+                            <a asp-action="Delete" asp-route-id="@variant.VariantId" class="btn btn-sm btn-danger">Xóa</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </form>
+}
+
+@section Scripts {
+    <script>
+        function toggleSelectAll(checkbox) {
+            const checkboxes = document.querySelectorAll('.variant-checkbox');
+            checkboxes.forEach(cb => cb.checked = checkbox.checked);
+            updateSelectedCount();
+        }
+
+        function updateSelectedCount() {
+            const selected = document.querySelectorAll('.variant-checkbox:checked');
+            const count = selected.length;
+            document.getElementById('selectedCount').textContent = count;
+            document.getElementById('bulkDeleteBtn').disabled = count === 0;
+        }
+
+        function bulkDelete() {
+            const selected = Array.from(document.querySelectorAll('.variant-checkbox:checked'))
+                .map(cb => parseInt(cb.value));
+            
+            if (selected.length === 0) {
+                alert('Vui lòng chọn ít nhất 1 variant để xóa');
+                return;
+            }
+
+            if (!confirm(`Bạn có chắc muốn xóa ${selected.length} variant(s) đã chọn? Hành động này không thể hoàn tác.`)) {
+                return;
+            }
+
+            fetch('@Url.Action("BulkDelete", "Variants")', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''
+                },
+                body: JSON.stringify({ variantIds: selected })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.message);
+                    location.reload();
+                } else {
+                    alert('Lỗi: ' + data.message);
+                }
+            })
+            .catch(error => {
+                alert('Lỗi khi xóa: ' + error);
+            });
+        }
+    </script>
+}
+

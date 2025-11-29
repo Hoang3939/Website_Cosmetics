@@ -1,0 +1,118 @@
+@model Website_Cosmetics.Models.Product
+@{
+    ViewData["Title"] = "Create Product";
+}
+
+<div class="page-header">
+    <h1>Create New Product</h1>
+</div>
+
+<form asp-action="Create" method="post" enctype="multipart/form-data">
+    @Html.AntiForgeryToken()
+
+    <div class="form-group">
+        <label asp-for="Name">Product Name *</label>
+        <input asp-for="Name" class="form-control" required />
+        <span asp-validation-for="Name" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="Slug">Slug</label>
+        <input asp-for="Slug" class="form-control" />
+        <small class="form-text text-muted">Leave empty to auto-generate from product name</small>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-group">
+                <label>Brand</label>
+                <select name="brandId" class="form-control">
+                    <option value="">-- Select Brand --</option>
+                    @if (ViewBag.Brands != null)
+                    {
+                        @foreach (var brand in (ViewBag.Brands as IEnumerable<Website_Cosmetics.Models.Brand>)!)
+                        {
+                            <option value="@brand.BrandId">@brand.Name</option>
+                        }
+                    }
+                </select>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-group">
+                <label>Category</label>
+                <select name="categoryId" class="form-control">
+                    <option value="">-- Select Category --</option>
+                    @if (ViewBag.Categories != null)
+                    {
+                        @foreach (var category in (ViewBag.Categories as IEnumerable<Website_Cosmetics.Models.Category>)!)
+                        {
+                            <option value="@category.CategoryId">@category.Name</option>
+                        }
+                    }
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-group">
+                <label asp-for="BasePrice">Base Price *</label>
+                <input asp-for="BasePrice" type="number" step="0.01" class="form-control" required />
+                <span asp-validation-for="BasePrice" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-group">
+                <label asp-for="SPF">SPF</label>
+                <input asp-for="SPF" class="form-control" />
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4">
+            <div class="form-group">
+                <label asp-for="Size">Size</label>
+                <input asp-for="Size" class="form-control" />
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="form-group">
+                <label asp-for="Finish">Finish</label>
+                <input asp-for="Finish" class="form-control" />
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="form-group">
+                <label asp-for="IsActive">Status</label>
+                <select asp-for="IsActive" class="form-control">
+                    <option value="true">Active</option>
+                    <option value="false">Inactive</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="Description">Description</label>
+        <textarea asp-for="Description" class="form-control" rows="4"></textarea>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="Ingredients">Ingredients</label>
+        <textarea asp-for="Ingredients" class="form-control" rows="4"></textarea>
+    </div>
+
+    <div class="alert alert-info mt-3">
+        <strong>Lưu ý:</strong> Sau khi tạo sản phẩm, hệ thống sẽ tự động tạo một variant mặc định. 
+        Bạn có thể quản lý các biến thể (màu sắc, kích thước, ảnh) ở bước tiếp theo.
+    </div>
+
+    <div class="form-actions mt-4">
+        <button type="submit" class="btn btn-primary">Tạo Sản Phẩm</button>
+        <a asp-action="Index" class="btn btn-secondary">Hủy</a>
+    </div>
+</form>
+

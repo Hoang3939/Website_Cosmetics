@@ -3,6 +3,7 @@ using Website_Cosmetics.Models;
 using Website_Cosmetics.Repositories;
 using Website_Cosmetics.Data;
 using Website_Cosmetics.Services;
+using Microsoft.AspNetCore.StaticFiles;
 
 var builder = WebApplication.CreateBuilder(args);
 // Lấy chuỗi kết nối từ appsettings.json
@@ -75,7 +76,25 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-app.UseStaticFiles();
+
+// Configure static files with MIME types for AVIF and WebP
+var contentTypeProvider = new Microsoft.AspNetCore.StaticFiles.FileExtensionContentTypeProvider();
+// Add AVIF if not already present
+if (!contentTypeProvider.Mappings.ContainsKey(".avif"))
+{
+    contentTypeProvider.Mappings.Add(".avif", "image/avif");
+}
+// Add WebP if not already present (WebP might already be in default mappings)
+if (!contentTypeProvider.Mappings.ContainsKey(".webp"))
+{
+    contentTypeProvider.Mappings.Add(".webp", "image/webp");
+}
+
+var staticFileOptions = new StaticFileOptions
+{
+    ContentTypeProvider = contentTypeProvider
+};
+app.UseStaticFiles(staticFileOptions);
 
 app.UseRouting();
 

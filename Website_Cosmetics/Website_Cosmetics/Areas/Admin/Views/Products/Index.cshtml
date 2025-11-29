@@ -1,0 +1,68 @@
+@model IEnumerable<Website_Cosmetics.Models.Product>
+@{
+    ViewData["Title"] = "Products Management";
+}
+
+<div class="page-header">
+    <h1>Products Management</h1>
+    <a asp-action="Create" class="btn btn-primary">Create New Product</a>
+</div>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Image</th>
+            <th>Name</th>
+            <th>Brand</th>
+            <th>Category</th>
+            <th>Base Price</th>
+            <th>Variants</th>
+            <th>Status</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var product in Model)
+        {
+            var primaryImage = product.ProductVariants
+                .SelectMany(v => v.ProductVariantImages)
+                .FirstOrDefault(img => img.IsPrimary);
+            
+            <tr>
+                <td>
+                    @if (primaryImage != null)
+                    {
+                        <img src="@primaryImage.Url" alt="@product.Name" style="width: 80px; height: 80px; object-fit: cover;" />
+                    }
+                    else
+                    {
+                        <div style="width: 80px; height: 80px; background: #f0f0f0; display: flex; align-items: center; justify-content: center;">
+                            No Image
+                        </div>
+                    }
+                </td>
+                <td>@product.Name</td>
+                <td>@(product.Brand?.Name ?? "N/A")</td>
+                <td>@(product.Category?.Name ?? "N/A")</td>
+                <td>@product.BasePrice.ToString("C")</td>
+                <td>@product.ProductVariants.Count()</td>
+                <td>
+                    @if (product.IsActive == true)
+                    {
+                        <span class="badge badge-success">Active</span>
+                    }
+                    else
+                    {
+                        <span class="badge badge-danger">Inactive</span>
+                    }
+                </td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@product.ProductId" class="btn btn-sm btn-primary">Sửa</a>
+                    <a asp-controller="Variants" asp-action="Index" asp-route-productId="@product.ProductId" class="btn btn-sm btn-info">Quản Lý Variants</a>
+                    <a asp-action="Delete" asp-route-id="@product.ProductId" class="btn btn-sm btn-danger">Xóa</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
