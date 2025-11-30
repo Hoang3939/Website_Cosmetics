@@ -7,6 +7,8 @@
     padding: 12px;
     background: var(--bg);
     border-right: 1px solid var(--stroke);
+    /* Prevent the internal negative margins from causing horizontal overflow */
+    overflow-x: hidden;
 }
 
 .sidebar__brand {
@@ -23,7 +25,7 @@
     overflow-y: auto;
     overflow-x: hidden;
     padding-right: 12px;
-    margin-right: -12px;
+    margin-right: 0; /* avoid layout overflow */
     scrollbar-gutter: stable;
     overscroll-behavior: contain;
     align-content: start; /* pack items to top, no distribute spacing */
@@ -106,8 +108,8 @@
     overflow: hidden;
 }
 
-.sidebar__link:hover {
-    opacity: 1;
+    .sidebar__link:hover {
+        opacity: 1;
     background: rgba(255,255,255,0.03);
     border-color: var(--stroke);
     transform: translateX(2px);
@@ -148,4 +150,4 @@
     width: 18px;
     height: 18px;
     opacity: .9;
-}
+    }

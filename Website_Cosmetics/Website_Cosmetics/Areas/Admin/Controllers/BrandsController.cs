@@ -1,13 +1,13 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Website_Cosmetics.Attributes;
+using Microsoft.AspNetCore.Authorization;
 using Website_Cosmetics.Data;
 using Website_Cosmetics.Models;
 
 namespace Website_Cosmetics.Areas.Admin.Controllers
 {
     [Area("Admin")]
-    [RequirePermission("Admin.Brand.Manage")]
+    [Authorize(Roles = "Admin")]
     public class BrandsController : Controller
     {
         private readonly ApplicationDbContext _context;

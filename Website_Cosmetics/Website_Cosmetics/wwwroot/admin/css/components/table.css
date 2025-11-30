@@ -139,12 +139,13 @@
     border-bottom: none;
 }
 
-/* Card container should not clip tooltips */
+/* Card container should not clip tooltips - adjusted to avoid horizontal overflow */
 .card .table-responsive {
     overflow-x: auto;
     overflow-y: visible;
-    margin: -1px;
-    padding: 1px;
+    margin: 0;
+    padding: 0;
+    max-width: 100%;
 }
 
 /* Staff Table Column Widths */
