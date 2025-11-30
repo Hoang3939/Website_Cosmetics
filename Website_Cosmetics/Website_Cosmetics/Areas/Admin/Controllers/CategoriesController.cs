@@ -119,7 +119,7 @@ namespace Website_Cosmetics.Areas.Admin.Controllers
                     // Check if category name already exists
                     if (await _context.Categories.AnyAsync(c => c.Name == category.Name))
                     {
-                        ModelState.AddModelError(nameof(category.Name), "Tên danh mục đã tồn tại. Vui lòng chọn tên khác.");
+                        ModelState.AddModelError(nameof(category.Name), "Category name already exists. Please choose a different name.");
                         return View(category);
                     }
 
@@ -131,14 +131,14 @@ namespace Website_Cosmetics.Areas.Admin.Controllers
                     _context.Categories.Add(category);
                     await _context.SaveChangesAsync();
 
-                    TempData["SuccessMessage"] = $"Danh mục '{category.Name}' đã được tạo thành công.";
+                    TempData["SuccessMessage"] = $"Category '{category.Name}' has been created successfully.";
                     return RedirectToAction(nameof(Index));
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error creating category");
-                ModelState.AddModelError("", $"Lỗi khi tạo danh mục: {ex.Message}");
+                ModelState.AddModelError("", $"Error creating category: {ex.Message}");
             }
 
             return View(category);
@@ -175,10 +175,10 @@ namespace Website_Cosmetics.Areas.Admin.Controllers
             {
                 if (ModelState.IsValid)
                 {
-                    // Check if category name already exists (khác category hiện tại)
+                    // Check if category name already exists (different from current category)
                     if (await _context.Categories.AnyAsync(c => c.Name == category.Name && c.CategoryId != id))
                     {
-                        ModelState.AddModelError(nameof(category.Name), "Tên danh mục đã tồn tại. Vui lòng chọn tên khác.");
+                        ModelState.AddModelError(nameof(category.Name), "Category name already exists. Please choose a different name.");
                         return View(category);
                     }
 
@@ -196,7 +196,7 @@ namespace Website_Cosmetics.Areas.Admin.Controllers
 
                     await _context.SaveChangesAsync();
 
-                    TempData["SuccessMessage"] = $"Danh mục '{existingCategory.Name}' đã được cập nhật thành công.";
+                    TempData["SuccessMessage"] = $"Category '{existingCategory.Name}' has been updated successfully.";
                     return RedirectToAction(nameof(Index));
                 }
             }
@@ -214,7 +214,7 @@ namespace Website_Cosmetics.Areas.Admin.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error editing category {CategoryId}", id);
-                ModelState.AddModelError("", $"Lỗi khi cập nhật danh mục: {ex.Message}");
+                ModelState.AddModelError("", $"Error updating category: {ex.Message}");
             }
 
             return View(category);
@@ -260,27 +260,27 @@ namespace Website_Cosmetics.Areas.Admin.Controllers
                     return NotFound();
                 }
 
-                // Kiểm tra xem có sản phẩm nào đang sử dụng danh mục này không
+                // Check if there are any products using this category
                 var productCount = category.Products?.Count ?? 0;
                 if (productCount > 0)
                 {
-                    TempData["ErrorMessage"] = $"Không thể xóa danh mục '{category.Name}' vì có {productCount} sản phẩm đang sử dụng danh mục này. Vui lòng xóa hoặc chuyển các sản phẩm trước.";
+                    TempData["ErrorMessage"] = $"Cannot delete category '{category.Name}' because {productCount} product(s) are using this category. Please remove or reassign those products first.";
                     return RedirectToAction(nameof(Delete), new { id = id });
                 }
 
                 var categoryName = category.Name;
 
-                // Xóa category (theo database schema, Product.CategoryId có ON DELETE SET NULL, nên không cần lo lắng)
+                // Delete category (according to database schema, Product.CategoryId has ON DELETE SET NULL, so no need to worry)
                 _context.Categories.Remove(category);
                 await _context.SaveChangesAsync();
 
-                TempData["SuccessMessage"] = $"Danh mục '{categoryName}' đã được xóa thành công.";
+                TempData["SuccessMessage"] = $"Category '{categoryName}' has been deleted successfully.";
                 return RedirectToAction(nameof(Index));
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error deleting category {CategoryId}", id);
-                TempData["ErrorMessage"] = $"Lỗi khi xóa danh mục: {ex.Message}";
+                TempData["ErrorMessage"] = $"Error deleting category: {ex.Message}";
                 return RedirectToAction(nameof(Index));
             }
         }
