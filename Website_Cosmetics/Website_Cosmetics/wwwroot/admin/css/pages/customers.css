@@ -1,0 +1,77 @@
+/* Customers Admin Page - scoped styles */
+
+.customers .staff-table th,
+.customers .staff-table td {
+    vertical-align: middle;
+}
+
+/* Column widths and alignment for customers listing */
+.customers .staff-table th:nth-child(1),
+.customers .staff-table td:nth-child(1) {
+    width: 70px;
+    text-align: center;
+}
+
+.customers .staff-table th:nth-child(2),
+.customers .staff-table td:nth-child(2) {
+    width: 200px;
+}
+
+.customers .staff-table th:nth-child(3),
+.customers .staff-table td:nth-child(3) {
+    width: 150px;
+}
+
+.customers .staff-table th:nth-child(4),
+.customers .staff-table td:nth-child(4) {
+    width: 240px;
+}
+
+.customers .staff-table th:nth-child(5),
+.customers .staff-table td:nth-child(5) {
+    width: 150px;
+}
+
+.customers .staff-table th:nth-child(6),
+.customers .staff-table td:nth-child(6),
+.customers .staff-table th:nth-child(7),
+.customers .staff-table td:nth-child(7),
+.customers .staff-table th:nth-child(8),
+.customers .staff-table td:nth-child(8),
+.customers .staff-table th:nth-child(9),
+.customers .staff-table td:nth-child(9) {
+    text-align: center;
+}
+
+.customers .staff-table th:nth-child(9),
+.customers .staff-table td:nth-child(9) {
+    min-width: 220px;
+}
+
+/* Better spacing for action column */
+.customers .action-buttons {
+    justify-content: center;
+}
+
+/* Details view tweaks */
+.customers .grid-cards {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+@media (max-width: 1200px) {
+    .customers .grid-cards {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 640px) {
+    .customers .grid-cards {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Make long addresses and emails wrap nicely */
+.customers .detail-list dd {
+    word-break: break-word;
+}
+

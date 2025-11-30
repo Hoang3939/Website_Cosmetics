@@ -1,0 +1,64 @@
+@model Website_Cosmetics.Models.Order
+@{
+    ViewData["Title"] = "Cancel Order";
+}
+
+<div class="page-header">
+    <div class="page-header__title">
+        <h1>Cancel Order #@Model.OrderNumber</h1>
+    </div>
+    <div class="page-header__actions">
+        <a asp-action="Details" asp-route-id="@Model.OrderId" class="btn btn-secondary">← Back to Details</a>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h3>Confirmation</h3>
+    </div>
+    <div class="card-body">
+        <div class="alert alert-warning">
+            <strong>Warning:</strong> This action cannot be undone. If the order was already paid, system will mark it as <em>Refunded</em> automatically.
+        </div>
+
+        <dl class="detail-list mb-4">
+            <div class="detail-item">
+                <dt>Order</dt>
+                <dd>#@Model.OrderNumber</dd>
+            </div>
+            <div class="detail-item">
+                <dt>Customer</dt>
+                <dd>@(Model.User?.FullName ?? Model.User?.Username ?? "Guest")</dd>
+            </div>
+            <div class="detail-item">
+                <dt>Status</dt>
+                <dd>@Model.Status</dd>
+            </div>
+            <div class="detail-item">
+                <dt>Payment</dt>
+                <dd>@Model.PaymentStatus</dd>
+            </div>
+            <div class="detail-item">
+                <dt>Total</dt>
+                <dd>@Model.Total.ToString("C")</dd>
+            </div>
+        </dl>
+
+        <form asp-action="Cancel" method="post" class="staff-form">
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="OrderId" />
+
+            <div class="form-group">
+                <label for="cancelReason">Cancel Reason (optional)</label>
+                <textarea id="cancelReason" name="cancelReason" class="form-control" rows="4" placeholder="Enter a reason to keep a clear audit trail..."></textarea>
+                <small class="form-text text-muted">A brief reason helps your team and customer support understand why this order was cancelled.</small>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-danger">Confirm Cancel</button>
+                <a asp-action="Details" asp-route-id="@Model.OrderId" class="btn btn-secondary">Keep Order</a>
+            </div>
+        </form>
+    </div>
+</div>
+

@@ -1,0 +1,177 @@
+@model Website_Cosmetics.Models.Order
+@{
+    ViewData["Title"] = $"Order #" + Model.OrderNumber;
+}
+
+<div class="orders">
+    <div class="page-header">
+        <div class="page-header__title">
+            <h1>Order #@Model.OrderNumber</h1>
+            <span class="page-header__count">@Model.CreatedAt.ToString("MM/dd/yyyy HH:mm")</span>
+        </div>
+        <div class="page-header__actions">
+            <a asp-action="Index" class="btn btn-secondary">← Back to Orders</a>
+            <a asp-action="UpdateStatus" asp-route-id="@Model.OrderId" class="btn btn-primary">Update Status</a>
+            @if (Model.Status != "Cancelled" && Model.Status != "Delivered")
+            {
+                <a asp-action="Cancel" asp-route-id="@Model.OrderId" class="btn btn-danger">Cancel Order</a>
+            }
+        </div>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+    }
+
+    <div class="grid-cards grid-cards--order-details">
+        <div class="card">
+            <div class="card__hd"><strong>Customer</strong></div>
+            <div>
+                <div class="kv">
+                    <div class="kv__row">
+                        <div class="kv__label">Name</div>
+                        <div class="kv__value value">@(Model.User?.FullName ?? Model.User?.Username ?? "Guest")</div>
+                    </div>
+                    <div class="kv__row">
+                        <div class="kv__label">Email</div>
+                        <div class="kv__value value text-ellipsis" title="@(Model.User?.Email ?? "N/A")">
+                            @if (!string.IsNullOrWhiteSpace(Model.User?.Email)) {<a href="mailto:@Model.User.Email">@Model.User.Email</a>} else { @:N/A }
+                        </div>
+                    </div>
+                    <div class="kv__row">
+                        <div class="kv__label">Phone</div>
+                        <div class="kv__value value">
+                            @if (!string.IsNullOrWhiteSpace(Model.User?.PhoneNumber)) {<a href="tel:@Model.User.PhoneNumber">@Model.User.PhoneNumber</a>} else { @:N/A }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card__hd"><strong>Shipping</strong></div>
+            <div>
+                <div class="kv">
+                    <div class="kv__row">
+                        <div class="kv__label">Method</div>
+                        <div class="kv__value value">@(Model.ShippingMethod ?? "Standard")</div>
+                    </div>
+                    <div class="kv__row">
+                        <div class="kv__label">Address</div>
+                        <div class="kv__value value text-multiline">@(Model.ShippingAddress ?? "N/A")</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card__hd"><strong>Payment</strong></div>
+            <div>
+                <div class="kv">
+                    <div class="kv__row">
+                        <div class="kv__label">Method</div>
+                        <div class="kv__value value">@(Model.PaymentMethod ?? "N/A")</div>
+                    </div>
+                    <div class="kv__row">
+                        <div class="kv__label">Status</div>
+                        <div class="kv__value value">
+                            @switch (Model.PaymentStatus)
+                            {
+                                case "Paid":
+                                    <span class="badge badge-success">Paid</span>
+                                    break;
+                                case "Failed":
+                                    <span class="badge badge-danger">Failed</span>
+                                    break;
+                                case "Refunded":
+                                    <span class="badge badge-info">Refunded</span>
+                                    break;
+                                default:
+                                    <span class="badge badge-warning">Pending</span>
+                                    break;
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card summary">
+            <div class="card__hd"><strong>Summary</strong></div>
+            <div>
+                <div class="kv">
+                    <div class="kv__row">
+                        <div class="kv__label">Status</div>
+                        <div class="kv__value kv__value--right value">
+                            @switch (Model.Status)
+                            {
+                                case "Processing":
+                                    <span class="badge badge--processing">Processing</span>
+                                    break;
+                                case "Shipped":
+                                    <span class="badge badge--shipped">Shipped</span>
+                                    break;
+                                case "Delivered":
+                                    <span class="badge badge-success">Delivered</span>
+                                    break;
+                                case "Cancelled":
+                                    <span class="badge badge-danger">Cancelled</span>
+                                    break;
+                                default:
+                                    <span class="badge badge-warning">Pending</span>
+                                    break;
+                            }
+                        </div>
+                    </div>
+                    <div class="kv__row"><div class="kv__label">Subtotal</div><div class="kv__value kv__value--right value num">@Model.SubTotal.ToString("C")</div></div>
+                    <div class="kv__row"><div class="kv__label">Shipping</div><div class="kv__value kv__value--right value num">@Model.ShippingFee.ToString("C")</div></div>
+                    <div class="kv__row"><div class="kv__label">Discount</div><div class="kv__value kv__value--right value num">-@Model.Discount.ToString("C")</div></div>
+                    <div class="kv__row"><div class="kv__label">Total</div><div class="kv__value kv__value--right value num"><strong>@Model.Total.ToString("C")</strong></div></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card__hd"><strong>Items</strong></div>
+        <div class="table table--order-items">
+            <div class="table__row table__row--hd">
+                <div>Product</div>
+                <div>Variant</div>
+                <div>Qty</div>
+                <div>Unit Price</div>
+                <div>Subtotal</div>
+            </div>
+            @foreach (var item in Model.OrderItems)
+            {
+                <div class="table__row">
+                    <div class="table__cell" data-label="Product">@(item.ProductVariant?.Product?.Name ?? item.ProductName)</div>
+                    <div class="table__cell" data-label="Variant">@item.ColorName</div>
+                    <div class="table__cell" data-label="Qty">@item.Quantity</div>
+                    <div class="table__cell" data-label="Unit Price">@item.UnitPrice.ToString("C")</div>
+                    <div class="table__cell" data-label="Subtotal">@item.Subtotal.ToString("C")</div>
+                </div>
+            }
+        </div>
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(Model.Notes))
+    {
+        <div class="card">
+            <div class="card__hd"><strong>Notes</strong></div>
+            <div class="card-body">
+                <div>@Html.Raw((Model.Notes ?? string.Empty).Replace("\n","<br/>").Replace("\r",""))</div>
+            </div>
+        </div>
+    }
+</div>
+
+@section Styles {
+    <link rel="stylesheet" href="~/admin/css/pages/orders.css" asp-append-version="true" />
+}
+

@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authorization;
 using Website_Cosmetics.Attributes;
 using Website_Cosmetics.Data;
 using Website_Cosmetics.Models;
@@ -7,7 +8,7 @@ using Website_Cosmetics.Models;
 namespace Website_Cosmetics.Areas.Admin.Controllers
 {
     [Area("Admin")]
-    [RequirePermission("Admin.Order.Manage")]
+    [Authorize(Roles = "Admin")]
     public class OrdersController : Controller
     {
         private readonly ApplicationDbContext _context;
