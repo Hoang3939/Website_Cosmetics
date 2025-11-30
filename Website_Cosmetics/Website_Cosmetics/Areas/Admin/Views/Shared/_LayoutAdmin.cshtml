@@ -30,6 +30,7 @@
                     <a class="sidebar__link" asp-area="Admin" asp-controller="Products" asp-action="Index">Products</a>
                     <a class="sidebar__link" asp-area="Admin" asp-controller="Orders" asp-action="Index">Orders</a>
                     <a class="sidebar__link" asp-area="Admin" asp-controller="Users" asp-action="Index">Users</a>
+                    <a class="sidebar__link" asp-area="Admin" asp-controller="Staff" asp-action="Index">Staff Management</a>
                     <a class="sidebar__link" asp-area="Admin" asp-controller="Reviews" asp-action="Index">Reviews</a>
                 </div>
 
@@ -80,6 +81,25 @@
         </div>
     </div>
 
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        // Sidebar toggle
+        document.addEventListener('DOMContentLoaded', function() {
+            const toggleBtn = document.getElementById('btnSidebarToggle');
+            const sidebar = document.querySelector('.sidebar');
+            
+            if (toggleBtn && sidebar) {
+                toggleBtn.addEventListener('click', function() {
+                    sidebar.classList.toggle('is-open');
+                });
+            }
+            
+            // Initialize Lucide icons
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
+        });
+    </script>
     @RenderSection("Scripts", required: false)
     
     <!-- Admin JS -->

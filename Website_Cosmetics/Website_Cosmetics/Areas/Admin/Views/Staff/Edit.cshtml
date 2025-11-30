@@ -1,0 +1,95 @@
+@model Website_Cosmetics.Models.User
+@{
+    ViewData["Title"] = "Edit Staff";
+}
+
+<div class="page-header">
+    <h1>Edit Staff: @(Model.FullName ?? Model.Username)</h1>
+    <div>
+        <a asp-action="Index" class="btn btn-secondary">← Back to List</a>
+        <a asp-action="Details" asp-route-id="@Model.UserId" class="btn btn-info">View Details</a>
+    </div>
+</div>
+
+<form asp-action="Edit" method="post" class="staff-form">
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="UserId" />
+
+    <div class="card">
+        <div class="card-header">
+            <h3>Basic Information</h3>
+        </div>
+        <div class="card-body">
+            <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label asp-for="Username">Username *</label>
+                    <input asp-for="Username" class="form-control" required />
+                    <span asp-validation-for="Username" class="text-danger"></span>
+                    <small class="form-text text-muted">Username can only contain letters, numbers, and underscores</small>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="Email">Email *</label>
+                    <input asp-for="Email" type="email" class="form-control" required />
+                    <span asp-validation-for="Email" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label asp-for="FirstName">First Name</label>
+                    <input asp-for="FirstName" class="form-control" />
+                    <span asp-validation-for="FirstName" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="LastName">Last Name</label>
+                    <input asp-for="LastName" class="form-control" />
+                    <span asp-validation-for="LastName" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label asp-for="PhoneNumber">Phone Number</label>
+                    <input asp-for="PhoneNumber" class="form-control" />
+                    <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+                    <small class="form-text text-muted">Phone number should contain only digits (10-11 digits)</small>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="IsEmailConfirmed">Email Confirmed</label>
+                    <select asp-for="IsEmailConfirmed" class="form-control">
+                        <option value="true" selected="@(Model.IsEmailConfirmed)">Yes</option>
+                        <option value="false" selected="@(!Model.IsEmailConfirmed)">No</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="IsActive">Status</label>
+                <select asp-for="IsActive" class="form-control">
+                    <option value="true" selected="@(Model.IsActive == true)">Active</option>
+                    <option value="false" selected="@(Model.IsActive == false)">Inactive</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-actions mt-4">
+        <button type="submit" class="btn btn-primary">Save Changes</button>
+        <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+    </div>
+</form>
+
+@section Styles {
+    <link rel="stylesheet" href="~/admin/css/pages/staff-management.css" asp-append-version="true" />
+}
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script src="~/admin/js/staff-management.js" asp-append-version="true"></script>
+}
+
