@@ -1,11 +1,10 @@
 @model IEnumerable<Website_Cosmetics.Models.Product>
 @{
     ViewData["Title"] = "Products Management";
-    var hasActiveFilters = ViewBag.HasActiveFilters as bool? ?? false;
     var searchTerm = ViewBag.SearchTerm as string ?? "";
-    var selectedBrandId = ViewBag.SelectedBrandId as int?;
-    var selectedCategoryId = ViewBag.SelectedCategoryId as int?;
-    var selectedIsActive = ViewBag.SelectedIsActive as bool?;
+    var brandId = ViewBag.SelectedBrandId as int?;
+    var categoryId = ViewBag.SelectedCategoryId as int?;
+    var isActive = ViewBag.SelectedIsActive as bool?;
 }
 
 <div class="page-header">
@@ -17,6 +16,15 @@
     <a asp-action="Create" class="btn btn-primary">Create New Product</a>
     </div>
 </div>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+}
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+}
 
 <!-- Search and Filter Section -->
 <div class="card filter-section">
@@ -43,7 +51,7 @@
                         {
                             @foreach (var brand in brands)
                             {
-                                @if (selectedBrandId == brand.BrandId)
+                                @if (brandId == brand.BrandId)
                                 {
                                     <option value="@brand.BrandId" selected>@brand.Name</option>
                                 }
@@ -68,7 +76,7 @@
                         {
                             @foreach (var category in categories)
                             {
-                                @if (selectedCategoryId == category.CategoryId)
+                                @if (categoryId == category.CategoryId)
                                 {
                                     <option value="@category.CategoryId" selected>@category.Name</option>
                                 }
@@ -86,12 +94,12 @@
             <div class="filter-form__group">
                 <select name="isActive" class="filter-form__select">
                     <option value="">All Status</option>
-                    @if (selectedIsActive == true)
+                    @if (isActive == true)
                     {
                         <option value="true" selected>Active</option>
                         <option value="false">Inactive</option>
                     }
-                    else if (selectedIsActive == false)
+                    else if (isActive == false)
                     {
                         <option value="true">Active</option>
                         <option value="false" selected>Inactive</option>
@@ -109,9 +117,9 @@
                 <button type="submit" class="btn btn-primary btn-icon" data-tooltip="Apply Filters">
                     <i data-lucide="filter"></i>
                 </button>
-                @if (hasActiveFilters)
+                @if (!string.IsNullOrWhiteSpace(searchTerm) || brandId.HasValue || categoryId.HasValue || isActive.HasValue)
                 {
-                    <a asp-action="Index" class="btn btn-secondary filter-clear btn-icon" data-tooltip="Clear All Filters">
+                    <a asp-action="Index" class="btn btn-secondary btn-icon" data-tooltip="Clear All Filters">
                         <i data-lucide="x"></i>
                     </a>
                 }
@@ -124,17 +132,17 @@
 <div class="card">
     @if (!Model.Any())
     {
-        <div class="empty-state">
-            <p>No products found.</p>
-            @if (hasActiveFilters)
-            {
-                <a asp-action="Index" class="link">Clear filters to see all products</a>
-            }
-            else
-            {
-                <a asp-action="Create" class="link">Create your first product</a>
-            }
-        </div>
+            <div class="empty-state">
+                <p>No products found.</p>
+                @if (!string.IsNullOrWhiteSpace(searchTerm) || brandId.HasValue || categoryId.HasValue || isActive.HasValue)
+                {
+                    <a asp-action="Index" class="link">Clear filters to see all products</a>
+                }
+                else
+                {
+                    <a asp-action="Create" class="link">Create your first product</a>
+                }
+            </div>
     }
     else
     {

@@ -12,11 +12,13 @@ namespace Website_Cosmetics.Areas.Admin.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly IWebHostEnvironment _environment;
+        private readonly ILogger<VariantsController> _logger;
 
-        public VariantsController(ApplicationDbContext context, IWebHostEnvironment environment)
+        public VariantsController(ApplicationDbContext context, IWebHostEnvironment environment, ILogger<VariantsController> logger)
         {
             _context = context;
             _environment = environment;
+            _logger = logger;
         }
 
         // GET: Admin/Variants?productId=5
@@ -71,12 +73,6 @@ namespace Website_Cosmetics.Areas.Admin.Controllers
             ViewBag.SelectedIsDefault = isDefault;
             ViewBag.HasActiveFilters = !string.IsNullOrWhiteSpace(searchTerm) || isActive.HasValue || isDefault.HasValue;
 
-            // Hiển thị thông báo nếu có
-            if (TempData["SuccessMessage"] != null)
-            {
-                ViewBag.SuccessMessage = TempData["SuccessMessage"];
-            }
-
             return View(variants);
         }
 
@@ -118,13 +114,29 @@ namespace Website_Cosmetics.Areas.Admin.Controllers
                     return NotFound();
                 }
 
+                // Remove fields not posted by the form to avoid ModelState invalidation
+                ModelState.Remove(nameof(variant.Product));
+                ModelState.Remove(nameof(variant.ProductVariantImages));
+                ModelState.Remove(nameof(variant.CartItems));
+                ModelState.Remove(nameof(variant.OrderItems));
+                ModelState.Remove(nameof(variant.ProductId));
+                ModelState.Remove(nameof(variant.CreatedAt));
+                ModelState.Remove(nameof(variant.UpdatedAt));
+                ModelState.Remove(nameof(variant.VariantId));
+
+                // VALIDATION: Check if images are provided BEFORE saving variant
+                if (variantImages == null || variantImages.Count == 0)
+                {
+                    ModelState.AddModelError("", "Variant must have at least 1 image. Please upload at least 1 image and mark it as primary.");
+                }
+
                 if (ModelState.IsValid)
                 {
                     variant.ProductId = productId;
                     variant.CreatedAt = DateTime.Now;
                     variant.UpdatedAt = DateTime.Now;
 
-                    // Nếu đây là variant đầu tiên, set làm default
+                    // If this is the first variant, set it as default
                     var existingVariants = await _context.ProductVariants
                         .Where(v => v.ProductId == productId)
                         .CountAsync();
@@ -133,24 +145,38 @@ namespace Website_Cosmetics.Areas.Admin.Controllers
                     {
                         variant.IsDefault = true;
                     }
+                    
+                    // If setting this variant as default, unset default flag from other variants
+                    if (variant.IsDefault == true)
+                    {
+                        var otherDefaultVariants = await _context.ProductVariants
+                            .Where(v => v.ProductId == productId && v.VariantId != variant.VariantId && v.IsDefault == true)
+                            .ToListAsync();
+                        
+                        foreach (var otherVariant in otherDefaultVariants)
+                        {
+                            otherVariant.IsDefault = false;
+                        }
+                    }
 
                     _context.ProductVariants.Add(variant);
                     await _context.SaveChangesAsync();
 
                     // Upload images for the variant
-                    if (variantImages != null && variantImages.Count > 0)
+                    // If no primary image is selected, set the first one as primary
+                    if (primaryImageIndices == null || primaryImageIndices.Count == 0)
                     {
-                        // If no primary image is selected, set the first one as primary
-                        if (primaryImageIndices == null || primaryImageIndices.Count == 0)
-                        {
-                            primaryImageIndices = new List<int> { 0 };
-                        }
-                        await UploadVariantImages(variant.VariantId, variantImages, primaryImageIndices, makeupReferenceIndices);
+                        primaryImageIndices = new List<int> { 0 };
                     }
-                    else
+                    
+                    try
                     {
-                        // VALIDATION: Variant phải có ít nhất 1 ảnh primary
-                        ModelState.AddModelError("", "Variant phải có ít nhất 1 ảnh. Vui lòng upload ít nhất 1 ảnh và đánh dấu làm ảnh chính.");
+                        await UploadVariantImages(variant.VariantId, variantImages!, primaryImageIndices, makeupReferenceIndices);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Error uploading variant images for variant {VariantId}", variant.VariantId);
+                        ModelState.AddModelError("", $"Error uploading images: {ex.Message}");
                         
                         var productForError = await _context.Products
                             .Include(p => p.Brand)
@@ -162,13 +188,13 @@ namespace Website_Cosmetics.Areas.Admin.Controllers
                         return View(variant);
                     }
 
-                    // VALIDATION: Kiểm tra variant có ít nhất 1 ảnh primary sau khi upload
+                    // VALIDATION: Check if variant has at least 1 primary image after upload
                     var hasPrimaryImage = await _context.ProductVariantImages
                         .AnyAsync(img => img.VariantId == variant.VariantId && img.IsPrimary);
                     
                     if (!hasPrimaryImage)
                     {
-                        // Nếu không có primary image, set ảnh đầu tiên làm primary
+                        // If no primary image, set the first image as primary
                         var firstImage = await _context.ProductVariantImages
                             .Where(img => img.VariantId == variant.VariantId)
                             .OrderBy(img => img.DisplayOrder)
@@ -181,7 +207,7 @@ namespace Website_Cosmetics.Areas.Admin.Controllers
                         }
                     }
 
-                    TempData["SuccessMessage"] = $"Variant '{variant.VariantName}' đã được tạo thành công.";
+                    TempData["SuccessMessage"] = $"Variant '{variant.VariantName}' has been created successfully.";
                     return RedirectToAction(nameof(Index), new { productId = productId });
                 }
             }
@@ -241,10 +267,24 @@ namespace Website_Cosmetics.Areas.Admin.Controllers
             List<string>? existingIsMakeupReference,
             List<int>? existingDisplayOrder)
         {
+            // Fallback: if id is 0, use variant.VariantId
+            if (id == 0 && variant.VariantId > 0)
+            {
+                id = variant.VariantId;
+            }
+
             if (id != variant.VariantId)
             {
                 return NotFound();
             }
+
+            // Remove fields not posted by the form to avoid ModelState invalidation
+            ModelState.Remove(nameof(variant.Product));
+            ModelState.Remove(nameof(variant.ProductVariantImages));
+            ModelState.Remove(nameof(variant.CartItems));
+            ModelState.Remove(nameof(variant.OrderItems));
+            ModelState.Remove(nameof(variant.CreatedAt));
+            ModelState.Remove(nameof(variant.UpdatedAt));
 
             if (ModelState.IsValid)
             {
@@ -275,6 +315,20 @@ namespace Website_Cosmetics.Areas.Admin.Controllers
                     existingVariant.Stock = variant.Stock;
                     existingVariant.LowStockThreshold = variant.LowStockThreshold;
                     existingVariant.IsActive = variant.IsActive;
+                    
+                    // If setting this variant as default, unset default flag from other variants
+                    if (variant.IsDefault == true && existingVariant.IsDefault != true)
+                    {
+                        var otherDefaultVariants = await _context.ProductVariants
+                            .Where(v => v.ProductId == existingVariant.ProductId && v.VariantId != id && v.IsDefault == true)
+                            .ToListAsync();
+                        
+                        foreach (var otherVariant in otherDefaultVariants)
+                        {
+                            otherVariant.IsDefault = false;
+                        }
+                    }
+                    
                     existingVariant.IsDefault = variant.IsDefault;
                     existingVariant.DisplayOrder = variant.DisplayOrder;
                     existingVariant.UpdatedAt = DateTime.Now;
@@ -325,14 +379,14 @@ namespace Website_Cosmetics.Areas.Admin.Controllers
                         await UploadVariantImages(id, newVariantImages, primaryImageIndices, makeupReferenceIndices);
                     }
 
-                    // VALIDATION: Kiểm tra variant có ít nhất 1 ảnh sau khi cập nhật
+                    // VALIDATION: Check if variant has at least 1 image after update
                     var totalImages = await _context.ProductVariantImages
                         .CountAsync(img => img.VariantId == id);
                     
                     if (totalImages == 0)
                     {
-                        // Nếu không có ảnh nào, báo lỗi
-                        ModelState.AddModelError("", "Variant phải có ít nhất 1 ảnh. Vui lòng upload ít nhất 1 ảnh và đánh dấu làm ảnh chính.");
+                        // If no images, show error
+                        ModelState.AddModelError("", "Variant must have at least 1 image. Please upload at least 1 image and mark it as primary.");
                         
                         var variantForError = await _context.ProductVariants
                             .Include(v => v.Product)
@@ -347,13 +401,13 @@ namespace Website_Cosmetics.Areas.Admin.Controllers
                         return View(variant);
                     }
 
-                    // VALIDATION: Kiểm tra variant có ít nhất 1 ảnh primary
+                    // VALIDATION: Check if variant has at least 1 primary image
                     var hasPrimaryImage = await _context.ProductVariantImages
                         .AnyAsync(img => img.VariantId == id && img.IsPrimary);
                     
                     if (!hasPrimaryImage)
                     {
-                        // Nếu không có primary image, set ảnh đầu tiên làm primary
+                        // If no primary image, set the first image as primary
                         var firstImage = await _context.ProductVariantImages
                             .Where(img => img.VariantId == id)
                             .OrderBy(img => img.DisplayOrder)
@@ -366,7 +420,7 @@ namespace Website_Cosmetics.Areas.Admin.Controllers
                     }
 
                     await _context.SaveChangesAsync();
-                    TempData["SuccessMessage"] = $"Variant '{variant.VariantName}' đã được cập nhật thành công.";
+                    TempData["SuccessMessage"] = $"Variant '{variant.VariantName}' has been updated successfully.";
                     return RedirectToAction(nameof(Index), new { productId = existingVariant.ProductId });
                 }
                 catch (DbUpdateConcurrencyException)
@@ -431,24 +485,26 @@ namespace Website_Cosmetics.Areas.Admin.Controllers
             {
                 var productId = variant.ProductId;
 
+                var variantName = variant.VariantName;
+
                 // Delete image files
                 foreach (var image in variant.ProductVariantImages)
                 {
                     DeleteImageFile(image.Url);
                 }
 
-                // Xóa folder variant sau khi xóa tất cả ảnh
+                // Delete variant folder after deleting all images
                 DeleteVariantFolder(variant);
 
                 _context.ProductVariants.Remove(variant);
                 await _context.SaveChangesAsync();
 
-                // Kiểm tra xem còn variant nào không, nếu không còn thì xóa folder sản phẩm
+                // Check if there are any remaining variants, if not, delete product folder
                 var remainingVariants = await _context.ProductVariants
                     .Where(v => v.ProductId == productId)
                     .ToListAsync();
 
-                // Nếu variant bị xóa là default, set variant đầu tiên làm default
+                // If the deleted variant was default, set the first remaining variant as default
                 if (remainingVariants.Any() && !remainingVariants.Any(v => v.IsDefault))
                 {
                     var firstVariant = remainingVariants.First();
@@ -457,15 +513,16 @@ namespace Website_Cosmetics.Areas.Admin.Controllers
                 }
                 else if (!remainingVariants.Any())
                 {
-                    // Nếu không còn variant nào, xóa folder sản phẩm
+                    // If no variants remain, delete product folder
                     DeleteProductFolder(variant.Product);
                 }
 
-                TempData["SuccessMessage"] = $"Variant '{variant.VariantName}' đã được xóa thành công.";
+                TempData["SuccessMessage"] = $"Variant '{variantName}' has been deleted successfully.";
                 return RedirectToAction(nameof(Index), new { productId = productId });
             }
 
-            return NotFound();
+            TempData["ErrorMessage"] = "Variant not found.";
+            return RedirectToAction(nameof(Index), new { productId = variant?.ProductId ?? 0 });
         }
 
         // POST: Admin/Variants/DeleteImage
@@ -485,7 +542,7 @@ namespace Website_Cosmetics.Areas.Admin.Controllers
             _context.ProductVariantImages.Remove(image);
             await _context.SaveChangesAsync();
 
-            // VALIDATION: Nếu ảnh bị xóa là primary, set ảnh đầu tiên còn lại làm primary
+            // VALIDATION: If deleted image was primary, set the first remaining image as primary
             if (wasPrimary)
             {
                 var firstRemainingImage = await _context.ProductVariantImages
@@ -510,7 +567,7 @@ namespace Website_Cosmetics.Areas.Admin.Controllers
         {
             if (request.VariantIds == null || request.VariantIds.Count == 0)
             {
-                return Json(new { success = false, message = "Vui lòng chọn ít nhất 1 variant để xóa" });
+                return Json(new { success = false, message = "Please select at least 1 variant to delete" });
             }
 
             var variants = await _context.ProductVariants
@@ -521,16 +578,16 @@ namespace Website_Cosmetics.Areas.Admin.Controllers
 
             if (variants.Count == 0)
             {
-                return Json(new { success = false, message = "Không tìm thấy variants để xóa" });
+                return Json(new { success = false, message = "No variants found to delete" });
             }
 
             var productId = variants.First().ProductId;
             
-            // Lấy thông tin product để xóa folder
+            // Get product information to delete folder
             var product = await _context.Products
                 .FirstOrDefaultAsync(p => p.ProductId == productId);
 
-            // Delete image files và xóa folder variant
+            // Delete image files and delete variant folder
             foreach (var variant in variants)
             {
                 foreach (var image in variant.ProductVariantImages)
@@ -538,14 +595,14 @@ namespace Website_Cosmetics.Areas.Admin.Controllers
                     DeleteImageFile(image.Url);
                 }
                 
-                // Xóa folder variant
+                // Delete variant folder
                 DeleteVariantFolder(variant);
             }
 
             _context.ProductVariants.RemoveRange(variants);
             await _context.SaveChangesAsync();
 
-            // Nếu variant bị xóa có default, set variant đầu tiên còn lại làm default
+            // If deleted variants include default, set the first remaining variant as default
             var remainingVariants = await _context.ProductVariants
                 .Where(v => v.ProductId == productId)
                 .ToListAsync();
@@ -558,13 +615,13 @@ namespace Website_Cosmetics.Areas.Admin.Controllers
             }
             else if (!remainingVariants.Any() && product != null)
             {
-                // Nếu không còn variant nào, xóa folder sản phẩm
+                // If no variants remain, delete product folder
                 DeleteProductFolder(product);
             }
 
             return Json(new { 
                 success = true, 
-                message = $"Đã xóa {variants.Count} variant(s) thành công",
+                message = $"Successfully deleted {variants.Count} variant(s)",
                 deletedCount = variants.Count
             });
         }
@@ -624,7 +681,7 @@ namespace Website_Cosmetics.Areas.Admin.Controllers
                 throw new InvalidOperationException("WebRootPath is not set");
             }
 
-            // Lấy thông tin variant và product để tạo folder structure
+            // Get variant and product information to create folder structure
             var variant = await _context.ProductVariants
                 .Include(v => v.Product)
                 .FirstOrDefaultAsync(v => v.VariantId == variantId);
@@ -634,38 +691,38 @@ namespace Website_Cosmetics.Areas.Admin.Controllers
                 throw new InvalidOperationException("Variant not found");
             }
 
-            // Tạo folder name cho sản phẩm (từ tên sản phẩm)
+            // Generate folder name for product (from product name)
             var productFolderName = GenerateSlug(variant.Product.Name);
             
-            // Tạo folder name cho variant (từ tên variant hoặc màu sắc)
+            // Generate folder name for variant (from variant name or color)
             string variantFolderName;
             if (!string.IsNullOrEmpty(variant.ColorName))
             {
-                // Nếu có màu sắc, dùng tên màu
+                // If color exists, use color name
                 variantFolderName = GenerateSlug(variant.ColorName);
             }
             else if (!string.IsNullOrEmpty(variant.VariantName))
             {
-                // Nếu không có màu, dùng tên variant
+                // If no color, use variant name
                 variantFolderName = GenerateSlug(variant.VariantName);
             }
             else
             {
-                // Fallback: dùng VariantId
+                // Fallback: use VariantId
                 variantFolderName = $"variant-{variantId}";
             }
 
             // Create directory path: wwwroot/public/images/products/{ProductName}/{VariantName}/
             var uploadPath = Path.Combine(_environment.WebRootPath, "public", "images", "products", productFolderName, variantFolderName);
             
-            // Tạo folder sản phẩm nếu chưa tồn tại
+            // Create product folder if it doesn't exist
             var productFolderPath = Path.Combine(_environment.WebRootPath, "public", "images", "products", productFolderName);
             if (!Directory.Exists(productFolderPath))
             {
                 Directory.CreateDirectory(productFolderPath);
             }
             
-            // Tạo folder variant nếu chưa tồn tại
+            // Create variant folder if it doesn't exist
             if (!Directory.Exists(uploadPath))
             {
                 Directory.CreateDirectory(uploadPath);
@@ -777,7 +834,7 @@ namespace Website_Cosmetics.Areas.Admin.Controllers
         }
 
         /// <summary>
-        /// Xóa folder variant khi xóa variant
+        /// Delete variant folder when deleting variant
         /// </summary>
         private void DeleteVariantFolder(ProductVariant variant)
         {
@@ -788,10 +845,10 @@ namespace Website_Cosmetics.Areas.Admin.Controllers
 
             try
             {
-                // Tạo folder name cho sản phẩm
+                // Generate folder name for product
                 var productFolderName = GenerateSlug(variant.Product.Name);
                 
-                // Tạo folder name cho variant
+                // Generate folder name for variant
                 string variantFolderName;
                 if (!string.IsNullOrEmpty(variant.ColorName))
                 {
@@ -809,21 +866,21 @@ namespace Website_Cosmetics.Areas.Admin.Controllers
                 // Path: wwwroot/public/images/products/{ProductName}/{VariantName}/
                 var variantFolderPath = Path.Combine(_environment.WebRootPath, "public", "images", "products", productFolderName, variantFolderName);
                 
-                // Xóa folder variant nếu tồn tại
+                // Delete variant folder if it exists
                 if (Directory.Exists(variantFolderPath))
                 {
-                    Directory.Delete(variantFolderPath, true); // true = xóa cả folder con và file bên trong
+                    Directory.Delete(variantFolderPath, true); // true = delete subfolders and files inside
                 }
             }
             catch (Exception ex)
             {
-                // Log error nhưng không throw để không ảnh hưởng đến việc xóa variant
+                // Log error but don't throw to avoid affecting variant deletion
                 Console.WriteLine($"Error deleting variant folder: {ex.Message}");
             }
         }
 
         /// <summary>
-        /// Xóa folder sản phẩm khi không còn variant nào
+        /// Delete product folder when no variants remain
         /// </summary>
         private void DeleteProductFolder(Product product)
         {
@@ -834,25 +891,25 @@ namespace Website_Cosmetics.Areas.Admin.Controllers
 
             try
             {
-                // Tạo folder name cho sản phẩm
+                // Generate folder name for product
                 var productFolderName = GenerateSlug(product.Name);
                 
                 // Path: wwwroot/public/images/products/{ProductName}/
                 var productFolderPath = Path.Combine(_environment.WebRootPath, "public", "images", "products", productFolderName);
                 
-                // Xóa folder sản phẩm nếu tồn tại và rỗng (hoặc xóa luôn nếu muốn)
+                // Delete product folder if it exists and is empty
                 if (Directory.Exists(productFolderPath))
                 {
-                    // Kiểm tra xem folder có rỗng không
+                    // Check if folder is empty
                     var hasFiles = Directory.GetFiles(productFolderPath, "*", SearchOption.AllDirectories).Length > 0;
                     var hasSubFolders = Directory.GetDirectories(productFolderPath).Length > 0;
                     
-                    // Nếu folder rỗng hoặc không còn subfolder nào, xóa luôn
+                    // If folder is empty or has no subfolders, delete it
                     if (!hasFiles && !hasSubFolders)
                     {
                         Directory.Delete(productFolderPath, true);
                     }
-                    // Nếu còn subfolder nhưng rỗng, xóa các subfolder rỗng
+                    // If subfolders exist but are empty, delete empty subfolders
                     else if (!hasFiles)
                     {
                         var subFolders = Directory.GetDirectories(productFolderPath);
@@ -875,13 +932,13 @@ namespace Website_Cosmetics.Areas.Admin.Controllers
             }
             catch (Exception ex)
             {
-                // Log error nhưng không throw
+                // Log error but don't throw
                 Console.WriteLine($"Error deleting product folder: {ex.Message}");
             }
         }
 
         /// <summary>
-        /// Tạo slug từ text (dùng để tạo tên folder)
+        /// Generate slug from text (used to create folder names)
         /// </summary>
         private string GenerateSlug(string text)
         {
@@ -906,7 +963,7 @@ namespace Website_Cosmetics.Areas.Admin.Controllers
             text = text.Replace("ỳ", "y").Replace("ý", "y").Replace("ỵ", "y").Replace("ỷ", "y").Replace("ỹ", "y");
             text = text.Replace("đ", "d");
 
-            // Remove special characters (giữ lại chữ, số, dấu gạch ngang và khoảng trắng)
+            // Remove special characters (keep letters, numbers, hyphens and spaces)
             text = System.Text.RegularExpressions.Regex.Replace(text, @"[^a-z0-9\s-]", "");
 
             // Replace spaces with hyphens

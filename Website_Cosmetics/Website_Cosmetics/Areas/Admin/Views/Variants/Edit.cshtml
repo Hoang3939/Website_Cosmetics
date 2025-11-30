@@ -37,7 +37,7 @@
 </div>
 
 <div class="card">
-    <form asp-action="Edit" method="post" enctype="multipart/form-data" class="form">
+    <form asp-action="Edit" method="post" enctype="multipart/form-data" class="form" asp-route-id="@Model.VariantId">
         @Html.AntiForgeryToken()
         <input type="hidden" asp-for="VariantId" />
         <input type="hidden" asp-for="ProductId" />

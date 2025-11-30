@@ -11,7 +11,8 @@
 
 <div class="page-header">
     <div class="page-header__title">
-    <h1>Staff Management</h1>
+        <h1>Staff Management</h1>
+        <span class="page-header__count">@totalCount staff(s)</span>
     </div>
     <div class="page-header__actions">
         <a asp-action="Create" class="btn btn-primary">+ Add New Staff</a>
@@ -59,18 +60,17 @@
                         <i data-lucide="filter"></i>
                         <span class="tooltip">Apply filters</span>
                     </button>
-                    <a asp-action="Index" class="btn btn-icon btn-secondary" id="resetBtn" title="Reset filters" style="display: none;">
-                        <i data-lucide="x"></i>
-                        <span class="tooltip">Reset filters</span>
-                    </a>
+                    @if (!string.IsNullOrWhiteSpace(search) || !string.IsNullOrWhiteSpace(status))
+                    {
+                        <a asp-action="Index" class="btn btn-icon btn-secondary" title="Reset filters">
+                            <i data-lucide="x"></i>
+                            <span class="tooltip">Reset filters</span>
+                        </a>
+                    }
                 </div>
             </div>
         </form>
     </div>
-</div>
-
-<div class="d-flex justify-content-between align-items-center mb-3">
-    <h3>Staff List (@totalCount total)</h3>
 </div>
 
 @if (!Model.Any())
@@ -150,7 +150,7 @@ else
                                     {
                                         <form asp-action="Deactivate" asp-route-id="@staff.UserId" method="post" class="d-inline">
                                             @Html.AntiForgeryToken()
-                                            <button type="submit" class="btn btn-sm btn-icon btn-warning" title="Deactivate" onclick="return confirm('Are you sure you want to deactivate this staff member?')">
+                                            <button type="submit" class="btn btn-sm btn-icon btn-warning" title="Deactivate">
                                                 <i data-lucide="user-x"></i>
                                                 <span class="tooltip">Deactivate</span>
                                             </button>
@@ -160,7 +160,7 @@ else
                                     {
                                         <form asp-action="Activate" asp-route-id="@staff.UserId" method="post" class="d-inline">
                                             @Html.AntiForgeryToken()
-                                            <button type="submit" class="btn btn-sm btn-icon btn-success" title="Activate" onclick="return confirm('Are you sure you want to activate this staff member?')">
+                                            <button type="submit" class="btn btn-sm btn-icon btn-success" title="Activate">
                                                 <i data-lucide="user-check"></i>
                                                 <span class="tooltip">Activate</span>
                                             </button>

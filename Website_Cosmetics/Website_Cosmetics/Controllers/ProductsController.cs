@@ -120,6 +120,23 @@ namespace Website_Cosmetics.Controllers
             
             // Get default variant if exists
             var defaultVariant = await _productRepository.GetDefaultVariantAsync(id);
+            
+            // Debug logging
+            if (defaultVariant != null)
+            {
+                Console.WriteLine($"DefaultVariant found: VariantId={defaultVariant.VariantId}, Stock={defaultVariant.Stock}, IsActive={defaultVariant.IsActive}, IsDefault={defaultVariant.IsDefault}");
+            }
+            else
+            {
+                Console.WriteLine($"DefaultVariant is null for ProductId={id}");
+                var allVariants = product.ProductVariants?.ToList() ?? new List<ProductVariant>();
+                Console.WriteLine($"Total variants loaded: {allVariants.Count}");
+                foreach (var v in allVariants)
+                {
+                    Console.WriteLine($"  Variant {v.VariantId}: Stock={v.Stock}, IsActive={v.IsActive}, IsDefault={v.IsDefault}");
+                }
+            }
+            
             ViewBag.DefaultVariant = defaultVariant;
             
             return View(product); 

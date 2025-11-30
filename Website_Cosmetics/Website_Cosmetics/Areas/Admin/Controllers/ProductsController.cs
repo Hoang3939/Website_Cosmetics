@@ -69,7 +69,6 @@ namespace Website_Cosmetics.Areas.Admin.Controllers
             ViewBag.SelectedBrandId = brandId;
             ViewBag.SelectedCategoryId = categoryId;
             ViewBag.SelectedIsActive = isActive;
-            ViewBag.HasActiveFilters = !string.IsNullOrWhiteSpace(searchTerm) || brandId.HasValue || categoryId.HasValue || isActive.HasValue;
 
             return View(products);
         }
@@ -109,10 +108,10 @@ namespace Website_Cosmetics.Areas.Admin.Controllers
                     _context.Products.Add(product);
                     await _context.SaveChangesAsync();
 
-                    // Tạo folder cho sản phẩm theo tên sản phẩm
+                    // Create folder for product based on product name
                     CreateProductFolder(product);
 
-                    // Bước 1: Tự động tạo variant mặc định cho sản phẩm
+                    // Step 1: Automatically create default variant for product
                     var defaultVariant = new ProductVariant
                     {
                         ProductId = product.ProductId,
@@ -128,9 +127,9 @@ namespace Website_Cosmetics.Areas.Admin.Controllers
                     _context.ProductVariants.Add(defaultVariant);
                     await _context.SaveChangesAsync();
 
-                    // Redirect đến trang quản lý variants để thêm variant chi tiết
-                    TempData["SuccessMessage"] = $"Sản phẩm '{product.Name}' đã được tạo thành công. Vui lòng thêm các biến thể (variants) cho sản phẩm này.";
-                    return RedirectToAction("Index", "Variants", new { productId = product.ProductId });
+                    // Redirect to Edit page of the newly created variant for admin to add details
+                    TempData["SuccessMessage"] = $"Product '{product.Name}' has been created successfully. Please add details for the default variant.";
+                    return RedirectToAction("Edit", "Variants", new { id = defaultVariant.VariantId });
                 }
             }
             catch (Exception ex)
@@ -338,8 +337,16 @@ namespace Website_Cosmetics.Areas.Admin.Controllers
                     .ThenInclude(v => v.ProductVariantImages)
                 .FirstOrDefaultAsync(p => p.ProductId == id);
 
-            if (product != null)
+            if (product == null)
             {
+                TempData["ErrorMessage"] = "Product not found.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            try
+            {
+                var productName = product.Name;
+
                 // Delete image files
                 foreach (var variant in product.ProductVariants)
                 {
@@ -351,6 +358,12 @@ namespace Website_Cosmetics.Areas.Admin.Controllers
 
                 _context.Products.Remove(product);
                 await _context.SaveChangesAsync();
+
+                TempData["SuccessMessage"] = $"Product '{productName}' has been deleted successfully.";
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = $"Error deleting product: {ex.Message}";
             }
 
             return RedirectToAction(nameof(Index));
@@ -543,7 +556,7 @@ namespace Website_Cosmetics.Areas.Admin.Controllers
         }
 
         /// <summary>
-        /// Tạo folder cho sản phẩm theo tên sản phẩm
+        /// Create folder for product based on product name
         /// </summary>
         private void CreateProductFolder(Product product)
         {
@@ -554,13 +567,13 @@ namespace Website_Cosmetics.Areas.Admin.Controllers
 
             try
             {
-                // Tạo folder name từ tên sản phẩm (dùng slug)
+                // Generate folder name from product name (using slug)
                 var folderName = GenerateSlug(product.Name);
                 
                 // Path: wwwroot/public/images/products/{ProductName}/
                 var productFolderPath = Path.Combine(_environment.WebRootPath, "public", "images", "products", folderName);
                 
-                // Tạo folder nếu chưa tồn tại
+                // Create folder if it doesn't exist
                 if (!Directory.Exists(productFolderPath))
                 {
                     Directory.CreateDirectory(productFolderPath);
@@ -568,7 +581,7 @@ namespace Website_Cosmetics.Areas.Admin.Controllers
             }
             catch (Exception ex)
             {
-                // Log error nhưng không throw để không ảnh hưởng đến việc tạo sản phẩm
+                // Log error but don't throw to avoid affecting product creation
                 Console.WriteLine($"Error creating product folder: {ex.Message}");
             }
         }

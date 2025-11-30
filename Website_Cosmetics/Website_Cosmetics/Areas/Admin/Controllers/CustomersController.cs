@@ -28,9 +28,9 @@ namespace Website_Cosmetics.Areas.Admin.Controllers
             int page = 1,
             int pageSize = 10)
         {
-            // Lấy tất cả users có role Customer
+            // Lấy tất cả users có role User (Customer)
             var customerQuery = _context.UserRoles
-                .Where(ur => ur.Role.RoleName == "Customer")
+                .Where(ur => ur.Role.RoleName == "User")
                 .Include(ur => ur.User)
                 .Include(ur => ur.Role)
                 .Select(ur => ur.User);
@@ -123,8 +123,8 @@ namespace Website_Cosmetics.Areas.Admin.Controllers
                 return NotFound();
             }
 
-            // Kiểm tra xem user có role Customer không
-            var hasCustomerRole = user.UserRoles.Any(ur => ur.Role.RoleName == "Customer");
+            // Kiểm tra xem user có role User (Customer) không
+            var hasCustomerRole = user.UserRoles.Any(ur => ur.Role.RoleName == "User");
             if (!hasCustomerRole)
             {
                 return NotFound();
@@ -146,19 +146,35 @@ namespace Website_Cosmetics.Areas.Admin.Controllers
         {
             try
             {
+                // Remove fields not posted by the form to avoid ModelState invalidation
+                ModelState.Remove(nameof(model.PasswordHash));
+                ModelState.Remove(nameof(model.UserId));
+                ModelState.Remove(nameof(model.CreatedAt));
+                ModelState.Remove(nameof(model.UpdatedAt));
+                ModelState.Remove(nameof(model.UserRoles));
+                ModelState.Remove(nameof(model.PasswordResetTokens));
+                ModelState.Remove(nameof(model.EmailConfirmationTokens));
+                ModelState.Remove(nameof(model.UserPermissions));
+                ModelState.Remove(nameof(model.GrantedPermissions));
+                ModelState.Remove(nameof(model.ShoppingCarts));
+                ModelState.Remove(nameof(model.Orders));
+                ModelState.Remove(nameof(model.ProductReviews));
+                ModelState.Remove(nameof(model.ProductLikes));
+                ModelState.Remove(nameof(model.UserAddresses));
+
                 if (ModelState.IsValid)
                 {
                     // Check if username already exists
                     if (await _context.Users.AnyAsync(u => u.Username == model.Username))
                     {
-                        ModelState.AddModelError(nameof(model.Username), "Username đã tồn tại. Vui lòng chọn username khác.");
+                        ModelState.AddModelError(nameof(model.Username), "Username already exists. Please choose a different username.");
                         return View(model);
                     }
 
                     // Check if email already exists
                     if (await _context.Users.AnyAsync(u => u.Email == model.Email))
                     {
-                        ModelState.AddModelError(nameof(model.Email), "Email đã tồn tại. Vui lòng sử dụng email khác.");
+                        ModelState.AddModelError(nameof(model.Email), "Email already exists. Please use a different email.");
                         return View(model);
                     }
 
@@ -171,8 +187,8 @@ namespace Website_Cosmetics.Areas.Admin.Controllers
                         FirstName = model.FirstName,
                         LastName = model.LastName,
                         PhoneNumber = model.PhoneNumber,
-                        IsEmailConfirmed = true, // Admin creates, so auto-confirm
-                        IsActive = true,
+                        IsEmailConfirmed = model.IsEmailConfirmed, // Use value from form
+                        IsActive = model.IsActive, // Use value from form
                         CreatedAt = DateTime.UtcNow,
                         UpdatedAt = DateTime.UtcNow
                     };
@@ -180,28 +196,45 @@ namespace Website_Cosmetics.Areas.Admin.Controllers
                     _context.Users.Add(user);
                     await _context.SaveChangesAsync();
 
-                    // Assign Customer role
-                    var customerRole = await _context.Roles.FirstOrDefaultAsync(r => r.RoleName == "Customer");
-                    if (customerRole != null)
+                    // Assign User role (Customer)
+                    var userRole = await _context.Roles.FirstOrDefaultAsync(r => r.RoleName == "User");
+                    if (userRole != null)
                     {
                         _context.UserRoles.Add(new UserRole
                         {
                             UserId = user.UserId,
-                            RoleId = customerRole.RoleId,
+                            RoleId = userRole.RoleId,
                             CreatedAt = DateTime.UtcNow,
                             UpdatedAt = DateTime.UtcNow
                         });
                         await _context.SaveChangesAsync();
                     }
+                    else
+                    {
+                        _logger.LogWarning("User role not found in database. Please ensure the User role exists.");
+                        TempData["ErrorMessage"] = "Error: User role not found in database. Please check the database configuration.";
+                        return View(model);
+                    }
 
-                    TempData["SuccessMessage"] = $"Khách hàng '{user.FullName}' đã được tạo thành công. Mật khẩu mặc định: Customer123!";
+                    TempData["SuccessMessage"] = $"Customer '{user.FullName}' has been created successfully. Default password: Customer123!";
                     return RedirectToAction(nameof(Index));
+                }
+                else
+                {
+                    // Log ModelState errors for debugging
+                    foreach (var error in ModelState)
+                    {
+                        foreach (var errorMessage in error.Value.Errors)
+                        {
+                            _logger.LogWarning("ModelState Error - {Key}: {Message}", error.Key, errorMessage.ErrorMessage);
+                        }
+                    }
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error creating customer");
-                ModelState.AddModelError("", $"Lỗi khi tạo khách hàng: {ex.Message}");
+                ModelState.AddModelError("", $"Error creating customer: {ex.Message}");
             }
 
             return View(model);
@@ -225,8 +258,8 @@ namespace Website_Cosmetics.Areas.Admin.Controllers
                 return NotFound();
             }
 
-            // Kiểm tra xem user có role Customer không
-            var hasCustomerRole = user.UserRoles.Any(ur => ur.Role.RoleName == "Customer");
+            // Kiểm tra xem user có role User (Customer) không
+            var hasCustomerRole = user.UserRoles.Any(ur => ur.Role.RoleName == "User");
             if (!hasCustomerRole)
             {
                 return NotFound();
@@ -240,6 +273,10 @@ namespace Website_Cosmetics.Areas.Admin.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, User model)
         {
+            if (id == 0)
+            {
+                id = model.UserId;
+            }
             if (id != model.UserId)
             {
                 return NotFound();
@@ -247,6 +284,21 @@ namespace Website_Cosmetics.Areas.Admin.Controllers
 
             try
             {
+                // Remove fields not posted by the form to avoid ModelState invalidation
+                ModelState.Remove(nameof(model.PasswordHash));
+                ModelState.Remove(nameof(model.CreatedAt));
+                ModelState.Remove(nameof(model.UpdatedAt));
+                ModelState.Remove(nameof(model.UserRoles));
+                ModelState.Remove(nameof(model.PasswordResetTokens));
+                ModelState.Remove(nameof(model.EmailConfirmationTokens));
+                ModelState.Remove(nameof(model.UserPermissions));
+                ModelState.Remove(nameof(model.GrantedPermissions));
+                ModelState.Remove(nameof(model.ShoppingCarts));
+                ModelState.Remove(nameof(model.Orders));
+                ModelState.Remove(nameof(model.ProductReviews));
+                ModelState.Remove(nameof(model.ProductLikes));
+                ModelState.Remove(nameof(model.UserAddresses));
+
                 if (ModelState.IsValid)
                 {
                     var user = await _context.Users
@@ -259,8 +311,8 @@ namespace Website_Cosmetics.Areas.Admin.Controllers
                         return NotFound();
                     }
 
-                    // Kiểm tra xem user có role Customer không
-                    var hasCustomerRole = user.UserRoles.Any(ur => ur.Role.RoleName == "Customer");
+                    // Kiểm tra xem user có role User (Customer) không
+                    var hasCustomerRole = user.UserRoles.Any(ur => ur.Role.RoleName == "User");
                     if (!hasCustomerRole)
                     {
                         return NotFound();
@@ -269,14 +321,14 @@ namespace Website_Cosmetics.Areas.Admin.Controllers
                     // Check if username already exists (khác user hiện tại)
                     if (await _context.Users.AnyAsync(u => u.Username == model.Username && u.UserId != id))
                     {
-                        ModelState.AddModelError(nameof(model.Username), "Username đã tồn tại. Vui lòng chọn username khác.");
+                        ModelState.AddModelError(nameof(model.Username), "Username already exists. Please choose a different username.");
                         return View(model);
                     }
 
                     // Check if email already exists (khác user hiện tại)
                     if (await _context.Users.AnyAsync(u => u.Email == model.Email && u.UserId != id))
                     {
-                        ModelState.AddModelError(nameof(model.Email), "Email đã tồn tại. Vui lòng sử dụng email khác.");
+                        ModelState.AddModelError(nameof(model.Email), "Email already exists. Please use a different email.");
                         return View(model);
                     }
 
@@ -292,8 +344,19 @@ namespace Website_Cosmetics.Areas.Admin.Controllers
 
                     await _context.SaveChangesAsync();
 
-                    TempData["SuccessMessage"] = $"Thông tin khách hàng '{user.FullName}' đã được cập nhật thành công.";
+                    TempData["SuccessMessage"] = $"Customer '{user.FullName}' has been updated successfully.";
                     return RedirectToAction(nameof(Index));
+                }
+                else
+                {
+                    // Log ModelState errors for diagnostics
+                    foreach (var kv in ModelState)
+                    {
+                        foreach (var err in kv.Value.Errors)
+                        {
+                            _logger.LogWarning("ModelState Error (Edit) - {Key}: {Message}", kv.Key, err.ErrorMessage);
+                        }
+                    }
                 }
             }
             catch (DbUpdateConcurrencyException)
@@ -310,7 +373,7 @@ namespace Website_Cosmetics.Areas.Admin.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error editing customer {CustomerId}", id);
-                ModelState.AddModelError("", $"Lỗi khi cập nhật khách hàng: {ex.Message}");
+                ModelState.AddModelError("", $"Error updating customer: {ex.Message}");
             }
 
             return View(model);
@@ -334,8 +397,8 @@ namespace Website_Cosmetics.Areas.Admin.Controllers
                 return NotFound();
             }
 
-            // Kiểm tra xem user có role Customer không
-            var hasCustomerRole = user.UserRoles.Any(ur => ur.Role.RoleName == "Customer");
+            // Kiểm tra xem user có role User (Customer) không
+            var hasCustomerRole = user.UserRoles.Any(ur => ur.Role.RoleName == "User");
             if (!hasCustomerRole)
             {
                 return NotFound();
@@ -361,8 +424,8 @@ namespace Website_Cosmetics.Areas.Admin.Controllers
                     return NotFound();
                 }
 
-                // Kiểm tra xem user có role Customer không
-                var hasCustomerRole = user.UserRoles.Any(ur => ur.Role.RoleName == "Customer");
+                // Kiểm tra xem user có role User (Customer) không
+                var hasCustomerRole = user.UserRoles.Any(ur => ur.Role.RoleName == "User");
                 if (!hasCustomerRole)
                 {
                     return NotFound();
@@ -374,13 +437,13 @@ namespace Website_Cosmetics.Areas.Admin.Controllers
                 _context.Users.Remove(user);
                 await _context.SaveChangesAsync();
 
-                TempData["SuccessMessage"] = $"Khách hàng '{userName}' đã được xóa thành công.";
+                TempData["SuccessMessage"] = $"Customer '{userName}' has been deleted successfully.";
                 return RedirectToAction(nameof(Index));
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error deleting customer {CustomerId}", id);
-                TempData["ErrorMessage"] = $"Lỗi khi xóa khách hàng: {ex.Message}";
+                TempData["ErrorMessage"] = $"Error deleting customer: {ex.Message}";
                 return RedirectToAction(nameof(Index));
             }
         }
@@ -409,13 +472,13 @@ namespace Website_Cosmetics.Areas.Admin.Controllers
                     user.IsActive = true;
                     user.UpdatedAt = DateTime.UtcNow;
                     await _context.SaveChangesAsync();
-                    TempData["SuccessMessage"] = $"Khách hàng '{user.FullName}' đã được kích hoạt thành công.";
+                    TempData["SuccessMessage"] = $"Customer '{user.FullName}' has been activated successfully.";
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error activating customer {CustomerId}", id);
-                TempData["ErrorMessage"] = $"Lỗi khi kích hoạt khách hàng: {ex.Message}";
+                TempData["ErrorMessage"] = $"Error activating customer: {ex.Message}";
             }
 
             return RedirectToAction(nameof(Index));
@@ -445,13 +508,13 @@ namespace Website_Cosmetics.Areas.Admin.Controllers
                     user.IsActive = false;
                     user.UpdatedAt = DateTime.UtcNow;
                     await _context.SaveChangesAsync();
-                    TempData["SuccessMessage"] = $"Khách hàng '{user.FullName}' đã được vô hiệu hóa thành công.";
+                    TempData["SuccessMessage"] = $"Customer '{user.FullName}' has been deactivated successfully.";
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error deactivating customer {CustomerId}", id);
-                TempData["ErrorMessage"] = $"Lỗi khi vô hiệu hóa khách hàng: {ex.Message}";
+                TempData["ErrorMessage"] = $"Error deactivating customer: {ex.Message}";
             }
 
             return RedirectToAction(nameof(Index));
@@ -463,7 +526,7 @@ namespace Website_Cosmetics.Areas.Admin.Controllers
             return await _context.Users
                 .Include(u => u.UserRoles)
                     .ThenInclude(ur => ur.Role)
-                .AnyAsync(u => u.UserId == id && u.UserRoles.Any(ur => ur.Role.RoleName == "Customer"));
+                .AnyAsync(u => u.UserId == id && u.UserRoles.Any(ur => ur.Role.RoleName == "User"));
         }
     }
 }
