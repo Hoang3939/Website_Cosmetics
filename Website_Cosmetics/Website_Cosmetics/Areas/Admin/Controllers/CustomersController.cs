@@ -311,8 +311,8 @@ namespace Website_Cosmetics.Areas.Admin.Controllers
                         return NotFound();
                     }
 
-                    // Kiểm tra xem user có role Customer không
-                    var hasCustomerRole = user.UserRoles.Any(ur => ur.Role.RoleName == "Customer");
+                    // Kiểm tra xem user có role User (Customer) không
+                    var hasCustomerRole = user.UserRoles.Any(ur => ur.Role.RoleName == "User");
                     if (!hasCustomerRole)
                     {
                         return NotFound();
@@ -424,8 +424,8 @@ namespace Website_Cosmetics.Areas.Admin.Controllers
                     return NotFound();
                 }
 
-                // Kiểm tra xem user có role Customer không
-                var hasCustomerRole = user.UserRoles.Any(ur => ur.Role.RoleName == "Customer");
+                // Kiểm tra xem user có role User (Customer) không
+                var hasCustomerRole = user.UserRoles.Any(ur => ur.Role.RoleName == "User");
                 if (!hasCustomerRole)
                 {
                     return NotFound();

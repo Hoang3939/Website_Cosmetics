@@ -13,7 +13,7 @@
     </div>
 </div>
 
-<form asp-action="Edit" method="post" class="staff-form">
+<form asp-action="Edit" asp-route-id="@Model.UserId" method="post" class="staff-form">
     @Html.AntiForgeryToken()
     <input type="hidden" asp-for="UserId" />
 
@@ -60,8 +60,8 @@
                 <div class="form-group">
                     <label asp-for="IsActive">Status</label>
                     <select asp-for="IsActive" class="form-control">
-                        <option value="true">Active</option>
-                        <option value="false">Inactive</option>
+                        <option value="true" selected="@(Model.IsActive == true)">Active</option>
+                        <option value="false" selected="@(Model.IsActive == false)">Inactive</option>
                     </select>
                 </div>
             </div>
@@ -72,14 +72,18 @@
                     <label asp-for="IsEmailConfirmed" class="form-check-label">Email Confirmed</label>
                 </div>
             </div>
-
-            <div class="form-actions">
-                <button type="submit" class="btn btn-primary">Update Customer</button>
-                <a asp-action="Index" class="btn btn-secondary">Cancel</a>
-            </div>
         </div>
     </div>
+
+    <div class="form-actions mt-4">
+        <button type="submit" class="btn btn-primary">Update Customer</button>
+        <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+    </div>
 </form>
+
+@section Styles {
+    <link rel="stylesheet" href="~/admin/css/pages/customers.css" asp-append-version="true" />
+}
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
