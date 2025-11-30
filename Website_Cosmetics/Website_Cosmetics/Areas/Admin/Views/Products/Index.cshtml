@@ -13,7 +13,9 @@
         <h1>Products Management</h1>
         <span class="page-header__count">@Model.Count() product(s)</span>
     </div>
-    <a asp-action="Create" class="btn btn-primary">Create New Product</a>
+    <div class="page-header__actions">
+        <a asp-action="Create" class="btn btn-primary">Create New Product</a>
+    </div>
 </div>
 
 <!-- Search and Filter Section -->

@@ -56,3 +56,29 @@
 .kpi__delta--down {
     color: var(--danger)
 }
+
+/* Card Header and Body (compatible with staff-management) */
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--stroke);
+}
+
+.card-header h3 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text);
+}
+
+.card-body {
+    padding: 0;
+}
+
+.card {
+    overflow: visible;
+    position: relative;
+}

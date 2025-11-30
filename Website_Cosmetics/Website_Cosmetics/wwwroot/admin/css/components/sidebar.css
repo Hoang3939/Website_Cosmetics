@@ -1,9 +1,11 @@
 ﻿.sidebar {
     display: flex;
     flex-direction: column;
-    height: 100%;
-    padding: 24px;
-    background: var(--bg-2);
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    padding: 20px;
+    background: var(--bg);
     border-right: 1px solid var(--stroke);
 }
 
@@ -17,7 +19,54 @@
     display: grid;
     gap: 18px;
     flex: 1;
-    min-height: 0
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-right: 12px;
+    margin-right: -12px;
+    scrollbar-gutter: stable;
+    overscroll-behavior: contain;
+    /* Firefox */
+    scrollbar-width: thin;
+    scrollbar-color: rgba(149, 154, 166, 0.35) transparent;
+}
+
+/* WebKit (Chrome, Edge, Safari) */
+.sidebar__nav::-webkit-scrollbar {
+    width: 6px;
+}
+
+.sidebar:hover .sidebar__nav::-webkit-scrollbar {
+    width: 8px;
+}
+
+.sidebar__nav::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.sidebar__nav::-webkit-scrollbar-thumb {
+    background-color: rgba(149, 154, 166, 0.35); /* ~ var(--muted) */
+    border-radius: 999px;
+    border: 2px solid transparent; /* create inset look */
+    background-clip: padding-box;
+}
+
+.sidebar__nav::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(149, 154, 166, 0.65);
+}
+
+.sidebar__nav::-webkit-scrollbar-thumb:active {
+    background-color: rgba(149, 154, 166, 0.8);
+}
+
+.sidebar__nav::-webkit-scrollbar-button {
+    display: none;
+    width: 0;
+    height: 0;
+}
+
+.sidebar__nav::-webkit-scrollbar-corner {
+    background: transparent;
 }
 
 .sidebar__group {
@@ -35,14 +84,39 @@
 .sidebar__link {
     display: block;
     padding: 10px 12px;
+    padding-right: 16px;
     border-radius: 10px;
     color: var(--text);
     opacity: .9;
-    border: 1px solid transparent
+    border: 1px solid transparent;
+    transition: all var(--t);
+    position: relative;
+    word-wrap: break-word;
 }
 
-    .sidebar__link:hover {
-        opacity: 1;
-        background: var(--bg-3);
-        border-color: var(--stroke)
-    }
+.sidebar__link:hover {
+    opacity: 1;
+    background: var(--bg-3);
+    border-color: var(--stroke);
+}
+
+.sidebar__link.is-active {
+    opacity: 1;
+    background: linear-gradient(90deg, rgba(110, 159, 255, 0.1) 0%, rgba(110, 159, 255, 0.05) 100%);
+    border-color: rgba(110, 159, 255, 0.3);
+    color: var(--brand);
+    font-weight: 600;
+    box-shadow: 0 0 0 1px rgba(110, 159, 255, 0.1) inset;
+}
+
+.sidebar__link.is-active::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    background: var(--brand);
+    border-radius: 0 2px 2px 0;
+    box-shadow: 0 0 8px rgba(110, 159, 255, 0.5);
+}

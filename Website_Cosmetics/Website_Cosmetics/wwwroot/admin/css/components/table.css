@@ -78,6 +78,151 @@
     }
 }
 
+/* Generic Table Styles (compatible with staff-management) */
+.table-responsive {
+    overflow-x: auto;
+    overflow-y: visible;
+    position: relative;
+}
+
+/* Staff Table Styles (compatible with staff-management) */
+.staff-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    table-layout: fixed;
+    overflow: visible;
+}
+
+.staff-table thead {
+    background: #0F1114;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.staff-table th {
+    padding: 12px;
+    text-align: left;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+    border-bottom: 1px solid var(--stroke);
+    font-weight: 600;
+    vertical-align: middle;
+}
+
+.staff-table td {
+    padding: 12px;
+    border-bottom: 1px solid var(--stroke);
+    word-wrap: break-word;
+    overflow: visible;
+    text-overflow: ellipsis;
+    vertical-align: middle;
+    position: relative;
+}
+
+.staff-table tbody {
+    overflow: visible;
+}
+
+.staff-table tr {
+    overflow: visible;
+}
+
+.staff-table tbody tr:hover {
+    background: #0F1114;
+}
+
+.staff-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* Card container should not clip tooltips */
+.card .table-responsive {
+    overflow-x: auto;
+    overflow-y: visible;
+    margin: -1px;
+    padding: 1px;
+}
+
+/* Staff Table Column Widths */
+.staff-table th:nth-child(1),
+.staff-table td:nth-child(1) {
+    width: 60px;
+    text-align: center;
+    padding-left: 8px;
+    padding-right: 8px;
+}
+
+.staff-table th:nth-child(2),
+.staff-table td:nth-child(2) {
+    width: 150px;
+}
+
+.staff-table th:nth-child(3),
+.staff-table td:nth-child(3) {
+    width: 130px;
+}
+
+.staff-table th:nth-child(4),
+.staff-table td:nth-child(4) {
+    width: 200px;
+}
+
+.staff-table th:nth-child(5),
+.staff-table td:nth-child(5) {
+    width: 130px;
+}
+
+.staff-table th:nth-child(6),
+.staff-table td:nth-child(6) {
+    width: 110px;
+    text-align: center;
+    padding-left: 8px;
+    padding-right: 8px;
+}
+
+.staff-table th:nth-child(7),
+.staff-table td:nth-child(7) {
+    width: 140px;
+    text-align: center;
+    padding-left: 8px;
+    padding-right: 8px;
+}
+
+.staff-table th:nth-child(8),
+.staff-table td:nth-child(8) {
+    width: 130px;
+    text-align: center;
+    padding-left: 8px;
+    padding-right: 8px;
+}
+
+.staff-table th:nth-child(9),
+.staff-table td:nth-child(9) {
+    width: auto;
+    min-width: 220px;
+    text-align: center;
+    padding-left: 12px;
+    padding-right: 12px;
+}
+
+.staff-table td:nth-child(1) {
+    font-weight: 600;
+    color: var(--muted);
+}
+
+.staff-table td:nth-child(8) {
+    color: var(--muted);
+    font-size: 13px;
+}
+
+.staff-table td:nth-child(9) {
+    overflow: visible;
+}
+
 @media (max-width: 768px) {
     /* Only apply mobile layout to Products and Variants tables */
     .table--products .table__row,
@@ -100,5 +245,81 @@
     .table--products .table__cell:last-child,
     .table--variants .table__cell:last-child {
         border-bottom: 0;
+    }
+
+    .staff-table {
+        font-size: 11px;
+        table-layout: fixed;
+    }
+
+    .staff-table th,
+    .staff-table td {
+        padding: 8px 4px;
+    }
+
+    .staff-table th:nth-child(1),
+    .staff-table td:nth-child(1) {
+        width: 45px;
+        padding-left: 4px;
+        padding-right: 4px;
+    }
+
+    .staff-table th:nth-child(2),
+    .staff-table td:nth-child(2) {
+        width: 100px;
+    }
+
+    .staff-table th:nth-child(3),
+    .staff-table td:nth-child(3) {
+        width: 90px;
+    }
+
+    .staff-table th:nth-child(4),
+    .staff-table td:nth-child(4) {
+        width: 140px;
+    }
+
+    .staff-table th:nth-child(5),
+    .staff-table td:nth-child(5) {
+        width: 100px;
+    }
+
+    .staff-table th:nth-child(6),
+    .staff-table td:nth-child(6) {
+        width: 70px;
+        padding-left: 4px;
+        padding-right: 4px;
+    }
+
+    .staff-table th:nth-child(7),
+    .staff-table td:nth-child(7) {
+        width: 90px;
+        padding-left: 4px;
+        padding-right: 4px;
+    }
+
+    .staff-table th:nth-child(8),
+    .staff-table td:nth-child(8) {
+        width: 90px;
+        padding-left: 4px;
+        padding-right: 4px;
+    }
+
+    .staff-table th:nth-child(9),
+    .staff-table td:nth-child(9) {
+        width: auto;
+        min-width: 150px;
+        padding-left: 8px;
+        padding-right: 8px;
+    }
+
+    .action-buttons {
+        flex-wrap: wrap;
+        gap: 4px;
+        justify-content: center;
+    }
+
+    .action-buttons .btn-icon {
+        min-width: 28px;
     }
 }

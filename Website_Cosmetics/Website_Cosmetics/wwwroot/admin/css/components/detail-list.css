@@ -1,0 +1,38 @@
+/* Detail List Component */
+
+.detail-list {
+    display: grid;
+    gap: 16px;
+}
+
+.detail-item {
+    display: grid;
+    grid-template-columns: 180px 1fr;
+    gap: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--stroke);
+}
+
+.detail-item:last-child {
+    border-bottom: none;
+}
+
+.detail-item dt {
+    font-weight: 600;
+    color: var(--muted);
+    font-size: 13px;
+}
+
+.detail-item dd {
+    margin: 0;
+    color: var(--text);
+    font-size: 14px;
+}
+
+@media (max-width: 640px) {
+    .detail-item {
+        grid-template-columns: 1fr;
+        gap: 4px;
+    }
+}
+

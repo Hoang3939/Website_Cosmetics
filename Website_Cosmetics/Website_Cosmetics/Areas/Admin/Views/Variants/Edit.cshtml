@@ -9,7 +9,9 @@
     <div class="page-header__title">
         <h1>Edit Variant: @Model.VariantName</h1>
     </div>
-    <a asp-action="Index" asp-route-productId="@productId" class="btn btn-secondary">← Back to Variants</a>
+    <div class="page-header__actions">
+        <a asp-action="Index" asp-route-productId="@productId" class="btn btn-secondary">← Back to Variants</a>
+    </div>
 </div>
 
 <div class="card product-info-card">

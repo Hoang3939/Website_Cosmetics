@@ -23,33 +23,34 @@
                 <a asp-area="Admin" asp-controller="Dashboard" asp-action="Index">COSMETIC</a>
             </div>
 
+            @{ var currentController = (ViewContext.RouteData.Values["controller"]?.ToString() ?? string.Empty).ToLower(); }
             <nav class="sidebar__nav">
                 <div class="sidebar__group">
                     <div class="sidebar__label">Management</div>
-                    <a class="sidebar__link" asp-area="Admin" asp-controller="Dashboard" asp-action="Index">Dashboard</a>
-                    <a class="sidebar__link" asp-area="Admin" asp-controller="Products" asp-action="Index">Products</a>
-                    <a class="sidebar__link" asp-area="Admin" asp-controller="Orders" asp-action="Index">Orders</a>
-                    <a class="sidebar__link" asp-area="Admin" asp-controller="Users" asp-action="Index">Users</a>
-                    <a class="sidebar__link" asp-area="Admin" asp-controller="Staff" asp-action="Index">Staff Management</a>
-                    <a class="sidebar__link" asp-area="Admin" asp-controller="Reviews" asp-action="Index">Reviews</a>
+                    <a class="sidebar__link @((currentController == "dashboard" || currentController == "staffdashboard") ? "is-active" : "")" asp-area="Admin" asp-controller="Dashboard" asp-action="Index" data-controller="dashboard">Dashboard</a>
+                    <a class="sidebar__link @(currentController == "products" ? "is-active" : "")" asp-area="Admin" asp-controller="Products" asp-action="Index" data-controller="products">Products</a>
+                    <a class="sidebar__link @(currentController == "orders" ? "is-active" : "")" asp-area="Admin" asp-controller="Orders" asp-action="Index" data-controller="orders">Orders</a>
+                    <a class="sidebar__link @(currentController == "users" ? "is-active" : "")" asp-area="Admin" asp-controller="Users" asp-action="Index" data-controller="users">Users</a>
+                    <a class="sidebar__link @(currentController == "staff" ? "is-active" : "")" asp-area="Admin" asp-controller="Staff" asp-action="Index" data-controller="staff">Staff Management</a>
+                    <a class="sidebar__link @(currentController == "reviews" ? "is-active" : "")" asp-area="Admin" asp-controller="Reviews" asp-action="Index" data-controller="reviews">Reviews</a>
                 </div>
 
                 <div class="sidebar__group">
                     <div class="sidebar__label">Inventory</div>
-                    <a class="sidebar__link" asp-area="Admin" asp-controller="Batches" asp-action="Index">Batches</a>
-                    <a class="sidebar__link" asp-area="Admin" asp-controller="Inventory" asp-action="Index">Stock (FIFO)</a>
+                    <a class="sidebar__link @(currentController == "batches" ? "is-active" : "")" asp-area="Admin" asp-controller="Batches" asp-action="Index" data-controller="batches">Batches</a>
+                    <a class="sidebar__link @(currentController == "inventory" ? "is-active" : "")" asp-area="Admin" asp-controller="Inventory" asp-action="Index" data-controller="inventory">Stock (FIFO)</a>
                 </div>
 
                 <div class="sidebar__group">
                     <div class="sidebar__label">Commerce</div>
-                    <a class="sidebar__link" asp-area="Admin" asp-controller="Coupons" asp-action="Index">Coupons</a>
-                    <a class="sidebar__link" asp-area="Admin" asp-controller="Reports" asp-action="Index">Reports</a>
+                    <a class="sidebar__link @(currentController == "coupons" ? "is-active" : "")" asp-area="Admin" asp-controller="Coupons" asp-action="Index" data-controller="coupons">Coupons</a>
+                    <a class="sidebar__link @(currentController == "reports" ? "is-active" : "")" asp-area="Admin" asp-controller="Reports" asp-action="Index" data-controller="reports">Reports</a>
                 </div>
 
                 <div class="sidebar__group">
                     <div class="sidebar__label">System</div>
-                    <a class="sidebar__link" asp-area="Admin" asp-controller="Roles" asp-action="Index">Roles & Permissions</a>
-                    <a class="sidebar__link" asp-area="Admin" asp-controller="Ai" asp-action="Index">AI Settings</a>
+                    <a class="sidebar__link @(currentController == "roles" ? "is-active" : "")" asp-area="Admin" asp-controller="Roles" asp-action="Index" data-controller="roles">Roles & Permissions</a>
+                    <a class="sidebar__link @(currentController == "ai" ? "is-active" : "")" asp-area="Admin" asp-controller="Ai" asp-action="Index" data-controller="ai">AI Settings</a>
                 </div>
             </nav>
         </aside>
@@ -83,7 +84,7 @@
 
     <script src="https://unpkg.com/lucide@latest"></script>
     <script>
-        // Sidebar toggle
+        // Sidebar toggle and active state
         document.addEventListener('DOMContentLoaded', function() {
             const toggleBtn = document.getElementById('btnSidebarToggle');
             const sidebar = document.querySelector('.sidebar');
@@ -94,25 +95,117 @@
                 });
             }
             
+            // Set active state for current page - ensure only ONE link is active
+            function setActiveSidebarLink() {
+                const currentPath = window.location.pathname.toLowerCase();
+                const sidebarLinks = document.querySelectorAll('.sidebar__link');
+                
+                // Remove all active states first
+                sidebarLinks.forEach(link => {
+                    link.classList.remove('is-active');
+                });
+                
+                // Helper to extract controller name from path
+                function getControllerFromPath(path) {
+                    const parts = path.replace(/^\/+|\/+$/g, '').split('/');
+                    const adminIndex = parts.indexOf('admin');
+                    if (adminIndex >= 0) {
+                        if (parts.length > adminIndex + 1) {
+                            return parts[adminIndex + 1].toLowerCase();
+                        }
+                        // If path is exactly /admin or /admin/, default to dashboard
+                        return 'dashboard';
+                    }
+                    const filtered = parts.filter(p => p && p !== 'admin');
+                    return filtered.length > 0 ? filtered[0].toLowerCase() : 'dashboard';
+                }
+                
+                let currentController = getControllerFromPath(currentPath);
+                
+                // Normalize controller aliases (e.g., StaffDashboard => Dashboard)
+                function normalizeController(name) {
+                    if (!name) return name;
+                    const map = {
+                        'staffdashboard': 'dashboard'
+                    };
+                    return map[name] || name;
+                }
+                
+                currentController = normalizeController(currentController || 'dashboard');
+                
+                // Find the matching link - only ONE should match
+                let activeLink = null;
+                
+                for (const link of sidebarLinks) {
+                    // Priority 1: Check data-controller attribute (most reliable)
+                    const linkController = link.getAttribute('data-controller');
+                    if (linkController && linkController.toLowerCase() === currentController) {
+                        activeLink = link;
+                        break; // Found exact match, stop searching
+                    }
+                }
+                
+                // If no match found via data-controller, try href matching
+                if (!activeLink) {
+                    for (const link of sidebarLinks) {
+                        const linkHref = link.getAttribute('href');
+                        if (!linkHref) continue;
+                        
+                        try {
+                            let linkPath = '';
+                            if (linkHref.startsWith('http://') || linkHref.startsWith('https://')) {
+                                const linkUrl = new URL(linkHref);
+                                linkPath = linkUrl.pathname.toLowerCase();
+                            } else {
+                                const baseUrl = window.location.origin;
+                                const resolvedUrl = new URL(linkHref, baseUrl);
+                                linkPath = resolvedUrl.pathname.toLowerCase();
+                            }
+                            
+                            const extractedController = getControllerFromPath(linkPath);
+                            
+                            // Exact controller match
+                            if (extractedController === currentController) {
+                                activeLink = link;
+                                break;
+                            }
+                            
+                            // Check if current path starts with link path (for sub-routes)
+                            if (linkPath && currentPath.startsWith(linkPath) && linkPath !== '/' && linkPath !== '/admin') {
+                                activeLink = link;
+                                break;
+                            }
+                        } catch (e) {
+                            // Skip invalid URLs
+                            continue;
+                        }
+                    }
+                }
+                
+                // Apply active state to the found link (only ONE)
+                if (activeLink) {
+                    activeLink.classList.add('is-active');
+                }
+            }
+            
+            setActiveSidebarLink();
+            
             // Initialize Lucide icons
             if (typeof lucide !== 'undefined') {
                 lucide.createIcons();
             }
         });
     </script>
-    @RenderSection("Scripts", required: false)
     
-    <!-- Admin JS -->
+    <!-- Admin Common JS - Shared functionality -->
+    <script src="~/admin/js/admin-common.js" asp-append-version="true"></script>
+    
+    <!-- Admin Page-specific JS -->
     <script src="~/admin/js/products.js" asp-append-version="true"></script>
     <script src="~/admin/js/variants.js" asp-append-version="true"></script>
+    <script src="~/admin/js/staff-management.js" asp-append-version="true"></script>
     
-    <!-- Initialize Lucide Icons -->
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            if (typeof lucide !== 'undefined' && typeof lucide.createIcons === 'function') {
-                lucide.createIcons();
-            }
-        });
-    </script>
+    @RenderSection("Scripts", required: false)
 </body>
 </html>
+

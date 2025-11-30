@@ -1,4 +1,4 @@
-/* Tooltip styles */
+/* Tooltip styles - data attribute approach */
 [data-tooltip] {
     position: relative;
 }
@@ -31,5 +31,100 @@
     border-top-color: var(--stroke);
     pointer-events: none;
     z-index: 9999;
+}
+
+/* Tooltip element approach (compatible with staff-management) */
+.tooltip {
+    position: fixed;
+    padding: 8px 12px;
+    background: var(--bg-3);
+    border: 1px solid var(--stroke);
+    border-radius: 8px;
+    color: var(--text);
+    font-size: 12px;
+    font-weight: 500;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1), 
+                visibility 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+                transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    visibility: hidden;
+    z-index: 99999;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4),
+                0 2px 8px rgba(0, 0, 0, 0.2);
+    line-height: 1.5;
+    transform: translateX(-50%) translateY(-4px) scale(0.95);
+    margin: 0;
+    left: 0;
+    top: 0;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+
+.tooltip::before {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-top: 6px solid var(--stroke);
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+}
+
+.tooltip::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 5px solid var(--bg-3);
+    margin-top: -1px;
+}
+
+.tooltip.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(-8px) scale(1);
+}
+
+.tooltip.tooltip-below {
+    transform: translateX(-50%) translateY(4px) scale(0.95);
+}
+
+.tooltip.tooltip-below.show {
+    transform: translateX(-50%) translateY(8px) scale(1);
+}
+
+.tooltip.tooltip-below::before {
+    top: auto;
+    bottom: 100%;
+    border-top-color: transparent;
+    border-bottom-color: var(--stroke);
+    filter: drop-shadow(0 -2px 4px rgba(0, 0, 0, 0.2));
+}
+
+.tooltip.tooltip-below::after {
+    top: auto;
+    bottom: 100%;
+    border-top-color: transparent;
+    border-bottom-color: var(--bg-3);
+    margin-top: 0;
+    margin-bottom: -1px;
+}
+
+@media (max-width: 768px) {
+    .tooltip {
+        font-size: 11px;
+        padding: 4px 8px;
+    }
 }
 

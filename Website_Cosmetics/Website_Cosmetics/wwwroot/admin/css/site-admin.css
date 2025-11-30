@@ -8,5 +8,12 @@
 @import url("./components/button.css");
 @import url("./components/form.css");
 @import url("./components/tooltip.css");
+@import url("./components/alert.css");
+@import url("./components/pagination.css");
+@import url("./components/page-header.css");
+@import url("./components/detail-list.css");
+@import url("./components/permission-list.css");
+@import url("./components/utility.css");
 @import url("./pages/products.css");
 @import url("./pages/variants.css");
+@import url("./pages/staff-management.css");
