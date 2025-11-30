@@ -1,12 +1,11 @@
 @model Website_Cosmetics.Models.User
 @{
-    ViewData["Title"] = "Staff Details";
-    var permissions = ViewBag.Permissions as IEnumerable<string> ?? new List<string>();
+    ViewData["Title"] = "Customer Details";
 }
 
 <div class="page-header">
     <div class="page-header__title">
-    <h1>Staff Details</h1>
+        <h1>Customer Details</h1>
     </div>
     <div class="page-header__actions">
         <a asp-action="Index" class="btn btn-secondary">← Back to List</a>
@@ -86,115 +85,60 @@
     </div>
 </div>
 
-<div class="card mb-4">
-    <div class="card-header">
-        <h3>Roles</h3>
-    </div>
-    <div class="card-body">
-        @if (Model.UserRoles != null && Model.UserRoles.Any())
-        {
+@if (Model.UserRoles != null && Model.UserRoles.Any())
+{
+    <div class="card mb-4">
+        <div class="card-header">
+            <h3>Roles</h3>
+        </div>
+        <div class="card-body">
             <div class="role-list">
                 @foreach (var userRole in Model.UserRoles)
                 {
                     <span class="badge badge-primary">@userRole.Role.RoleName</span>
                 }
             </div>
-        }
-        else
-        {
-            <p class="text-muted">No roles assigned.</p>
-        }
+        </div>
     </div>
-</div>
-
-<div class="card mb-4">
-    <div class="card-header">
-        <h3>Permissions</h3>
-    </div>
-    <div class="card-body">
-        @if (permissions.Any())
-        {
-            <div class="permission-list-details">
-                @foreach (var permission in permissions)
-                {
-                    <div class="permission-badge-item">
-                        <span class="badge badge-permission">@permission</span>
-                    </div>
-                }
-            </div>
-            <div class="permission-actions mt-3">
-                <a asp-action="Permissions" asp-route-id="@Model.UserId" class="btn btn-primary">
-                    <i data-lucide="key" style="width: 16px; height: 16px; margin-right: 6px;"></i>
-                    Manage Permissions
-                </a>
-            </div>
-        }
-        else
-        {
-            <div class="permission-empty-state">
-                <p class="text-muted mb-3">No permissions assigned to this staff member.</p>
-                <a asp-action="Permissions" asp-route-id="@Model.UserId" class="btn btn-primary">
-                    <i data-lucide="key" style="width: 16px; height: 16px; margin-right: 6px;"></i>
-                    Assign Permissions
-                </a>
-            </div>
-        }
-    </div>
-</div>
+}
 
 @if (Model.UserAddresses != null && Model.UserAddresses.Any())
 {
     <div class="card mb-4">
         <div class="card-header">
-            <h3>Addresses</h3>
+            <h3>Addresses (@Model.UserAddresses.Count())</h3>
         </div>
         <div class="card-body">
             @foreach (var address in Model.UserAddresses)
             {
                 <div class="address-item">
-                    <p><strong>@address.AddressLine1</strong></p>
+                    <p><strong>@address.FullName</strong></p>
+                    @if (!string.IsNullOrEmpty(address.PhoneNumber))
+                    {
+                        <p class="text-muted">@address.PhoneNumber</p>
+                    }
+                    <p>@address.AddressLine1</p>
                     @if (!string.IsNullOrEmpty(address.AddressLine2))
                     {
                         <p>@address.AddressLine2</p>
                     }
-                    <p>@address.City, @address.State @address.PostalCode</p>
+                    <p>@address.City, @(address.State ?? "") @(address.PostalCode ?? "")</p>
                     <p>@address.Country</p>
+                    @if (address.IsDefault)
+                    {
+                        <span class="badge badge-success">Default Address</span>
+                    }
                 </div>
             }
         </div>
     </div>
 }
-
-<div class="action-buttons mt-4">
-    <a asp-action="Edit" asp-route-id="@Model.UserId" class="btn btn-primary">Edit Staff</a>
-    @if (Model.IsActive == true)
-    {
-        <form asp-action="Deactivate" asp-route-id="@Model.UserId" method="post" class="action-form">
-            @Html.AntiForgeryToken()
-            <button type="submit" class="btn btn-warning" onclick="return confirm('Are you sure you want to deactivate this staff member?')">Deactivate</button>
-        </form>
-    }
-    else
-    {
-        <form asp-action="Activate" asp-route-id="@Model.UserId" method="post" class="action-form">
-            @Html.AntiForgeryToken()
-            <button type="submit" class="btn btn-success" onclick="return confirm('Are you sure you want to activate this staff member?')">Activate</button>
-        </form>
-    }
-    <a asp-action="Delete" asp-route-id="@Model.UserId" class="btn btn-danger">Delete</a>
-</div>
-
-@section Styles {
-    <link rel="stylesheet" href="~/admin/css/pages/staff-management.css" asp-append-version="true" />
-}
-
-@section Scripts {
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            if (typeof lucide !== 'undefined') {
-                lucide.createIcons();
-            }
-        });
-    </script>
+else
+{
+    <div class="card mb-4">
+        <div class="card-body">
+            <p class="text-muted">No addresses found.</p>
+        </div>
+    </div>
 }
 
