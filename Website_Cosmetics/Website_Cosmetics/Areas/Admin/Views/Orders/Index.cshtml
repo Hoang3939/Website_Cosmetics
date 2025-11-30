@@ -81,82 +81,86 @@
         }
         else
         {
-            <div class="table table--orders">
-                <div class="table__row table__row--hd">
-                    <div>#</div>
-                    <div>Order</div>
-                    <div>Customer</div>
-                    <div>Total</div>
-                    <div>Status</div>
-                    <div>Payment</div>
-                    <div>Date</div>
-                    <div>Actions</div>
-                </div>
-                @foreach (var order in Model)
-                {
-                    <div class="table__row">
-                        <div class="table__cell">@order.OrderId</div>
-                        <div class="table__cell table__cell--name">
-                            <a asp-action="Details" asp-route-id="@order.OrderId" class="order-link">@order.OrderNumber</a>
-                        </div>
-                        <div class="table__cell">
-                            @(order.User?.FullName ?? order.User?.Username ?? "Guest")
-                        </div>
-                        <div class="table__cell">@order.Total.ToString("C")</div>
-                        <div class="table__cell">
-                            @switch (order.Status)
-                            {
-                                case "Processing":
-                                    <span class="badge badge--processing">Processing</span>
-                                    break;
-                                case "Shipped":
-                                    <span class="badge badge--shipped">Shipped</span>
-                                    break;
-                                case "Delivered":
-                                    <span class="badge badge-success">Delivered</span>
-                                    break;
-                                case "Cancelled":
-                                    <span class="badge badge-danger">Cancelled</span>
-                                    break;
-                                default:
-                                    <span class="badge badge-warning">Pending</span>
-                                    break;
-                            }
-                        </div>
-                        <div class="table__cell">
-                            @switch (order.PaymentStatus)
-                            {
-                                case "Paid":
-                                    <span class="badge badge-success">Paid</span>
-                                    break;
-                                case "Failed":
-                                    <span class="badge badge-danger">Failed</span>
-                                    break;
-                                case "Refunded":
-                                    <span class="badge badge-info">Refunded</span>
-                                    break;
-                                default:
-                                    <span class="badge badge-warning">Pending</span>
-                                    break;
-                            }
-                        </div>
-                        <div class="table__cell">@order.CreatedAt.ToString("MM/dd/yyyy HH:mm")</div>
-                        <div class="table__cell table__cell--actions">
-                            <a asp-action="Details" asp-route-id="@order.OrderId" class="btn btn-sm btn-icon btn-info" data-tooltip="View Details">
-                                <i data-lucide="eye"></i>
-                            </a>
-                            <a asp-action="UpdateStatus" asp-route-id="@order.OrderId" class="btn btn-sm btn-icon btn-primary" data-tooltip="Update Status">
-                                <i data-lucide="refresh-cw"></i>
-                            </a>
-                            @if (order.Status != "Cancelled" && order.Status != "Delivered")
-                            {
-                                <a asp-action="Cancel" asp-route-id="@order.OrderId" class="btn btn-sm btn-icon btn-danger" data-tooltip="Cancel Order">
-                                    <i data-lucide="x-circle"></i>
-                                </a>
-                            }
-                        </div>
-                    </div>
-                }
+            <div class="table-responsive">
+                <table class="staff-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Order</th>
+                            <th>Customer</th>
+                            <th>Total</th>
+                            <th>Status</th>
+                            <th>Payment</th>
+                            <th>Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var order in Model)
+                        {
+                            <tr>
+                                <td class="text-center">@order.OrderId</td>
+                                <td><a asp-action="Details" asp-route-id="@order.OrderId" class="link">@order.OrderNumber</a></td>
+                                <td>@(order.User?.FullName ?? order.User?.Username ?? "Guest")</td>
+                                <td>@order.Total.ToString("C")</td>
+                                <td class="text-center">
+                                    @switch (order.Status)
+                                    {
+                                        case "Processing":
+                                            <span class="badge badge--processing">Processing</span>
+                                            break;
+                                        case "Shipped":
+                                            <span class="badge badge--shipped">Shipped</span>
+                                            break;
+                                        case "Delivered":
+                                            <span class="badge badge-success">Delivered</span>
+                                            break;
+                                        case "Cancelled":
+                                            <span class="badge badge-danger">Cancelled</span>
+                                            break;
+                                        default:
+                                            <span class="badge badge-warning">Pending</span>
+                                            break;
+                                    }
+                                </td>
+                                <td class="text-center">
+                                    @switch (order.PaymentStatus)
+                                    {
+                                        case "Paid":
+                                            <span class="badge badge-success">Paid</span>
+                                            break;
+                                        case "Failed":
+                                            <span class="badge badge-danger">Failed</span>
+                                            break;
+                                        case "Refunded":
+                                            <span class="badge badge-info">Refunded</span>
+                                            break;
+                                        default:
+                                            <span class="badge badge-warning">Pending</span>
+                                            break;
+                                    }
+                                </td>
+                                <td class="text-center">@order.CreatedAt.ToString("MM/dd/yyyy HH:mm")</td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <a asp-action="Details" asp-route-id="@order.OrderId" class="btn btn-sm btn-icon btn-info" data-tooltip="View Details">
+                                            <i data-lucide="eye"></i>
+                                        </a>
+                                        <a asp-action="UpdateStatus" asp-route-id="@order.OrderId" class="btn btn-sm btn-icon btn-primary" data-tooltip="Update Status">
+                                            <i data-lucide="refresh-cw"></i>
+                                        </a>
+                                        @if (order.Status != "Cancelled" && order.Status != "Delivered")
+                                        {
+                                            <a asp-action="Cancel" asp-route-id="@order.OrderId" class="btn btn-sm btn-icon btn-danger" data-tooltip="Cancel Order">
+                                                <i data-lucide="x-circle"></i>
+                                            </a>
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
             </div>
         }
     </div>
@@ -184,8 +188,4 @@
         </div>
     }
 </div>
-
-@section Styles {
-    <link rel="stylesheet" href="~/admin/css/pages/orders.css" asp-append-version="true" />
-}
 

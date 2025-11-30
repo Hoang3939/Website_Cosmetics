@@ -123,34 +123,34 @@
 @media (max-width: 768px) {
     .filter-row {
         grid-template-columns: 1fr;
-    }
-    
+}
+
     .filter-actions {
-        flex-direction: column;
-    }
-    
-    .staff-table {
+    flex-direction: column;
+}
+
+.staff-table {
         font-size: 11px;
         table-layout: fixed;
-    }
-    
+}
+
     .staff-table th,
-    .staff-table td {
+.staff-table td {
         padding: 8px 4px;
-    }
-    
+}
+
     .staff-table th:nth-child(1),
     .staff-table td:nth-child(1) {
         width: 45px;
         padding-left: 4px;
         padding-right: 4px;
-    }
-    
+}
+
     .staff-table th:nth-child(2),
     .staff-table td:nth-child(2) {
         width: 100px;
-    }
-    
+}
+
     .staff-table th:nth-child(3),
     .staff-table td:nth-child(3) {
         width: 90px;
@@ -159,34 +159,34 @@
     .staff-table th:nth-child(4),
     .staff-table td:nth-child(4) {
         width: 140px;
-    }
-    
+}
+
     .staff-table th:nth-child(5),
     .staff-table td:nth-child(5) {
         width: 100px;
-    }
-    
+}
+
     .staff-table th:nth-child(6),
     .staff-table td:nth-child(6) {
         width: 70px;
         padding-left: 4px;
         padding-right: 4px;
-    }
-    
+}
+
     .staff-table th:nth-child(7),
     .staff-table td:nth-child(7) {
         width: 90px;
         padding-left: 4px;
         padding-right: 4px;
-    }
-    
+}
+
     .staff-table th:nth-child(8),
     .staff-table td:nth-child(8) {
         width: 90px;
         padding-left: 4px;
         padding-right: 4px;
-    }
-    
+}
+
     .staff-table th:nth-child(9),
     .staff-table td:nth-child(9) {
         width: auto;
@@ -196,19 +196,19 @@
     }
     
     .action-buttons {
-        flex-wrap: wrap;
+    flex-wrap: wrap;
         gap: 4px;
-        justify-content: center;
-    }
-    
+    justify-content: center;
+}
+
     .action-buttons .btn-icon {
         min-width: 28px;
-    }
-    
+}
+
     .tooltip {
         font-size: 11px;
         padding: 4px 8px;
-    }
+}
 }
 
 @media (max-width: 768px) {

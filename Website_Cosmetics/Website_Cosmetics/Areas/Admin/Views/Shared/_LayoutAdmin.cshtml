@@ -32,25 +32,6 @@
                     <a class="sidebar__link @(currentController == "orders" ? "is-active" : "")" asp-area="Admin" asp-controller="Orders" asp-action="Index" data-controller="orders">Orders</a>
                     <a class="sidebar__link @(currentController == "customers" ? "is-active" : "")" asp-area="Admin" asp-controller="Customers" asp-action="Index" data-controller="customers">Customers</a>
                     <a class="sidebar__link @(currentController == "staff" ? "is-active" : "")" asp-area="Admin" asp-controller="Staff" asp-action="Index" data-controller="staff">Staff Management</a>
-                    <a class="sidebar__link @(currentController == "reviews" ? "is-active" : "")" asp-area="Admin" asp-controller="Reviews" asp-action="Index" data-controller="reviews">Reviews</a>
-                </div>
-
-                <div class="sidebar__group">
-                    <div class="sidebar__label">Inventory</div>
-                    <a class="sidebar__link @(currentController == "batches" ? "is-active" : "")" asp-area="Admin" asp-controller="Batches" asp-action="Index" data-controller="batches">Batches</a>
-                    <a class="sidebar__link @(currentController == "inventory" ? "is-active" : "")" asp-area="Admin" asp-controller="Inventory" asp-action="Index" data-controller="inventory">Stock (FIFO)</a>
-                </div>
-
-                <div class="sidebar__group">
-                    <div class="sidebar__label">Commerce</div>
-                    <a class="sidebar__link @(currentController == "coupons" ? "is-active" : "")" asp-area="Admin" asp-controller="Coupons" asp-action="Index" data-controller="coupons">Coupons</a>
-                    <a class="sidebar__link @(currentController == "reports" ? "is-active" : "")" asp-area="Admin" asp-controller="Reports" asp-action="Index" data-controller="reports">Reports</a>
-                </div>
-
-                <div class="sidebar__group">
-                    <div class="sidebar__label">System</div>
-                    <a class="sidebar__link @(currentController == "roles" ? "is-active" : "")" asp-area="Admin" asp-controller="Roles" asp-action="Index" data-controller="roles">Roles & Permissions</a>
-                    <a class="sidebar__link @(currentController == "ai" ? "is-active" : "")" asp-area="Admin" asp-controller="Ai" asp-action="Index" data-controller="ai">AI Settings</a>
                 </div>
             </nav>
         </aside>

@@ -39,14 +39,22 @@
                     </div>
                     <div class="kv__row">
                         <div class="kv__label">Email</div>
-                        <div class="kv__value value text-ellipsis" title="@(Model.User?.Email ?? "N/A")">
-                            @if (!string.IsNullOrWhiteSpace(Model.User?.Email)) {<a href="mailto:@Model.User.Email">@Model.User.Email</a>} else { @:N/A }
+                        <div class="kv__value value text-ellipsis">
+                            @if (!string.IsNullOrWhiteSpace(Model.User?.Email)) {
+                                <a href="mailto:@Model.User.Email">@Model.User.Email</a>
+                            } else {
+                                <span>N/A</span>
+                            }
                         </div>
                     </div>
                     <div class="kv__row">
                         <div class="kv__label">Phone</div>
                         <div class="kv__value value">
-                            @if (!string.IsNullOrWhiteSpace(Model.User?.PhoneNumber)) {<a href="tel:@Model.User.PhoneNumber">@Model.User.PhoneNumber</a>} else { @:N/A }
+                            @if (!string.IsNullOrWhiteSpace(Model.User?.PhoneNumber)) {
+                                <a href="tel:@Model.User.PhoneNumber">@Model.User.PhoneNumber</a>
+                            } else {
+                                <span>N/A</span>
+                            }
                         </div>
                     </div>
                 </div>
