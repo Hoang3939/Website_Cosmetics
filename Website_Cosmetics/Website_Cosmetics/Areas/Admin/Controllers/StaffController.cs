@@ -155,6 +155,22 @@ namespace Website_Cosmetics.Areas.Admin.Controllers
         {
             try
             {
+                // Remove PasswordHash from ModelState since it's not in the form
+                ModelState.Remove(nameof(model.PasswordHash));
+                ModelState.Remove(nameof(model.UserId));
+                ModelState.Remove(nameof(model.CreatedAt));
+                ModelState.Remove(nameof(model.UpdatedAt));
+                ModelState.Remove(nameof(model.UserRoles));
+                ModelState.Remove(nameof(model.PasswordResetTokens));
+                ModelState.Remove(nameof(model.EmailConfirmationTokens));
+                ModelState.Remove(nameof(model.UserPermissions));
+                ModelState.Remove(nameof(model.GrantedPermissions));
+                ModelState.Remove(nameof(model.ShoppingCarts));
+                ModelState.Remove(nameof(model.Orders));
+                ModelState.Remove(nameof(model.ProductReviews));
+                ModelState.Remove(nameof(model.ProductLikes));
+                ModelState.Remove(nameof(model.UserAddresses));
+
                 if (ModelState.IsValid)
                 {
                     // Check if username already exists
@@ -180,8 +196,8 @@ namespace Website_Cosmetics.Areas.Admin.Controllers
                         FirstName = model.FirstName,
                         LastName = model.LastName,
                         PhoneNumber = model.PhoneNumber,
-                        IsEmailConfirmed = true, // Admin creates, so auto-confirm
-                        IsActive = true,
+                        IsEmailConfirmed = model.IsEmailConfirmed, // Use value from form
+                        IsActive = model.IsActive, // Use value from form
                         CreatedAt = DateTime.UtcNow,
                         UpdatedAt = DateTime.UtcNow
                     };
@@ -202,9 +218,26 @@ namespace Website_Cosmetics.Areas.Admin.Controllers
                         });
                         await _context.SaveChangesAsync();
                     }
+                    else
+                    {
+                        _logger.LogWarning("Staff role not found in database. Please ensure the Staff role exists.");
+                        TempData["ErrorMessage"] = "Lỗi: Không tìm thấy role 'Staff' trong database. Vui lòng kiểm tra lại.";
+                        return View(model);
+                    }
 
                     TempData["SuccessMessage"] = $"Nhân viên '{user.FullName}' đã được tạo thành công. Mật khẩu mặc định: Staff123!";
                     return RedirectToAction(nameof(Index));
+                }
+                else
+                {
+                    // Log ModelState errors for debugging
+                    foreach (var error in ModelState)
+                    {
+                        foreach (var errorMessage in error.Value.Errors)
+                        {
+                            _logger.LogWarning("ModelState Error - {Key}: {Message}", error.Key, errorMessage.ErrorMessage);
+                        }
+                    }
                 }
             }
             catch (Exception ex)
