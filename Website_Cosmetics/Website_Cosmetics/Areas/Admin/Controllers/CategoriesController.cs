@@ -1,0 +1,294 @@
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Website_Cosmetics.Attributes;
+using Website_Cosmetics.Data;
+using Website_Cosmetics.Models;
+
+namespace Website_Cosmetics.Areas.Admin.Controllers
+{
+    [Area("Admin")]
+    [RequirePermission("Admin.Category.Manage")]
+    public class CategoriesController : Controller
+    {
+        private readonly ApplicationDbContext _context;
+        private readonly ILogger<CategoriesController> _logger;
+
+        public CategoriesController(ApplicationDbContext context, ILogger<CategoriesController> logger)
+        {
+            _context = context;
+            _logger = logger;
+        }
+
+        // GET: /Admin/Categories/
+        public async Task<IActionResult> Index(
+            string? search = null,
+            string? status = null,
+            int page = 1,
+            int pageSize = 10)
+        {
+            // Lấy tất cả categories
+            var categoriesQuery = _context.Categories
+                .Include(c => c.Products)
+                .AsQueryable();
+
+            // Filter theo search (Name, Description)
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                search = search.Trim();
+                categoriesQuery = categoriesQuery.Where(c =>
+                    c.Name.Contains(search) ||
+                    (c.Description != null && c.Description.Contains(search))
+                );
+            }
+
+            // Filter theo trạng thái (Active/Inactive)
+            if (!string.IsNullOrWhiteSpace(status))
+            {
+                if (status.ToLower() == "active")
+                {
+                    categoriesQuery = categoriesQuery.Where(c => c.IsActive == true);
+                }
+                else if (status.ToLower() == "inactive")
+                {
+                    categoriesQuery = categoriesQuery.Where(c => c.IsActive == false);
+                }
+            }
+
+            // Lấy tổng số để phân trang
+            var totalCount = await categoriesQuery.CountAsync();
+            var totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
+
+            // Validate page number
+            if (page < 1) page = 1;
+            if (page > totalPages && totalPages > 0) page = totalPages;
+
+            // Phân trang
+            var categories = await categoriesQuery
+                .OrderByDescending(c => c.CreatedAt)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            // Truyền filter parameters vào ViewBag
+            ViewBag.Search = search;
+            ViewBag.Status = status;
+            ViewBag.CurrentPage = page;
+            ViewBag.TotalPages = totalPages;
+            ViewBag.TotalCount = totalCount;
+            ViewBag.PageSize = pageSize;
+
+            return View(categories);
+        }
+
+        // GET: /Admin/Categories/Details/{id}
+        public async Task<IActionResult> Details(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var category = await _context.Categories
+                .Include(c => c.Products)
+                .FirstOrDefaultAsync(c => c.CategoryId == id);
+
+            if (category == null)
+            {
+                return NotFound();
+            }
+
+            return View(category);
+        }
+
+        // GET: /Admin/Categories/Create
+        public IActionResult Create()
+        {
+            return View();
+        }
+
+        // POST: /Admin/Categories/Create
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create(Category category)
+        {
+            try
+            {
+                if (ModelState.IsValid)
+                {
+                    // Check if category name already exists
+                    if (await _context.Categories.AnyAsync(c => c.Name == category.Name))
+                    {
+                        ModelState.AddModelError(nameof(category.Name), "Tên danh mục đã tồn tại. Vui lòng chọn tên khác.");
+                        return View(category);
+                    }
+
+                    // Set default values
+                    category.IsActive = category.IsActive ?? true;
+                    category.CreatedAt = DateTime.UtcNow;
+                    category.UpdatedAt = DateTime.UtcNow;
+
+                    _context.Categories.Add(category);
+                    await _context.SaveChangesAsync();
+
+                    TempData["SuccessMessage"] = $"Danh mục '{category.Name}' đã được tạo thành công.";
+                    return RedirectToAction(nameof(Index));
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error creating category");
+                ModelState.AddModelError("", $"Lỗi khi tạo danh mục: {ex.Message}");
+            }
+
+            return View(category);
+        }
+
+        // GET: /Admin/Categories/Edit/{id}
+        public async Task<IActionResult> Edit(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var category = await _context.Categories.FindAsync(id);
+            if (category == null)
+            {
+                return NotFound();
+            }
+
+            return View(category);
+        }
+
+        // POST: /Admin/Categories/Edit/{id}
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(int id, Category category)
+        {
+            if (id != category.CategoryId)
+            {
+                return NotFound();
+            }
+
+            try
+            {
+                if (ModelState.IsValid)
+                {
+                    // Check if category name already exists (khác category hiện tại)
+                    if (await _context.Categories.AnyAsync(c => c.Name == category.Name && c.CategoryId != id))
+                    {
+                        ModelState.AddModelError(nameof(category.Name), "Tên danh mục đã tồn tại. Vui lòng chọn tên khác.");
+                        return View(category);
+                    }
+
+                    var existingCategory = await _context.Categories.FindAsync(id);
+                    if (existingCategory == null)
+                    {
+                        return NotFound();
+                    }
+
+                    // Update category properties
+                    existingCategory.Name = category.Name;
+                    existingCategory.Description = category.Description;
+                    existingCategory.IsActive = category.IsActive ?? true;
+                    existingCategory.UpdatedAt = DateTime.UtcNow;
+
+                    await _context.SaveChangesAsync();
+
+                    TempData["SuccessMessage"] = $"Danh mục '{existingCategory.Name}' đã được cập nhật thành công.";
+                    return RedirectToAction(nameof(Index));
+                }
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!await CategoryExists(id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error editing category {CategoryId}", id);
+                ModelState.AddModelError("", $"Lỗi khi cập nhật danh mục: {ex.Message}");
+            }
+
+            return View(category);
+        }
+
+        // GET: /Admin/Categories/Delete/{id}
+        public async Task<IActionResult> Delete(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var category = await _context.Categories
+                .Include(c => c.Products)
+                .FirstOrDefaultAsync(c => c.CategoryId == id);
+
+            if (category == null)
+            {
+                return NotFound();
+            }
+
+            // Kiểm tra xem có sản phẩm nào đang sử dụng danh mục này không
+            var productCount = category.Products?.Count ?? 0;
+            ViewBag.ProductCount = productCount;
+
+            return View(category);
+        }
+
+        // POST: /Admin/Categories/Delete/{id}
+        [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteConfirmed(int id)
+        {
+            try
+            {
+                var category = await _context.Categories
+                    .Include(c => c.Products)
+                    .FirstOrDefaultAsync(c => c.CategoryId == id);
+
+                if (category == null)
+                {
+                    return NotFound();
+                }
+
+                // Kiểm tra xem có sản phẩm nào đang sử dụng danh mục này không
+                var productCount = category.Products?.Count ?? 0;
+                if (productCount > 0)
+                {
+                    TempData["ErrorMessage"] = $"Không thể xóa danh mục '{category.Name}' vì có {productCount} sản phẩm đang sử dụng danh mục này. Vui lòng xóa hoặc chuyển các sản phẩm trước.";
+                    return RedirectToAction(nameof(Delete), new { id = id });
+                }
+
+                var categoryName = category.Name;
+
+                // Xóa category (theo database schema, Product.CategoryId có ON DELETE SET NULL, nên không cần lo lắng)
+                _context.Categories.Remove(category);
+                await _context.SaveChangesAsync();
+
+                TempData["SuccessMessage"] = $"Danh mục '{categoryName}' đã được xóa thành công.";
+                return RedirectToAction(nameof(Index));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error deleting category {CategoryId}", id);
+                TempData["ErrorMessage"] = $"Lỗi khi xóa danh mục: {ex.Message}";
+                return RedirectToAction(nameof(Index));
+            }
+        }
+
+        // Helper method
+        private async Task<bool> CategoryExists(int id)
+        {
+            return await _context.Categories.AnyAsync(e => e.CategoryId == id);
+        }
+    }
+}
+
