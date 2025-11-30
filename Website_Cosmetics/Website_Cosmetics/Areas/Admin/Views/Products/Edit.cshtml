@@ -1,0 +1,219 @@
+@model Website_Cosmetics.Models.Product
+@{
+    ViewData["Title"] = "Edit Product";
+}
+
+<div class="page-header">
+    <div class="page-header__title">
+        <h1>Edit Product: @Model.Name</h1>
+    </div>
+    <a asp-action="Index" class="btn btn-secondary">← Back to Products</a>
+</div>
+
+<div class="card">
+    <form asp-action="Edit" method="post" enctype="multipart/form-data" class="form">
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="ProductId" />
+
+        <div class="form__section">
+            <h3 class="form__section-title">Basic Information</h3>
+            
+            <div class="form__group">
+                <label asp-for="Name" class="form__label">Product Name <span class="form__required">*</span></label>
+                <input asp-for="Name" class="form__input" required />
+                <span asp-validation-for="Name" class="form__error"></span>
+            </div>
+
+            <div class="form__group">
+                <label asp-for="Slug" class="form__label">Slug</label>
+                <input asp-for="Slug" class="form__input" />
+                <small class="form__help">Leave empty to auto-generate from product name</small>
+            </div>
+
+            <div class="form__row">
+                <div class="form__group form__group--half">
+                    <label class="form__label">Brand</label>
+                    <select name="brandId" class="form__select">
+                        <option value="">-- Select Brand --</option>
+                        @if (ViewBag.Brands != null)
+                        {
+                            var brands = ViewBag.Brands as IEnumerable<Website_Cosmetics.Models.Brand>;
+                            @if (brands != null)
+                            {
+                                @foreach (var brand in brands)
+                                {
+                                    @if (Model.BrandId == brand.BrandId)
+                                    {
+                                        <option value="@brand.BrandId" selected>@brand.Name</option>
+                                    }
+                                    else
+                                    {
+                                        <option value="@brand.BrandId">@brand.Name</option>
+                                    }
+                                }
+                            }
+                        }
+                    </select>
+                </div>
+                <div class="form__group form__group--half">
+                    <label class="form__label">Category</label>
+                    <select name="categoryId" class="form__select">
+                        <option value="">-- Select Category --</option>
+                        @if (ViewBag.Categories != null)
+                        {
+                            var categories = ViewBag.Categories as IEnumerable<Website_Cosmetics.Models.Category>;
+                            @if (categories != null)
+                            {
+                                @foreach (var category in categories)
+                                {
+                                    @if (Model.CategoryId == category.CategoryId)
+                                    {
+                                        <option value="@category.CategoryId" selected>@category.Name</option>
+                                    }
+                                    else
+                                    {
+                                        <option value="@category.CategoryId">@category.Name</option>
+                                    }
+                                }
+                            }
+                        }
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="form__section">
+            <h3 class="form__section-title">Pricing & Details</h3>
+            
+            <div class="form__row">
+                <div class="form__group form__group--half">
+                    <label asp-for="BasePrice" class="form__label">Base Price <span class="form__required">*</span></label>
+                    <input asp-for="BasePrice" type="number" step="0.01" class="form__input" required />
+                    <span asp-validation-for="BasePrice" class="form__error"></span>
+                </div>
+                <div class="form__group form__group--half">
+                    <label asp-for="SPF" class="form__label">SPF</label>
+                    <input asp-for="SPF" class="form__input" />
+                </div>
+            </div>
+
+            <div class="form__row">
+                <div class="form__group form__group--third">
+                    <label asp-for="Size" class="form__label">Size</label>
+                    <input asp-for="Size" class="form__input" />
+                </div>
+                <div class="form__group form__group--third">
+                    <label asp-for="Finish" class="form__label">Finish</label>
+                    <input asp-for="Finish" class="form__input" />
+                </div>
+                <div class="form__group form__group--third">
+                    <label asp-for="IsActive" class="form__label">Status</label>
+                    <select asp-for="IsActive" class="form__select">
+                        @if (Model.IsActive == true)
+                        {
+                            <option value="true" selected>Active</option>
+                            <option value="false">Inactive</option>
+                        }
+                        else
+                        {
+                            <option value="true">Active</option>
+                            <option value="false" selected>Inactive</option>
+                        }
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="form__section">
+            <h3 class="form__section-title">Description</h3>
+            
+            <div class="form__group">
+                <label asp-for="Description" class="form__label">Description</label>
+                <textarea asp-for="Description" class="form__textarea" rows="4">@Model.Description</textarea>
+            </div>
+
+            <div class="form__group">
+                <label asp-for="Ingredients" class="form__label">Ingredients</label>
+                <textarea asp-for="Ingredients" class="form__textarea" rows="4">@Model.Ingredients</textarea>
+            </div>
+        </div>
+
+        <div class="form__section">
+            <h3 class="form__section-title">Product Images</h3>
+            <p class="form__help">Manage existing images and upload new ones. Set primary image and virtual try-on images.</p>
+
+    @{
+        var firstVariant = Model.ProductVariants.FirstOrDefault();
+        var existingImages = firstVariant?.ProductVariantImages.OrderBy(img => img.DisplayOrder).ToList() ?? new List<Website_Cosmetics.Models.ProductVariantImage>();
+    }
+
+            @if (existingImages.Any())
+            {
+                <div class="image-gallery" id="existingImages">
+                    @for (int i = 0; i < existingImages.Count; i++)
+                    {
+                        var image = existingImages[i];
+                        <div class="image-card" data-image-id="@image.ImageId">
+                            <img src="@image.Url" class="image-card__img" alt="@image.AltText" />
+                            <div class="image-card__body">
+                            <input type="hidden" name="existingImageIds" value="@image.ImageId" />
+                            
+                            <div class="form-check mb-2">
+                                <input class="form-check-input primary-checkbox" 
+                                       type="checkbox" 
+                                       name="existingIsPrimary" 
+                                       value="@i"
+                                       @(image.IsPrimary ? "checked" : "")
+                                       data-image-id="@image.ImageId"
+                                       data-variant-id="@(firstVariant?.VariantId ?? 0)">
+                                <label class="form-check-label">
+                                    Set as Primary Image
+                                </label>
+                            </div>
+                            
+                            <div class="form-check mb-2">
+                                <input class="form-check-input makeup-checkbox" 
+                                       type="checkbox" 
+                                       name="existingIsMakeupReference" 
+                                       value="@i"
+                                       @(image.IsMakeupReference ? "checked" : "")
+                                       data-image-id="@image.ImageId">
+                                <label class="form-check-label">
+                                    Use for Virtual Try-On
+                                </label>
+                            </div>
+                            
+                            <input type="hidden" name="existingDisplayOrder" value="@i" />
+                            
+                            <button type="button" 
+                                    class="btn btn-sm btn-danger btn-delete-image" 
+                                    data-image-id="@image.ImageId"
+                                    data-delete-url="@Url.Action("DeleteImage", "Products")">
+                                Delete
+                            </button>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+
+            <div class="form__group">
+                <label class="form__label">Upload New Images</label>
+                <input type="file" name="newVariantImages" multiple accept="image/*,.avif,.webp,image/avif,image/webp" class="form__input" id="newImageUpload" />
+                <small class="form__help">You can select multiple images at once</small>
+            </div>
+
+            <div id="newImagePreview" class="image-gallery"></div>
+        </div>
+
+        <div class="form__actions">
+            <button type="submit" class="btn btn-primary">Save Changes</button>
+            <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
+

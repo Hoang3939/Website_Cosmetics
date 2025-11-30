@@ -1,0 +1,91 @@
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 16px;
+    border: 1px solid var(--stroke);
+    border-radius: var(--radius);
+    background: var(--bg-3);
+    color: var(--text);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all var(--t);
+    text-decoration: none;
+}
+
+.btn:hover {
+    background: var(--bg);
+    border-color: var(--brand);
+}
+
+.btn-primary {
+    background: var(--brand);
+    border-color: var(--brand);
+    color: #fff;
+}
+
+.btn-primary:hover {
+    background: #5a8fff;
+    border-color: #5a8fff;
+}
+
+.btn-secondary {
+    background: var(--bg-3);
+    border-color: var(--stroke);
+}
+
+.btn-secondary:hover {
+    background: var(--bg);
+}
+
+.btn-danger {
+    background: var(--danger);
+    border-color: var(--danger);
+    color: #fff;
+}
+
+.btn-danger:hover {
+    background: #d94a4a;
+    border-color: #d94a4a;
+}
+
+.btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.btn-sm {
+    padding: 6px 12px;
+    font-size: 12px;
+}
+
+.btn-icon {
+    padding: 4px;
+    min-width: 24px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-icon i {
+    width: 10px;
+    height: 10px;
+    display: block;
+}
+
+/* Smaller icon button when combined with btn-sm */
+.btn-sm.btn-icon {
+    padding: 4px;
+    min-width: 24px;
+}
+
+.btn-sm.btn-icon i {
+    width: 10px;
+    height: 10px;
+}
+
+.btn-icon .btn__text {
+    margin-left: 6px;
+}
+

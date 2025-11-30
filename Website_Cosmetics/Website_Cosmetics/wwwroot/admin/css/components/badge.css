@@ -24,3 +24,21 @@
     background: #16221b;
     color: #CFF1DE
 }
+
+.badge--success {
+    background: rgba(76, 195, 138, 0.1);
+    border-color: var(--success);
+    color: var(--success);
+}
+
+.badge--danger {
+    background: rgba(236, 90, 90, 0.1);
+    border-color: var(--danger);
+    color: var(--danger);
+}
+
+.badge--primary {
+    background: rgba(110, 159, 255, 0.1);
+    border-color: var(--brand);
+    color: var(--brand);
+}

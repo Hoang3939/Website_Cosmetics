@@ -1,0 +1,57 @@
+@model Website_Cosmetics.Models.Product
+@{
+    ViewData["Title"] = "Delete Product";
+}
+
+<div class="page-header">
+    <div class="page-header__title">
+        <h1>Delete Product</h1>
+    </div>
+    <a asp-action="Index" class="btn btn-secondary">← Back to Products</a>
+</div>
+
+<div class="card">
+    <div class="delete-warning">
+        <h3>Are you sure you want to delete this product?</h3>
+        <p class="delete-warning__text">This action cannot be undone. All variants and images associated with this product will also be deleted.</p>
+    </div>
+
+    <div class="product-details">
+        <h4 class="product-details__title">@Model.Name</h4>
+        <dl class="product-details__list">
+            <div class="product-details__item">
+                <dt>Brand:</dt>
+                <dd>@(Model.Brand?.Name ?? "N/A")</dd>
+            </div>
+            <div class="product-details__item">
+                <dt>Category:</dt>
+                <dd>@(Model.Category?.Name ?? "N/A")</dd>
+            </div>
+            <div class="product-details__item">
+                <dt>Base Price:</dt>
+                <dd>@Model.BasePrice.ToString("C")</dd>
+            </div>
+            <div class="product-details__item">
+                <dt>Status:</dt>
+                <dd>
+                    @if (Model.IsActive == true)
+                    {
+                        <span class="badge badge--success">Active</span>
+                    }
+                    else
+                    {
+                        <span class="badge badge--danger">Inactive</span>
+                    }
+                </dd>
+            </div>
+        </dl>
+    </div>
+
+    <form asp-action="Delete" method="post" class="form__actions">
+        @Html.AntiForgeryToken()
+        <input type="hidden" asp-for="ProductId" />
+        
+        <button type="submit" class="btn btn-danger">Delete Product</button>
+        <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+    </form>
+</div>
