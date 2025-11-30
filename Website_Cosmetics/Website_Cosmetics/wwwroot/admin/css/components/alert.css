@@ -6,8 +6,13 @@
     margin-bottom: 16px;
     border: 1px solid;
     display: flex;
-    justify-content: space-between;
-    align-items: center;
+    align-items: flex-start;
+    gap: 8px;
+}
+
+.alert strong {
+    margin-right: 4px;
+    flex-shrink: 0;
 }
 
 .alert-success {

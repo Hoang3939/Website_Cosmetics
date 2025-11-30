@@ -3,14 +3,22 @@
 .detail-list {
     display: grid;
     gap: 16px;
+    max-width: 100%;
 }
 
 .detail-item {
     display: grid;
-    grid-template-columns: 180px 1fr;
-    gap: 16px;
+    grid-template-columns: 220px 1fr;
+    gap: 20px;
     padding-bottom: 12px;
     border-bottom: 1px solid var(--stroke);
+    min-width: 0; /* Allow content to shrink if needed */
+}
+
+.detail-item dd {
+    word-break: break-word;
+    overflow-wrap: break-word;
+    max-width: 100%;
 }
 
 .detail-item:last-child {

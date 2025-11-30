@@ -150,7 +150,7 @@ else
                                     {
                                         <form asp-action="Deactivate" asp-route-id="@staff.UserId" method="post" class="d-inline">
                                             @Html.AntiForgeryToken()
-                                            <button type="submit" class="btn btn-sm btn-icon btn-warning" title="Deactivate" onclick="return confirm('Are you sure you want to deactivate this staff member?')">
+                                            <button type="submit" class="btn btn-sm btn-icon btn-warning" title="Deactivate">
                                                 <i data-lucide="user-x"></i>
                                                 <span class="tooltip">Deactivate</span>
                                             </button>
@@ -160,7 +160,7 @@ else
                                     {
                                         <form asp-action="Activate" asp-route-id="@staff.UserId" method="post" class="d-inline">
                                             @Html.AntiForgeryToken()
-                                            <button type="submit" class="btn btn-sm btn-icon btn-success" title="Activate" onclick="return confirm('Are you sure you want to activate this staff member?')">
+                                            <button type="submit" class="btn btn-sm btn-icon btn-success" title="Activate">
                                                 <i data-lucide="user-check"></i>
                                                 <span class="tooltip">Activate</span>
                                             </button>

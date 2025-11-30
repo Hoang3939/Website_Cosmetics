@@ -176,14 +176,14 @@ namespace Website_Cosmetics.Areas.Admin.Controllers
                     // Check if username already exists
                     if (await _context.Users.AnyAsync(u => u.Username == model.Username))
                     {
-                        ModelState.AddModelError(nameof(model.Username), "Username đã tồn tại. Vui lòng chọn username khác.");
+                        ModelState.AddModelError(nameof(model.Username), "Username already exists. Please choose a different username.");
                         return View(model);
                     }
 
                     // Check if email already exists
                     if (await _context.Users.AnyAsync(u => u.Email == model.Email))
                     {
-                        ModelState.AddModelError(nameof(model.Email), "Email đã tồn tại. Vui lòng sử dụng email khác.");
+                        ModelState.AddModelError(nameof(model.Email), "Email already exists. Please use a different email.");
                         return View(model);
                     }
 
@@ -221,11 +221,11 @@ namespace Website_Cosmetics.Areas.Admin.Controllers
                     else
                     {
                         _logger.LogWarning("Staff role not found in database. Please ensure the Staff role exists.");
-                        TempData["ErrorMessage"] = "Lỗi: Không tìm thấy role 'Staff' trong database. Vui lòng kiểm tra lại.";
+                        TempData["ErrorMessage"] = "Error: Staff role not found in database. Please check the database configuration.";
                         return View(model);
                     }
 
-                    TempData["SuccessMessage"] = $"Nhân viên '{user.FullName}' đã được tạo thành công. Mật khẩu mặc định: Staff123!";
+                    TempData["SuccessMessage"] = $"Staff member '{user.FullName}' has been created successfully. Default password: Staff123!";
                     return RedirectToAction(nameof(Index));
                 }
                 else
@@ -243,7 +243,7 @@ namespace Website_Cosmetics.Areas.Admin.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error creating staff");
-                ModelState.AddModelError("", $"Lỗi khi tạo nhân viên: {ex.Message}");
+                ModelState.AddModelError("", $"Error creating staff member: {ex.Message}");
             }
 
             return View(model);
@@ -282,6 +282,10 @@ namespace Website_Cosmetics.Areas.Admin.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, User model)
         {
+            if (id == 0)
+            {
+                id = model.UserId;
+            }
             if (id != model.UserId)
             {
                 return NotFound();
@@ -289,6 +293,21 @@ namespace Website_Cosmetics.Areas.Admin.Controllers
 
             try
             {
+                // Remove fields not posted by the form to avoid ModelState invalidation
+                ModelState.Remove(nameof(model.PasswordHash));
+                ModelState.Remove(nameof(model.CreatedAt));
+                ModelState.Remove(nameof(model.UpdatedAt));
+                ModelState.Remove(nameof(model.UserRoles));
+                ModelState.Remove(nameof(model.PasswordResetTokens));
+                ModelState.Remove(nameof(model.EmailConfirmationTokens));
+                ModelState.Remove(nameof(model.UserPermissions));
+                ModelState.Remove(nameof(model.GrantedPermissions));
+                ModelState.Remove(nameof(model.ShoppingCarts));
+                ModelState.Remove(nameof(model.Orders));
+                ModelState.Remove(nameof(model.ProductReviews));
+                ModelState.Remove(nameof(model.ProductLikes));
+                ModelState.Remove(nameof(model.UserAddresses));
+
                 if (ModelState.IsValid)
                 {
                     var user = await _context.Users
@@ -311,14 +330,14 @@ namespace Website_Cosmetics.Areas.Admin.Controllers
                     // Check if username already exists (khác user hiện tại)
                     if (await _context.Users.AnyAsync(u => u.Username == model.Username && u.UserId != id))
                     {
-                        ModelState.AddModelError(nameof(model.Username), "Username đã tồn tại. Vui lòng chọn username khác.");
+                        ModelState.AddModelError(nameof(model.Username), "Username already exists. Please choose a different username.");
                         return View(model);
                     }
 
                     // Check if email already exists (khác user hiện tại)
                     if (await _context.Users.AnyAsync(u => u.Email == model.Email && u.UserId != id))
                     {
-                        ModelState.AddModelError(nameof(model.Email), "Email đã tồn tại. Vui lòng sử dụng email khác.");
+                        ModelState.AddModelError(nameof(model.Email), "Email already exists. Please use a different email.");
                         return View(model);
                     }
 
@@ -334,8 +353,19 @@ namespace Website_Cosmetics.Areas.Admin.Controllers
 
                     await _context.SaveChangesAsync();
 
-                    TempData["SuccessMessage"] = $"Thông tin nhân viên '{user.FullName}' đã được cập nhật thành công.";
+                    TempData["SuccessMessage"] = $"Staff member '{user.FullName}' has been updated successfully.";
                     return RedirectToAction(nameof(Index));
+                }
+                else
+                {
+                    // Log ModelState errors for diagnostics
+                    foreach (var kv in ModelState)
+                    {
+                        foreach (var err in kv.Value.Errors)
+                        {
+                            _logger.LogWarning("ModelState Error (Edit) - {Key}: {Message}", kv.Key, err.ErrorMessage);
+                        }
+                    }
                 }
             }
             catch (DbUpdateConcurrencyException)
@@ -352,7 +382,7 @@ namespace Website_Cosmetics.Areas.Admin.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error editing staff {StaffId}", id);
-                ModelState.AddModelError("", $"Lỗi khi cập nhật nhân viên: {ex.Message}");
+                ModelState.AddModelError("", $"Error updating staff member: {ex.Message}");
             }
 
             return View(model);
@@ -416,13 +446,13 @@ namespace Website_Cosmetics.Areas.Admin.Controllers
                 _context.Users.Remove(user);
                 await _context.SaveChangesAsync();
 
-                TempData["SuccessMessage"] = $"Nhân viên '{userName}' đã được xóa thành công.";
+                TempData["SuccessMessage"] = $"Staff member '{userName}' has been deleted successfully.";
                 return RedirectToAction(nameof(Index));
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error deleting staff {StaffId}", id);
-                TempData["ErrorMessage"] = $"Lỗi khi xóa nhân viên: {ex.Message}";
+                TempData["ErrorMessage"] = $"Error deleting staff member: {ex.Message}";
                 return RedirectToAction(nameof(Index));
             }
         }
@@ -510,13 +540,13 @@ namespace Website_Cosmetics.Areas.Admin.Controllers
                     user.IsActive = true;
                     user.UpdatedAt = DateTime.UtcNow;
                     await _context.SaveChangesAsync();
-                    TempData["SuccessMessage"] = $"Nhân viên '{user.FullName}' đã được kích hoạt thành công.";
+                    TempData["SuccessMessage"] = $"Staff member '{user.FullName}' has been activated successfully.";
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error activating staff {StaffId}", id);
-                TempData["ErrorMessage"] = $"Lỗi khi kích hoạt nhân viên: {ex.Message}";
+                TempData["ErrorMessage"] = $"Error activating staff member: {ex.Message}";
             }
 
             return RedirectToAction(nameof(Index));
@@ -546,13 +576,13 @@ namespace Website_Cosmetics.Areas.Admin.Controllers
                     user.IsActive = false;
                     user.UpdatedAt = DateTime.UtcNow;
                     await _context.SaveChangesAsync();
-                    TempData["SuccessMessage"] = $"Nhân viên '{user.FullName}' đã được vô hiệu hóa thành công.";
+                    TempData["SuccessMessage"] = $"Staff member '{user.FullName}' has been deactivated successfully.";
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error deactivating staff {StaffId}", id);
-                TempData["ErrorMessage"] = $"Lỗi khi vô hiệu hóa nhân viên: {ex.Message}";
+                TempData["ErrorMessage"] = $"Error deactivating staff member: {ex.Message}";
             }
 
             return RedirectToAction(nameof(Index));

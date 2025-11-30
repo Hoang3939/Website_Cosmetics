@@ -50,7 +50,18 @@
 
 /* Better spacing for action column */
 .customers .action-buttons {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: wrap;
+    gap: 6px;
     justify-content: center;
+    align-items: center;
+}
+
+.customers .staff-table .action-buttons .btn-icon,
+.customers .staff-table .action-buttons .btn {
+    margin: 0;
+    flex-shrink: 0;
 }
 
 /* Details view tweaks */
