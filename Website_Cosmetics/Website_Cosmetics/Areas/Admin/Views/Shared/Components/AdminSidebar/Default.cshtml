@@ -1,0 +1,43 @@
+@model Website_Cosmetics.Areas.Admin.ViewComponents.SidebarViewModel
+@{
+    var currentController = (ViewContext.RouteData.Values["controller"]?.ToString() ?? string.Empty).ToLower();
+}
+
+<nav class="sidebar__nav">
+    <div class="sidebar__group">
+        <div class="sidebar__label">Management</div>
+        @if (Model.HasDashboardAccess)
+        {
+            <a class="sidebar__link @((currentController == "dashboard" || currentController == "staffdashboard") ? "is-active" : "")" asp-area="Admin" asp-controller="Dashboard" asp-action="Index" data-controller="dashboard">Dashboard</a>
+        }
+        @if (Model.HasProductsAccess)
+        {
+            <a class="sidebar__link @(currentController == "products" ? "is-active" : "")" asp-area="Admin" asp-controller="Products" asp-action="Index" data-controller="products">Products</a>
+        }
+        @if (Model.HasCategoriesAccess)
+        {
+            <a class="sidebar__link @(currentController == "categories" ? "is-active" : "")" asp-area="Admin" asp-controller="Categories" asp-action="Index" data-controller="categories">Categories</a>
+        }
+        @if (Model.HasBrandsAccess)
+        {
+            <a class="sidebar__link @(currentController == "brands" ? "is-active" : "")" asp-area="Admin" asp-controller="Brands" asp-action="Index" data-controller="brands">Brands</a>
+        }
+        @if (Model.HasOrdersAccess)
+        {
+            <a class="sidebar__link @(currentController == "orders" ? "is-active" : "")" asp-area="Admin" asp-controller="Orders" asp-action="Index" data-controller="orders">Orders</a>
+        }
+        @if (Model.HasCustomersAccess)
+        {
+            <a class="sidebar__link @(currentController == "customers" ? "is-active" : "")" asp-area="Admin" asp-controller="Customers" asp-action="Index" data-controller="customers">Customers</a>
+        }
+        @if (Model.HasStaffAccess)
+        {
+            <a class="sidebar__link @(currentController == "staff" ? "is-active" : "")" asp-area="Admin" asp-controller="Staff" asp-action="Index" data-controller="staff">Staff</a>
+        }
+        @if (Model.HasPermissionsAccess)
+        {
+            <a class="sidebar__link @(currentController == "permissions" ? "is-active" : "")" asp-area="Admin" asp-controller="Permissions" asp-action="Index" data-controller="permissions">Permissions</a>
+        }
+    </div>
+</nav>
+

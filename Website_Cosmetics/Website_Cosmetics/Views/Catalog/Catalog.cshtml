@@ -35,13 +35,22 @@
             <div class="grid grid--products">
                 @foreach (var product in Model)
                 {
-                    var productImage = product.ProductImages?.FirstOrDefault(img => img.ImageType == "cover")?.Url 
-                                     ?? product.ProductImages?.FirstOrDefault()?.Url
-                                     ?? "/public/images/products/img-cart-lip.png";
-                    var minPrice = product.ProductVariants?.Where(v => v.Price.HasValue).Min(v => v.Price) ?? product.BasePrice;
-                    var maxPrice = product.ProductVariants?.Where(v => v.Price.HasValue).Max(v => v.Price) ?? product.BasePrice;
-                    var hasSale = product.ProductVariants?.Any(v => v.Price.HasValue && v.Price < product.BasePrice) == true;
-                    var salePrice = hasSale ? product.ProductVariants?.Where(v => v.Price.HasValue && v.Price < product.BasePrice).Min(v => v.Price) : null;
+                    // Get image from default variant's primary image, fallback to first variant image, then product image, then default
+                    var defaultVariant = product.ProductVariants?.FirstOrDefault(v => v.IsDefault == true && (v.IsActive == true || v.IsActive == null)) 
+                                         ?? product.ProductVariants?.FirstOrDefault(v => v.IsActive == true || v.IsActive == null)
+                                         ?? product.ProductVariants?.FirstOrDefault();
+                    var productImage = defaultVariant?.ProductVariantImages?.FirstOrDefault(img => img.IsPrimary)?.Url
+                                    ?? defaultVariant?.ProductVariantImages?.FirstOrDefault()?.Url
+                                    ?? product.ProductImages?.FirstOrDefault(img => img.ImageType == "cover")?.Url
+                                    ?? product.ProductImages?.FirstOrDefault()?.Url
+                                    ?? "/public/images/products/img-cart-lip.png";
+                    // Get price from default variant (use variant.Price if exists, otherwise use product.BasePrice)
+                    var currentPrice = defaultVariant?.Price ?? product.BasePrice;
+                    // Compare price: use CompareAtPrice if exists, otherwise use BasePrice
+                    var comparePrice = defaultVariant?.CompareAtPrice ?? product.BasePrice;
+                    // Check if there's a discount: CompareAtPrice > currentPrice OR (variant.Price < BasePrice)
+                    var hasSale = (defaultVariant?.CompareAtPrice != null && defaultVariant.CompareAtPrice > currentPrice) 
+                               || (defaultVariant?.Price != null && defaultVariant.Price < product.BasePrice);
                     
                     <div class="card product" data-product-id="@product.ProductId">
                         <div class="product__header">
@@ -73,18 +82,10 @@
                                 </div>
                             }
                             <div class="product__price">
-                                @if (hasSale && salePrice.HasValue)
+                                <span class="price--now">$@currentPrice.ToString("0.00")</span>
+                                @if (hasSale && comparePrice > currentPrice)
                                 {
-                                    <span class="price--now">$@salePrice.Value.ToString("0.00")</span>
-                                    <span class="price--old">$@product.BasePrice.ToString("0.00")</span>
-                                }
-                                else if (minPrice == maxPrice)
-                                {
-                                    <span class="price--now">$@minPrice.ToString("0.00")</span>
-                                }
-                                else
-                                {
-                                    <span class="price--now">$@minPrice.ToString("0.00") - $@maxPrice.ToString("0.00")</span>
+                                    <span class="price--old">$@comparePrice.ToString("0.00")</span>
                                 }
                             </div>
                             <div class="product__actions">

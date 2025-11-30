@@ -42,6 +42,8 @@
         <input type="hidden" asp-for="VariantId" />
         <input type="hidden" asp-for="ProductId" />
 
+        <div asp-validation-summary="ModelOnly" class="form__error-box" role="alert"></div>
+
         <div class="form__section">
             <h3 class="form__section-title">Basic Information</h3>
             
@@ -59,10 +61,16 @@
                 <div class="form__group form__group--third">
                     <label asp-for="ColorName" class="form__label">Color Name</label>
                     <input asp-for="ColorName" class="form__input" />
+                    <span asp-validation-for="ColorName" class="form__error"></span>
                 </div>
                 <div class="form__group form__group--third">
-                    <label asp-for="ColorCode" class="form__label">Color Code (Hex)</label>
-                    <input asp-for="ColorCode" type="color" class="form__input form__input--color" />
+                    <label asp-for="ColorCode" class="form__label">Color Code</label>
+                    <div class="color-input-group">
+                        <input type="color" class="form__input form__input--color" id="colorPicker" value="@(Model.ColorCode ?? "#666666")" />
+                        <input asp-for="ColorCode" type="text" class="form__input form__input--color-code" id="colorCodeInput" placeholder="#666666" pattern="^#[0-9A-Fa-f]{6}$" maxlength="7" value="@Model.ColorCode" />
+                    </div>
+                    <span asp-validation-for="ColorCode" class="form__error"></span>
+                    <small class="form__help">Select color or enter hex code (e.g., #666666)</small>
                 </div>
                 <div class="form__group form__group--third">
                     <label asp-for="ColorFamily" class="form__label">Color Family</label>
@@ -259,4 +267,85 @@
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const colorPicker = document.getElementById('colorPicker');
+            const colorCodeInput = document.getElementById('colorCodeInput');
+            
+            if (!colorPicker || !colorCodeInput) return;
+            
+            // Initialize: set color picker from input if input has value
+            if (colorCodeInput.value && colorCodeInput.value.match(/^#[0-9A-Fa-f]{6}$/)) {
+                colorPicker.value = colorCodeInput.value.toUpperCase();
+            } else if (colorPicker.value) {
+                colorCodeInput.value = colorPicker.value.toUpperCase();
+            } else {
+                // Set default
+                const defaultValue = '#666666';
+                colorCodeInput.value = defaultValue;
+                colorPicker.value = defaultValue;
+            }
+            
+            // Sync from color picker to text input
+            colorPicker.addEventListener('input', function() {
+                const value = this.value.toUpperCase();
+                colorCodeInput.value = value;
+            });
+            
+            // Sync from text input to color picker
+            colorCodeInput.addEventListener('input', function() {
+                let value = this.value.trim();
+                
+                // Add # if missing
+                if (value && !value.startsWith('#')) {
+                    value = '#' + value;
+                }
+                
+                // Validate hex color format
+                if (value.match(/^#[0-9A-Fa-f]{6}$/)) {
+                    colorPicker.value = value.toUpperCase();
+                    this.value = value.toUpperCase();
+                    this.setCustomValidity('');
+                } else if (value.length > 0 && value.length < 7) {
+                    // Still typing, don't show error yet
+                    this.setCustomValidity('');
+                } else if (value.length > 0) {
+                    this.setCustomValidity('Please enter a valid hex color code (e.g., #666666)');
+                } else {
+                    this.setCustomValidity('');
+                }
+            });
+            
+            // Format on blur
+            colorCodeInput.addEventListener('blur', function() {
+                let value = this.value.trim();
+                if (value && !value.startsWith('#')) {
+                    value = '#' + value;
+                }
+                if (value.match(/^#[0-9A-Fa-f]{6}$/)) {
+                    const formattedValue = value.toUpperCase();
+                    this.value = formattedValue;
+                    colorPicker.value = formattedValue;
+                } else if (value.length > 0) {
+                    // Invalid format, reset to picker value
+                    this.value = colorPicker.value.toUpperCase();
+                }
+            });
+            
+            // Before form submit, ensure both inputs have the same value
+            const form = colorCodeInput.closest('form');
+            if (form) {
+                form.addEventListener('submit', function() {
+                    // Use text input value if valid, otherwise use picker value
+                    const textValue = colorCodeInput.value.trim();
+                    if (textValue.match(/^#[0-9A-Fa-f]{6}$/)) {
+                        colorPicker.value = textValue.toUpperCase();
+                        colorCodeInput.value = textValue.toUpperCase();
+                    } else {
+                        colorCodeInput.value = colorPicker.value.toUpperCase();
+                    }
+                });
+            }
+        });
+    </script>
 }

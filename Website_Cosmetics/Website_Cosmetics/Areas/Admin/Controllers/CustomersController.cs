@@ -8,7 +8,7 @@ using Website_Cosmetics.Models;
 namespace Website_Cosmetics.Areas.Admin.Controllers
 {
     [Area("Admin")]
-    [Authorize(Roles = "Admin")]
+    [RequirePermissionOrAdmin("User.Manage")]
     public class CustomersController : Controller
     {
         private readonly ApplicationDbContext _context;

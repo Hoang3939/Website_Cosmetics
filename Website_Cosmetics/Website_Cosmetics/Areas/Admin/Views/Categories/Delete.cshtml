@@ -21,7 +21,13 @@
         @if (productCount > 0)
         {
             <div class="alert alert-warning">
-                <strong>Warning:</strong> This category is currently used by @productCount product(s). You must remove or reassign those products before deleting this category.
+                <strong>⚠️ Cannot Delete:</strong> This category is currently used by <strong>@productCount</strong> product(s). You must remove or reassign those products before deleting this category.
+                <br /><br />
+                <small>To delete this category, please:</small>
+                <ul style="margin-top: 10px; margin-bottom: 0;">
+                    <li>Go to Products management and remove or change the category for all @productCount product(s)</li>
+                    <li>Or set those products to a different category</li>
+                </ul>
             </div>
         }
         else
@@ -66,6 +72,7 @@
         <form asp-action="Delete" method="post" class="form-actions" id="deleteForm" asp-route-id="@Model.CategoryId">
             @Html.AntiForgeryToken()
             <input type="hidden" asp-for="CategoryId" />
+            <input type="hidden" id="productCount" value="@productCount" />
             <button type="button" class="btn btn-danger" id="deleteBtn" @(productCount > 0 ? "disabled" : null)>Delete Category</button>
             <a asp-action="Index" class="btn btn-secondary">Cancel</a>
         </form>
@@ -112,41 +119,60 @@
             const cancelBtn = document.getElementById('cancelBtn');
             const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
             const deleteForm = document.getElementById('deleteForm');
+            const productCountInput = document.getElementById('productCount');
+            const productCount = productCountInput ? parseInt(productCountInput.value) : 0;
+
+            // VALIDATION: Prevent form submission if category has products
+            if (deleteForm) {
+                deleteForm.addEventListener('submit', function (e) {
+                    if (productCount > 0) {
+                        e.preventDefault();
+                        alert(`Cannot delete category. This category is currently used by ${productCount} product(s). Please remove or reassign those products first.`);
+                        return false;
+                    }
+                });
+            }
 
             if (deleteBtn && deleteModal) {
-                // Open modal when delete button is clicked
-                deleteBtn.addEventListener('click', function () {
-                    deleteModal.style.display = 'flex';
-                });
+                // VALIDATION: Disable delete button if category has products
+                if (productCount > 0) {
+                    deleteBtn.disabled = true;
+                    deleteBtn.title = `Cannot delete: ${productCount} product(s) are using this category`;
+                } else {
+                    // Open modal when delete button is clicked
+                    deleteBtn.addEventListener('click', function () {
+                        deleteModal.style.display = 'flex';
+                    });
 
-                // Close modal functions
-                function closeModalFunc() {
-                    deleteModal.style.display = 'none';
+                    // Close modal functions
+                    function closeModalFunc() {
+                        deleteModal.style.display = 'none';
+                    }
+
+                    closeModal?.addEventListener('click', closeModalFunc);
+                    cancelBtn?.addEventListener('click', closeModalFunc);
+
+                    // Close modal when clicking outside
+                    deleteModal.addEventListener('click', function (e) {
+                        if (e.target === deleteModal) {
+                            closeModalFunc();
+                        }
+                    });
+
+                    // Close modal on Escape key
+                    document.addEventListener('keydown', function (e) {
+                        if (e.key === 'Escape' && deleteModal.style.display === 'flex') {
+                            closeModalFunc();
+                        }
+                    });
+
+                    // Confirm deletion
+                    confirmDeleteBtn?.addEventListener('click', function () {
+                        if (deleteForm) {
+                            deleteForm.submit();
+                        }
+                    });
                 }
-
-                closeModal?.addEventListener('click', closeModalFunc);
-                cancelBtn?.addEventListener('click', closeModalFunc);
-
-                // Close modal when clicking outside
-                deleteModal.addEventListener('click', function (e) {
-                    if (e.target === deleteModal) {
-                        closeModalFunc();
-                    }
-                });
-
-                // Close modal on Escape key
-                document.addEventListener('keydown', function (e) {
-                    if (e.key === 'Escape' && deleteModal.style.display === 'flex') {
-                        closeModalFunc();
-                    }
-                });
-
-                // Confirm deletion
-                confirmDeleteBtn?.addEventListener('click', function () {
-                    if (deleteForm) {
-                        deleteForm.submit();
-                    }
-                });
             }
         });
     </script>

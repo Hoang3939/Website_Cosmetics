@@ -3,11 +3,12 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authorization;
 using Website_Cosmetics.Data;
 using Website_Cosmetics.Models;
+using Website_Cosmetics.Attributes;
 
 namespace Website_Cosmetics.Areas.Admin.Controllers
 {
     [Area("Admin")]
-    [Authorize(Roles = "Admin")]
+    [RequirePermissionOrAdmin("Brand.Manage")]
     public class BrandsController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -113,12 +114,20 @@ namespace Website_Cosmetics.Areas.Admin.Controllers
         {
             try
             {
+                // VALIDATION: Check name length
+                if (!string.IsNullOrWhiteSpace(brand.Name) && brand.Name.Length > 100)
+                {
+                    ModelState.AddModelError(nameof(brand.Name), "Brand name cannot exceed 100 characters.");
+                    return View(brand);
+                }
+
                 if (ModelState.IsValid)
                 {
-                    // Check if brand name already exists
-                    if (await _context.Brands.AnyAsync(b => b.Name == brand.Name))
+                    // VALIDATION: Check if brand name already exists (case-insensitive)
+                    var trimmedName = brand.Name?.Trim();
+                    if (!string.IsNullOrWhiteSpace(trimmedName) && await _context.Brands.AnyAsync(b => b.Name != null && b.Name.Trim().ToLower() == trimmedName.ToLower()))
                     {
-                        ModelState.AddModelError(nameof(brand.Name), "Tên thương hiệu đã tồn tại. Vui lòng chọn tên khác.");
+                        ModelState.AddModelError(nameof(brand.Name), "Brand name already exists. Please choose a different name.");
                         return View(brand);
                     }
 
@@ -130,14 +139,14 @@ namespace Website_Cosmetics.Areas.Admin.Controllers
                     _context.Brands.Add(brand);
                     await _context.SaveChangesAsync();
 
-                    TempData["SuccessMessage"] = $"Thương hiệu '{brand.Name}' đã được tạo thành công.";
+                    TempData["SuccessMessage"] = $"Brand '{brand.Name}' has been created successfully.";
                     return RedirectToAction(nameof(Index));
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error creating brand");
-                ModelState.AddModelError("", $"Lỗi khi tạo thương hiệu: {ex.Message}");
+                ModelState.AddModelError("", $"Error creating brand: {ex.Message}");
             }
 
             return View(brand);
@@ -172,12 +181,20 @@ namespace Website_Cosmetics.Areas.Admin.Controllers
 
             try
             {
+                // VALIDATION: Check name length
+                if (!string.IsNullOrWhiteSpace(brand.Name) && brand.Name.Length > 100)
+                {
+                    ModelState.AddModelError(nameof(brand.Name), "Brand name cannot exceed 100 characters.");
+                    return View(brand);
+                }
+
                 if (ModelState.IsValid)
                 {
-                    // Check if brand name already exists (khác brand hiện tại)
-                    if (await _context.Brands.AnyAsync(b => b.Name == brand.Name && b.BrandId != id))
+                    // VALIDATION: Check if brand name already exists (case-insensitive, different from current brand)
+                    var trimmedName = brand.Name?.Trim();
+                    if (!string.IsNullOrWhiteSpace(trimmedName) && await _context.Brands.AnyAsync(b => b.BrandId != id && b.Name != null && b.Name.Trim().ToLower() == trimmedName.ToLower()))
                     {
-                        ModelState.AddModelError(nameof(brand.Name), "Tên thương hiệu đã tồn tại. Vui lòng chọn tên khác.");
+                        ModelState.AddModelError(nameof(brand.Name), "Brand name already exists. Please choose a different name.");
                         return View(brand);
                     }
 
@@ -188,14 +205,14 @@ namespace Website_Cosmetics.Areas.Admin.Controllers
                     }
 
                     // Update brand properties
-                    existingBrand.Name = brand.Name;
+                    existingBrand.Name = brand.Name ?? existingBrand.Name;
                     existingBrand.Country = brand.Country;
                     existingBrand.IsActive = brand.IsActive ?? true;
                     existingBrand.UpdatedAt = DateTime.UtcNow;
 
                     await _context.SaveChangesAsync();
 
-                    TempData["SuccessMessage"] = $"Thương hiệu '{existingBrand.Name}' đã được cập nhật thành công.";
+                    TempData["SuccessMessage"] = $"Brand '{existingBrand.Name}' has been updated successfully.";
                     return RedirectToAction(nameof(Index));
                 }
             }
@@ -213,7 +230,7 @@ namespace Website_Cosmetics.Areas.Admin.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error editing brand {BrandId}", id);
-                ModelState.AddModelError("", $"Lỗi khi cập nhật thương hiệu: {ex.Message}");
+                ModelState.AddModelError("", $"Error updating brand: {ex.Message}");
             }
 
             return View(brand);
@@ -236,7 +253,7 @@ namespace Website_Cosmetics.Areas.Admin.Controllers
                 return NotFound();
             }
 
-            // Kiểm tra xem có sản phẩm nào đang sử dụng thương hiệu này không
+            // Check if any products are using this brand
             var productCount = brand.Products?.Count ?? 0;
             ViewBag.ProductCount = productCount;
 
@@ -259,27 +276,28 @@ namespace Website_Cosmetics.Areas.Admin.Controllers
                     return NotFound();
                 }
 
-                // Kiểm tra xem có sản phẩm nào đang sử dụng thương hiệu này không
+                // VALIDATION: Check if any products are using this brand
                 var productCount = brand.Products?.Count ?? 0;
                 if (productCount > 0)
                 {
-                    TempData["ErrorMessage"] = $"Không thể xóa thương hiệu '{brand.Name}' vì có {productCount} sản phẩm đang sử dụng thương hiệu này. Vui lòng xóa hoặc chuyển các sản phẩm trước.";
+                    TempData["ErrorMessage"] = $"Cannot delete brand '{brand.Name}' because {productCount} product(s) are using this brand. Please remove or reassign those products first.";
+                    _logger.LogWarning("Attempted to delete brand {BrandId} ({BrandName}) with {ProductCount} associated products", id, brand.Name, productCount);
                     return RedirectToAction(nameof(Delete), new { id = id });
                 }
 
                 var brandName = brand.Name;
 
-                // Xóa brand (theo database schema, Product.BrandId có ON DELETE SET NULL, nên không cần lo lắng)
+                // Delete brand (according to database schema, Product.BrandId has ON DELETE SET NULL, so no need to worry)
                 _context.Brands.Remove(brand);
                 await _context.SaveChangesAsync();
 
-                TempData["SuccessMessage"] = $"Thương hiệu '{brandName}' đã được xóa thành công.";
+                TempData["SuccessMessage"] = $"Brand '{brandName}' has been deleted successfully.";
                 return RedirectToAction(nameof(Index));
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error deleting brand {BrandId}", id);
-                TempData["ErrorMessage"] = $"Lỗi khi xóa thương hiệu: {ex.Message}";
+                TempData["ErrorMessage"] = $"Error deleting brand: {ex.Message}";
                 return RedirectToAction(nameof(Index));
             }
         }

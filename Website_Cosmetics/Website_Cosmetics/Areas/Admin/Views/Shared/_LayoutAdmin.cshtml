@@ -23,19 +23,7 @@
                 <a asp-area="Admin" asp-controller="Dashboard" asp-action="Index">COSMETIC</a>
             </div>
 
-            @{ var currentController = (ViewContext.RouteData.Values["controller"]?.ToString() ?? string.Empty).ToLower(); }
-            <nav class="sidebar__nav">
-                <div class="sidebar__group">
-                    <div class="sidebar__label">Management</div>
-                    <a class="sidebar__link @((currentController == "dashboard" || currentController == "staffdashboard") ? "is-active" : "")" asp-area="Admin" asp-controller="Dashboard" asp-action="Index" data-controller="dashboard">Dashboard</a>
-                    <a class="sidebar__link @(currentController == "products" ? "is-active" : "")" asp-area="Admin" asp-controller="Products" asp-action="Index" data-controller="products">Products</a>
-                    <a class="sidebar__link @(currentController == "categories" ? "is-active" : "")" asp-area="Admin" asp-controller="Categories" asp-action="Index" data-controller="categories">Categories</a>
-                    <a class="sidebar__link @(currentController == "brands" ? "is-active" : "")" asp-area="Admin" asp-controller="Brands" asp-action="Index" data-controller="brands">Brands</a>
-                    <a class="sidebar__link @(currentController == "orders" ? "is-active" : "")" asp-area="Admin" asp-controller="Orders" asp-action="Index" data-controller="orders">Orders</a>
-                    <a class="sidebar__link @(currentController == "customers" ? "is-active" : "")" asp-area="Admin" asp-controller="Customers" asp-action="Index" data-controller="customers">Customers</a>
-                    <a class="sidebar__link @(currentController == "staff" ? "is-active" : "")" asp-area="Admin" asp-controller="Staff" asp-action="Index" data-controller="staff">Staff</a>
-                </div>
-            </nav>
+            @await Component.InvokeAsync("AdminSidebar")
         </aside>
 
         <!-- Main -->
@@ -43,10 +31,6 @@
             <!-- Header -->
             <header class="header">
                 <button class="header__toggle" id="btnSidebarToggle" aria-label="Toggle sidebar">☰</button>
-
-                <div class="header__search">
-                    <input placeholder="Search..." />
-                </div>
 
                 <div class="header__actions">
                     <div class="header__badge">Admin</div>

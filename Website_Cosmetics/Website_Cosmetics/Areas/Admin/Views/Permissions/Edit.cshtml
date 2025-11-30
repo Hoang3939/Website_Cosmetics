@@ -1,0 +1,66 @@
+@model Website_Cosmetics.Models.Permission
+@{
+    ViewData["Title"] = "Edit Permission";
+}
+
+<div class="page-header">
+    <div class="page-header__title">
+        <h1>Edit Permission: @Model.PermissionName</h1>
+    </div>
+    <div class="page-header__actions">
+        <a asp-action="Index" class="btn btn-secondary">← Back to List</a>
+    </div>
+</div>
+
+<form asp-action="Edit" method="post" class="staff-form">
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="PermissionId" />
+
+    <div class="card">
+        <div class="card-header">
+            <h3>Basic Information</h3>
+        </div>
+        <div class="card-body">
+            <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label asp-for="PermissionName">Permission Name *</label>
+                    <input asp-for="PermissionName" class="form-control" required placeholder="e.g., Admin.Dashboard.View" />
+                    <span asp-validation-for="PermissionName" class="text-danger"></span>
+                    <small class="form-text">Only letters, numbers, dots, and underscores are allowed.</small>
+                </div>
+                <div class="form-group">
+                    <label asp-for="Category">Category</label>
+                    <input asp-for="Category" class="form-control" placeholder="e.g., Admin, Staff, User" />
+                    <span asp-validation-for="Category" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label asp-for="Description">Description</label>
+                    <textarea asp-for="Description" rows="3" class="form-control" placeholder="Short description of this permission..."></textarea>
+                    <span asp-validation-for="Description" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="IsActive">Status</label>
+                    <select asp-for="IsActive" class="form-control">
+                        <option value="true" selected="@(Model.IsActive == true)">Active</option>
+                        <option value="false" selected="@(Model.IsActive == false)">Inactive</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">Update</button>
+                <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+            </div>
+        </div>
+    </div>
+</form>
+
+@section Scripts {
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+}
+

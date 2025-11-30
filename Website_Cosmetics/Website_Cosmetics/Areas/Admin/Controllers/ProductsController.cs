@@ -3,12 +3,13 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Website_Cosmetics.Data;
 using Website_Cosmetics.Models;
+using Website_Cosmetics.Attributes;
 using System.Text.RegularExpressions;
 
 namespace Website_Cosmetics.Areas.Admin.Controllers
 {
     [Area("Admin")]
-    [Authorize(Roles = "Admin")]
+    [RequirePermissionOrAdmin("Product.Manage")]
     public class ProductsController : Controller
     {
         private readonly ApplicationDbContext _context;

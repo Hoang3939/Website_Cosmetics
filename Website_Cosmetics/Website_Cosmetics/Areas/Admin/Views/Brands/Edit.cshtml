@@ -27,8 +27,9 @@
             <div class="form-row">
                 <div class="form-group">
                     <label asp-for="Name">Name *</label>
-                    <input asp-for="Name" class="form-control" required />
+                    <input asp-for="Name" class="form-control" required maxlength="100" />
                     <span asp-validation-for="Name" class="text-danger"></span>
+                    <small class="form-text text-muted">Maximum 100 characters. Brand name must be unique.</small>
                 </div>
                 <div class="form-group">
                     <label asp-for="Country">Country</label>
@@ -61,4 +62,57 @@
 
 @section Scripts {
     @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const nameInput = document.querySelector('input[name="Name"]');
+            const form = document.querySelector('form');
+            const submitButton = form.querySelector('button[type="submit"]');
+            
+            if (nameInput) {
+                // Real-time character count
+                const charCount = document.createElement('small');
+                charCount.className = 'form-text text-muted';
+                charCount.style.marginTop = '5px';
+                charCount.style.display = 'block';
+                nameInput.parentNode.appendChild(charCount);
+                
+                function updateCharCount() {
+                    const length = nameInput.value.length;
+                    const maxLength = 100;
+                    charCount.textContent = `${length}/${maxLength} characters`;
+                    
+                    if (length > maxLength) {
+                        charCount.className = 'form-text text-danger';
+                        charCount.textContent = `Exceeds maximum length! ${length}/${maxLength} characters`;
+                        submitButton.disabled = true;
+                    } else {
+                        charCount.className = 'form-text text-muted';
+                        submitButton.disabled = false;
+                    }
+                }
+                
+                nameInput.addEventListener('input', updateCharCount);
+                updateCharCount();
+                
+                // Prevent form submission if name is too long
+                form.addEventListener('submit', function(e) {
+                    const nameValue = nameInput.value.trim();
+                    
+                    if (nameValue.length > 100) {
+                        e.preventDefault();
+                        alert('Brand name cannot exceed 100 characters. Please shorten the name.');
+                        nameInput.focus();
+                        return false;
+                    }
+                    
+                    if (!nameValue) {
+                        e.preventDefault();
+                        alert('Brand name is required.');
+                        nameInput.focus();
+                        return false;
+                    }
+                });
+            }
+        });
+    </script>
 }

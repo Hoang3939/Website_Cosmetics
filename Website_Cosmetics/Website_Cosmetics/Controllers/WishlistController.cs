@@ -35,6 +35,7 @@ namespace Website_Cosmetics.Controllers
                     .ThenInclude(p => p.ProductImages)
                 .Include(pl => pl.Product)
                     .ThenInclude(p => p.ProductVariants)
+                        .ThenInclude(v => v.ProductVariantImages)
                 .OrderByDescending(pl => pl.CreatedAt)
                 .ToListAsync();
 

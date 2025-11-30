@@ -1,8 +1,13 @@
 /* Customers Admin Page - scoped styles */
 
+.customers .staff-table {
+    table-layout: auto;
+}
+
 .customers .staff-table th,
 .customers .staff-table td {
     vertical-align: middle;
+    overflow: visible;
 }
 
 /* Column widths and alignment for customers listing */
@@ -37,31 +42,59 @@
 .customers .staff-table th:nth-child(7),
 .customers .staff-table td:nth-child(7),
 .customers .staff-table th:nth-child(8),
-.customers .staff-table td:nth-child(8),
-.customers .staff-table th:nth-child(9),
-.customers .staff-table td:nth-child(9) {
+.customers .staff-table td:nth-child(8) {
     text-align: center;
+    width: 120px;
+    min-width: 120px;
+    padding: 8px 12px;
+    white-space: nowrap;
 }
 
 .customers .staff-table th:nth-child(9),
 .customers .staff-table td:nth-child(9) {
-    min-width: 220px;
+    text-align: center;
+    min-width: 280px;
+    width: 280px;
+    padding: 8px 16px;
+    overflow: visible;
 }
 
 /* Better spacing for action column */
 .customers .action-buttons {
     display: flex !important;
     flex-direction: row !important;
-    flex-wrap: wrap;
+    flex-wrap: nowrap !important;
     gap: 6px;
     justify-content: center;
     align-items: center;
+    width: 100%;
+    min-width: 0;
+    padding: 0;
+    margin: 0;
 }
 
 .customers .staff-table .action-buttons .btn-icon,
 .customers .staff-table .action-buttons .btn {
     margin: 0;
     flex-shrink: 0;
+    display: inline-flex;
+    min-width: 32px;
+    width: 32px;
+    height: 32px;
+}
+
+.customers .staff-table .action-buttons .action-form {
+    display: inline-flex;
+    margin: 0;
+    flex-shrink: 0;
+}
+
+.customers .staff-table .action-buttons .action-form button {
+    margin: 0;
+    min-width: 32px;
+    width: 32px;
+    height: 32px;
+    padding: 0;
 }
 
 /* Details view tweaks */
@@ -78,6 +111,115 @@
 @media (max-width: 640px) {
     .customers .grid-cards {
         grid-template-columns: 1fr;
+    }
+}
+
+/* Responsive for action buttons - ensure horizontal layout */
+@media (max-width: 1200px) {
+    .customers .staff-table th:nth-child(8),
+    .customers .staff-table td:nth-child(8) {
+        width: 110px;
+        min-width: 110px;
+        padding: 8px 8px;
+    }
+    
+    .customers .staff-table th:nth-child(9),
+    .customers .staff-table td:nth-child(9) {
+        min-width: 260px;
+        width: 260px;
+        padding: 8px 12px;
+    }
+    
+    .customers .action-buttons {
+        display: flex !important;
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
+        gap: 5px;
+        justify-content: center;
+        align-items: center;
+    }
+    
+    .customers .action-buttons .btn-icon,
+    .customers .action-buttons .action-form button {
+        min-width: 30px;
+        width: 30px;
+        height: 30px;
+        padding: 0;
+    }
+}
+
+@media (max-width: 768px) {
+    .customers .staff-table {
+        font-size: 12px;
+    }
+    
+    .customers .staff-table th:nth-child(8),
+    .customers .staff-table td:nth-child(8) {
+        width: 100px;
+        min-width: 100px;
+        padding: 8px 6px;
+    }
+    
+    .customers .staff-table th:nth-child(9),
+    .customers .staff-table td:nth-child(9) {
+        min-width: 240px;
+        width: 240px;
+        padding: 8px 8px;
+    }
+    
+    .customers .action-buttons {
+        display: flex !important;
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
+        gap: 4px;
+        justify-content: center;
+        align-items: center;
+    }
+    
+    .customers .action-buttons .btn-icon,
+    .customers .action-buttons .action-form button {
+        min-width: 28px;
+        width: 28px;
+        height: 28px;
+        padding: 0;
+    }
+    
+    .customers .action-buttons .btn-icon i {
+        width: 14px;
+        height: 14px;
+    }
+}
+
+@media (max-width: 480px) {
+    .customers .staff-table th:nth-child(8),
+    .customers .staff-table td:nth-child(8) {
+        width: 90px;
+        min-width: 90px;
+        padding: 6px 4px;
+        font-size: 11px;
+    }
+    
+    .customers .staff-table th:nth-child(9),
+    .customers .staff-table td:nth-child(9) {
+        min-width: 200px;
+        width: 200px;
+        padding: 6px 6px;
+    }
+    
+    .customers .action-buttons {
+        gap: 3px;
+    }
+    
+    .customers .action-buttons .btn-icon,
+    .customers .action-buttons .action-form button {
+        min-width: 26px;
+        width: 26px;
+        height: 26px;
+    }
+    
+    .customers .action-buttons .btn-icon i {
+        width: 12px;
+        height: 12px;
     }
 }
 

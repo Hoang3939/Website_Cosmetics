@@ -13,8 +13,8 @@ public partial class Brand
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public int BrandId { get; set; }
 
-    [Required]
-    [StringLength(200)]
+    [Required(ErrorMessage = "Brand name is required.")]
+    [StringLength(100, ErrorMessage = "Brand name cannot exceed 100 characters.")]
     public string Name { get; set; } = null!;
 
     [StringLength(100)]

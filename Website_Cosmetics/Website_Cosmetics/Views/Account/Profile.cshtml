@@ -10,9 +10,25 @@
             <p>Manage your personal information.</p>
         </div>
 
-        @await Html.PartialAsync("_Alerts")
+        <!-- Toast Container -->
+        <div class="toast-wrap" id="toastContainer"></div>
 
-        <form asp-action="Profile" method="post" class="profile-form">
+        <!-- Confirmation Modal -->
+        <div id="confirmModal" class="modal-overlay">
+            <div class="modal">
+                <button type="button" class="modal__close" onclick="closeConfirmModal()">
+                    <i data-lucide="x"></i>
+                </button>
+                <h3 style="margin-top: 0; margin-bottom: 16px; font-size: 20px; font-weight: 600;">Confirm Changes</h3>
+                <p style="margin-bottom: 24px; color: #6b7280;">Are you sure you want to save these changes to your profile?</p>
+                <div style="display: flex; gap: 12px; justify-content: flex-end;">
+                    <button type="button" class="btn btn--secondary" onclick="closeConfirmModal()">Cancel</button>
+                    <button type="button" class="btn btn--brand" onclick="submitProfileForm()">Save Changes</button>
+                </div>
+            </div>
+        </div>
+
+        <form id="profileForm" asp-action="Profile" method="post" class="profile-form">
             @Html.AntiForgeryToken()
             <input type="hidden" asp-for="UserId" />
             <input type="hidden" asp-for="Username" />
@@ -55,7 +71,7 @@
             </div>
 
             <div class="form-actions">
-                <button type="submit" class="btn btn--brand">Save Changes</button>
+                <button type="button" class="btn btn--brand" onclick="showConfirmModal()">Save Changes</button>
                 <a asp-controller="Home" asp-action="Index" class="btn btn--secondary">Cancel</a>
             </div>
         </form>
@@ -64,5 +80,85 @@
 
 @section Styles {
     <link rel="stylesheet" href="~/public/css/pages/profile.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/public/css/components/modal.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/public/css/components/toast.css" asp-append-version="true" />
+}
+
+@section Scripts {
+    <script>
+        // Show confirmation modal
+        function showConfirmModal() {
+            const modal = document.getElementById('confirmModal');
+            if (modal) {
+                modal.classList.add('is-open');
+                document.body.classList.add('no-scroll');
+            }
+        }
+
+        // Close confirmation modal
+        function closeConfirmModal() {
+            const modal = document.getElementById('confirmModal');
+            if (modal) {
+                modal.classList.remove('is-open');
+                document.body.classList.remove('no-scroll');
+            }
+        }
+
+        // Submit form after confirmation
+        function submitProfileForm() {
+            document.getElementById('profileForm').submit();
+        }
+
+        // Close modal when clicking outside
+        document.getElementById('confirmModal')?.addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeConfirmModal();
+            }
+        });
+
+        // Show toast notification
+        function showToast(message, type) {
+            const container = document.getElementById('toastContainer');
+            if (!container) return;
+
+            const toast = document.createElement('div');
+            toast.className = `toast toast--${type}`;
+            toast.innerHTML = `
+                <span class="toast__icon">${type === 'success' ? '✓' : '✕'}</span>
+                <span>${message}</span>
+            `;
+
+            container.appendChild(toast);
+
+            // Trigger animation
+            setTimeout(() => {
+                toast.classList.add('is-in');
+            }, 10);
+
+            // Auto-hide after 4.5 seconds
+            setTimeout(() => {
+                toast.classList.remove('is-in');
+                setTimeout(() => {
+                    if (toast.parentNode) {
+                        toast.parentNode.removeChild(toast);
+                    }
+                }, 250);
+            }, 4500);
+        }
+
+        // Show success/error messages on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            const successMessage = '@TempData["SuccessMessage"]';
+            const errorMessage = '@TempData["ErrorMessage"]';
+
+            if (successMessage) {
+                showToast(successMessage, 'success');
+            }
+
+            if (errorMessage) {
+                showToast(errorMessage, 'error');
+            }
+        });
+    </script>
 }
 

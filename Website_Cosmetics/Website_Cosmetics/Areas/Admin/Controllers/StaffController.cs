@@ -466,7 +466,9 @@ namespace Website_Cosmetics.Areas.Admin.Controllers
 
             var userPermissions = await _authService.GetUserPermissionsAsync(id);
             var allPermissions = await _context.Permissions
-                .Where(p => p.Category == "Staff" && p.IsActive)
+                .Where(p => p.IsActive)
+                .OrderBy(p => p.Category)
+                .ThenBy(p => p.PermissionName)
                 .ToListAsync();
 
             ViewBag.User = user;

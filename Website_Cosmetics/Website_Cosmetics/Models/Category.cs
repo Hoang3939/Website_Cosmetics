@@ -13,8 +13,8 @@ public partial class Category
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public int CategoryId { get; set; }
 
-    [Required]
-    [StringLength(100)]
+    [Required(ErrorMessage = "Category name is required.")]
+    [StringLength(100, ErrorMessage = "Category name cannot exceed 100 characters.")]
     public string Name { get; set; } = null!;
 
     [StringLength(255)]

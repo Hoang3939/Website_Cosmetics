@@ -92,7 +92,7 @@ namespace Website_Cosmetics.Areas.Admin.Controllers
             ViewBag.Product = product;
             ViewBag.ProductId = productId;
 
-            return View();
+            return View(new ProductVariant());
         }
 
         // POST: Admin/Variants/Create
@@ -128,6 +128,46 @@ namespace Website_Cosmetics.Areas.Admin.Controllers
                 if (variantImages == null || variantImages.Count == 0)
                 {
                     ModelState.AddModelError("", "Variant must have at least 1 image. Please upload at least 1 image and mark it as primary.");
+                }
+
+                // VALIDATION: Check if variant with same color name or color code already exists for this product
+                bool hasColorConflict = false;
+                List<string> conflictMessages = new List<string>();
+
+                if (!string.IsNullOrWhiteSpace(variant.ColorName))
+                {
+                    var existingVariantWithSameColorName = await _context.ProductVariants
+                        .Where(v => v.ProductId == productId && 
+                                    v.ColorName != null && 
+                                    v.ColorName.ToLower().Trim() == variant.ColorName.ToLower().Trim())
+                        .FirstOrDefaultAsync();
+
+                    if (existingVariantWithSameColorName != null)
+                    {
+                        hasColorConflict = true;
+                        conflictMessages.Add($"Color name '{variant.ColorName}' is already used by another variant in this product.");
+                    }
+                }
+
+                if (!string.IsNullOrWhiteSpace(variant.ColorCode))
+                {
+                    var existingVariantWithSameColorCode = await _context.ProductVariants
+                        .Where(v => v.ProductId == productId && 
+                                    v.ColorCode != null && 
+                                    v.ColorCode.ToUpper().Trim() == variant.ColorCode.ToUpper().Trim())
+                        .FirstOrDefaultAsync();
+
+                    if (existingVariantWithSameColorCode != null)
+                    {
+                        hasColorConflict = true;
+                        conflictMessages.Add($"Color code '{variant.ColorCode}' is already used by another variant in this product.");
+                    }
+                }
+
+                if (hasColorConflict)
+                {
+                    string finalMessage = "Color cannot be duplicated. " + string.Join(" ", conflictMessages) + " Please choose a different color name or color code.";
+                    ModelState.AddModelError(nameof(variant.ColorName), finalMessage);
                 }
 
                 if (ModelState.IsValid)
@@ -221,9 +261,14 @@ namespace Website_Cosmetics.Areas.Admin.Controllers
                 .Include(p => p.Category)
                 .FirstOrDefaultAsync(p => p.ProductId == productId);
 
+            if (productForView == null)
+            {
+                return NotFound();
+            }
+
             ViewBag.Product = productForView;
             ViewBag.ProductId = productId;
-            return View(variant);
+            return View(variant ?? new ProductVariant());
         }
 
         // GET: Admin/Variants/Edit/5
@@ -285,6 +330,48 @@ namespace Website_Cosmetics.Areas.Admin.Controllers
             ModelState.Remove(nameof(variant.OrderItems));
             ModelState.Remove(nameof(variant.CreatedAt));
             ModelState.Remove(nameof(variant.UpdatedAt));
+
+            // VALIDATION: Check if variant with same color name or color code already exists for this product (excluding current variant)
+            bool hasColorConflict = false;
+            List<string> conflictMessages = new List<string>();
+
+            if (!string.IsNullOrWhiteSpace(variant.ColorName))
+            {
+                var existingVariantWithSameColorName = await _context.ProductVariants
+                    .Where(v => v.ProductId == variant.ProductId && 
+                                v.VariantId != id &&
+                                v.ColorName != null && 
+                                v.ColorName.ToLower().Trim() == variant.ColorName.ToLower().Trim())
+                    .FirstOrDefaultAsync();
+
+                if (existingVariantWithSameColorName != null)
+                {
+                    hasColorConflict = true;
+                    conflictMessages.Add($"Color name '{variant.ColorName}' is already used by another variant in this product.");
+                }
+            }
+
+            if (!string.IsNullOrWhiteSpace(variant.ColorCode))
+            {
+                var existingVariantWithSameColorCode = await _context.ProductVariants
+                    .Where(v => v.ProductId == variant.ProductId && 
+                                v.VariantId != id &&
+                                v.ColorCode != null && 
+                                v.ColorCode.ToUpper().Trim() == variant.ColorCode.ToUpper().Trim())
+                    .FirstOrDefaultAsync();
+
+                if (existingVariantWithSameColorCode != null)
+                {
+                    hasColorConflict = true;
+                    conflictMessages.Add($"Color code '{variant.ColorCode}' is already used by another variant in this product.");
+                }
+            }
+
+            if (hasColorConflict)
+            {
+                string finalMessage = "Color cannot be duplicated. " + string.Join(" ", conflictMessages) + " Please choose a different color name or color code.";
+                ModelState.AddModelError(nameof(variant.ColorName), finalMessage);
+            }
 
             if (ModelState.IsValid)
             {

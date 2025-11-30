@@ -71,36 +71,43 @@
     <div class="card-body">
         @if (allPermissions.Any())
         {
-            <div class="permission-grid">
-                @foreach (var permission in allPermissions)
-                {
-                    var hasPermission = userPermissions.Contains(permission.PermissionName);
-                    <div class="permission-item">
-                        <div class="permission-info">
-                            <strong>@permission.PermissionName</strong>
-                            @if (!string.IsNullOrEmpty(permission.Description))
-                            {
-                                <p class="text-muted">@permission.Description</p>
-                            }
-                        </div>
-                        <div class="permission-action">
-                            @if (hasPermission)
-                            {
-                                <span class="badge badge-success">Granted</span>
-                            }
-                            else
-                            {
-                                <form asp-action="GrantPermission" method="post" class="d-inline">
-                                    @Html.AntiForgeryToken()
-                                    <input type="hidden" name="userId" value="@user?.UserId" />
-                                    <input type="hidden" name="permissionName" value="@permission.PermissionName" />
-                                    <button type="submit" class="btn btn-sm btn-primary">Grant</button>
-                                </form>
-                            }
-                        </div>
+            var groupedPermissions = allPermissions.GroupBy(p => p.Category ?? "Other").OrderBy(g => g.Key);
+            @foreach (var group in groupedPermissions)
+            {
+                <div class="permission-category-group" style="margin-bottom: 24px;">
+                    <h4 style="margin-bottom: 12px; color: var(--text); font-size: 16px; font-weight: 600;">@group.Key</h4>
+                    <div class="permission-grid">
+                        @foreach (var permission in group.OrderBy(p => p.PermissionName))
+                        {
+                            var hasPermission = userPermissions.Contains(permission.PermissionName);
+                            <div class="permission-item">
+                                <div class="permission-info">
+                                    <strong>@permission.PermissionName</strong>
+                                    @if (!string.IsNullOrEmpty(permission.Description))
+                                    {
+                                        <p class="text-muted" style="margin: 4px 0 0 0; font-size: 13px;">@permission.Description</p>
+                                    }
+                                </div>
+                                <div class="permission-action">
+                                    @if (hasPermission)
+                                    {
+                                        <span class="badge badge-success">Granted</span>
+                                    }
+                                    else
+                                    {
+                                        <form asp-action="GrantPermission" method="post" class="d-inline">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="userId" value="@user?.UserId" />
+                                            <input type="hidden" name="permissionName" value="@permission.PermissionName" />
+                                            <button type="submit" class="btn btn-sm btn-primary">Grant</button>
+                                        </form>
+                                    }
+                                </div>
+                            </div>
+                        }
                     </div>
-                }
-            </div>
+                </div>
+            }
         }
         else
         {

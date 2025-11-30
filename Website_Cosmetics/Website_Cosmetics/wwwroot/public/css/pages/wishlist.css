@@ -41,15 +41,22 @@
 }
 
 /* Wishlist product cards adjustments */
-.wishlist .product__actions {
-    flex-direction: column;
+.product__actions {
+    display: flex;
     gap: 8px;
+    flex-wrap: wrap;
 }
 
-.wishlist .product__actions .btn {
-    width: 100%;
+.product__actions > .btn,
+.product__actions > .wishlist-remove-form {
+    flex: 1;
+    min-width: 0;
 }
 
-.wishlist-remove-form {
+.product__actions .wishlist-remove-form {
+    display: flex;
+}
+
+.product__actions .wishlist-remove-form .btn {
     width: 100%;
 }

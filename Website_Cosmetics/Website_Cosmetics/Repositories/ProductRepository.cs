@@ -156,10 +156,11 @@ namespace Website_Cosmetics.Repositories
                 }
             }
 
-            // Step 8: Load ProductVariants for stock calculation
+            // Step 8: Load ProductVariants with images for stock calculation and image display
             var variants = await _context.ProductVariants
                                 .AsNoTracking()
-                                .Where(v => productIds.Contains(v.ProductId) && v.IsActive == true)
+                                .Include(v => v.ProductVariantImages.OrderBy(i => i.DisplayOrder))
+                                .Where(v => productIds.Contains(v.ProductId) && (v.IsActive == true || v.IsActive == null))
                                 .ToListAsync();
 
             // Attach variants to products
@@ -173,25 +174,77 @@ namespace Website_Cosmetics.Repositories
 
         public async Task<IEnumerable<Product>> GetOnSaleAsync(int count = 8)
         {
-            // Step 1: Find product IDs with sale variants
-            var productIdsWithSale = await _context.ProductVariants
+            // Step 1: Load all active products with their variants and base prices
+            var allProducts = await _context.Products
                                 .AsNoTracking()
-                                .Where(v => v.CompareAtPrice != null && v.CompareAtPrice > v.Price && v.IsActive == true)
-                                .Select(v => v.ProductId)
-                                .Distinct()
+                                .Where(p => p.IsActive == true)
                                 .ToListAsync();
 
-            if (!productIdsWithSale.Any())
+            if (!allProducts.Any())
                 return new List<Product>();
 
-            // Step 2: Get product IDs ordered by UpdatedAt
-            var productIds = await _context.Products
+            // Step 2: Load all active variants
+            var allVariants = await _context.ProductVariants
                                 .AsNoTracking()
-                                .Where(p => p.IsActive == true && productIdsWithSale.Contains(p.ProductId))
+                                .Where(v => v.IsActive == true || v.IsActive == null)
+                                .ToListAsync();
+
+            // Step 3: Filter products that have default variants with discount >= 40%
+            var productsWith40PercentDiscount = new List<Product>();
+            
+            foreach (var product in allProducts)
+            {
+                // Get default variant
+                var defaultVariant = allVariants
+                    .Where(v => v.ProductId == product.ProductId)
+                    .OrderByDescending(v => v.IsDefault == true)
+                    .ThenByDescending(v => v.IsActive == true || v.IsActive == null)
+                    .ThenBy(v => v.DisplayOrder)
+                    .FirstOrDefault();
+
+                if (defaultVariant == null) continue;
+
+                // Calculate current price
+                var currentPrice = defaultVariant.Price ?? product.BasePrice;
+                
+                // Calculate compare price (original price)
+                // If variant has CompareAtPrice, use it; otherwise use BasePrice
+                var comparePrice = defaultVariant.CompareAtPrice ?? product.BasePrice;
+                
+                // Calculate discount percentage
+                // Check if there's a discount: CompareAtPrice > currentPrice OR (variant.Price < BasePrice)
+                if (comparePrice > currentPrice && comparePrice > 0)
+                {
+                    var discountPercent = (1 - (currentPrice / comparePrice)) * 100;
+                    
+                    // Only include products with discount >= 40%
+                    if (discountPercent >= 40)
+                    {
+                        productsWith40PercentDiscount.Add(product);
+                    }
+                }
+                // Also check if variant.Price < BasePrice (even without CompareAtPrice)
+                else if (defaultVariant.Price != null && defaultVariant.Price < product.BasePrice && product.BasePrice > 0)
+                {
+                    var discountPercent = (1 - (defaultVariant.Price.Value / product.BasePrice)) * 100;
+                    
+                    // Only include products with discount >= 40%
+                    if (discountPercent >= 40)
+                    {
+                        productsWith40PercentDiscount.Add(product);
+                    }
+                }
+            }
+
+            if (!productsWith40PercentDiscount.Any())
+                return new List<Product>();
+
+            // Step 4: Get product IDs ordered by UpdatedAt, limited to count
+            var productIds = productsWith40PercentDiscount
                                 .OrderByDescending(p => p.UpdatedAt)
                                 .Take(count)
                                 .Select(p => p.ProductId)
-                                .ToListAsync();
+                                .ToList();
 
             if (!productIds.Any())
                 return new List<Product>();
@@ -256,10 +309,11 @@ namespace Website_Cosmetics.Repositories
                 }
             }
 
-            // Step 9: Load ProductVariants for stock calculation
+            // Step 9: Load ProductVariants with images for stock calculation and image display
             var variants = await _context.ProductVariants
                                 .AsNoTracking()
-                                .Where(v => productIds.Contains(v.ProductId) && v.IsActive == true)
+                                .Include(v => v.ProductVariantImages.OrderBy(i => i.DisplayOrder))
+                                .Where(v => productIds.Contains(v.ProductId) && (v.IsActive == true || v.IsActive == null))
                                 .ToListAsync();
 
             // Attach variants to products
@@ -278,24 +332,9 @@ namespace Website_Cosmetics.Repositories
                                 .Include(p => p.Category)
                                 .Include(p => p.ProductImages)
                                 .Include(p => p.ProductVariants)
+                                    .ThenInclude(v => v.ProductVariantImages)
                                 .Where(p => p.IsActive == true && p.CategoryId == categoryId)
                                 .OrderByDescending(p => p.CreatedAt)
-                                .ToListAsync();
-        }
-
-        public async Task<IEnumerable<Product>> SearchAsync(string keyword)
-        {
-            keyword = keyword.ToLower();
-            return await _context.Products
-                                .Include(p => p.Brand)
-                                .Include(p => p.Category)
-                                .Include(p => p.ProductImages)
-                                .Include(p => p.ProductVariants)
-                                .Where(p => p.IsActive == true && 
-                                           (p.Name.ToLower().Contains(keyword) ||
-                                            (p.Description != null && p.Description.ToLower().Contains(keyword)) ||
-                                            (p.Brand != null && p.Brand.Name.ToLower().Contains(keyword))))
-                                .OrderByDescending(p => p.Rating)
                                 .ToListAsync();
         }
 
@@ -330,7 +369,7 @@ namespace Website_Cosmetics.Repositories
             var defaultVariants = await _context.ProductVariants
                                               .Include(v => v.ProductVariantImages.OrderBy(i => i.DisplayOrder))
                                               .Where(v => v.ProductId == productId && 
-                                                         v.IsDefault == true && 
+                                                                       v.IsDefault == true && 
                                                          (v.IsActive == true || v.IsActive == null))
                                               .ToListAsync();
 
@@ -349,7 +388,7 @@ namespace Website_Cosmetics.Repositories
             if (defaultVariant == null)
             {
                 var activeVariants = await _context.ProductVariants
-                                                  .Include(v => v.ProductVariantImages.OrderBy(i => i.DisplayOrder))
+                                              .Include(v => v.ProductVariantImages.OrderBy(i => i.DisplayOrder))
                                                   .Where(v => v.ProductId == productId && (v.IsActive == true || v.IsActive == null))
                                                   .ToListAsync();
                 
@@ -361,6 +400,152 @@ namespace Website_Cosmetics.Repositories
             }
 
             return defaultVariant;
+        }
+
+        // ===================================
+        // PRODUCT COUNT OPERATIONS
+        // ===================================
+
+        public async Task<int> GetTrendingCountAsync()
+        {
+            // Count all active products (trending = all products)
+            return await _context.Products
+                .Where(p => p.IsActive == true)
+                .CountAsync();
+        }
+
+        public async Task<int> GetMakeupCountAsync()
+        {
+            // Get Makeup category
+            var makeupCategory = await _context.Categories
+                .FirstOrDefaultAsync(c => c.Name.ToLower().Contains("makeup") || c.Name.ToLower() == "makeup");
+
+            if (makeupCategory != null)
+            {
+                return await _context.Products
+                    .Where(p => p.IsActive == true && p.CategoryId == makeupCategory.CategoryId)
+                    .CountAsync();
+            }
+            else
+            {
+                // Fallback: count by name containing "makeup"
+                return await _context.Products
+                    .Where(p => p.IsActive == true && 
+                           (p.Name.ToLower().Contains("makeup") || 
+                            p.Category != null && p.Category.Name.ToLower().Contains("makeup")))
+                    .CountAsync();
+            }
+        }
+
+        public async Task<int> GetToolsCountAsync()
+        {
+            // Get Tools/Brushes category
+            var toolsCategory = await _context.Categories
+                .FirstOrDefaultAsync(c => c.Name.ToLower().Contains("tool") || 
+                                         c.Name.ToLower().Contains("brush") ||
+                                         c.Name.ToLower() == "tools");
+
+            if (toolsCategory != null)
+            {
+                return await _context.Products
+                    .Where(p => p.IsActive == true && p.CategoryId == toolsCategory.CategoryId)
+                    .CountAsync();
+            }
+            else
+            {
+                // Fallback: count by name containing "tool" or "brush"
+                return await _context.Products
+                    .Where(p => p.IsActive == true && 
+                           (p.Name.ToLower().Contains("tool") || 
+                            p.Name.ToLower().Contains("brush") ||
+                            p.Category != null && (p.Category.Name.ToLower().Contains("tool") || 
+                                                   p.Category.Name.ToLower().Contains("brush"))))
+                    .CountAsync();
+            }
+        }
+
+        public async Task<IEnumerable<Product>> SearchAsync(string keyword)
+        {
+            if (string.IsNullOrWhiteSpace(keyword))
+                return new List<Product>();
+
+            var searchTerm = keyword.ToLower().Trim();
+
+            // Get brand and category IDs that match the search term
+            var matchingBrandIds = await _context.Brands
+                .AsNoTracking()
+                .Where(b => b.Name.ToLower().Contains(searchTerm))
+                .Select(b => b.BrandId)
+                .ToListAsync();
+
+            var matchingCategoryIds = await _context.Categories
+                .AsNoTracking()
+                .Where(c => c.Name.ToLower().Contains(searchTerm))
+                .Select(c => c.CategoryId)
+                .ToListAsync();
+
+            // Search in product name, brand name, and category name
+            var productIds = await _context.Products
+                .AsNoTracking()
+                .Where(p => p.IsActive == true && (
+                    p.Name.ToLower().Contains(searchTerm) ||
+                    (p.BrandId.HasValue && matchingBrandIds.Contains(p.BrandId.Value)) ||
+                    (p.CategoryId.HasValue && matchingCategoryIds.Contains(p.CategoryId.Value))
+                ))
+                .OrderByDescending(p => p.UpdatedAt)
+                .Take(10) // Limit to 10 results for autocomplete
+                .Select(p => p.ProductId)
+                .ToListAsync();
+
+            if (!productIds.Any())
+                return new List<Product>();
+
+            // Load products with basic data
+            var products = await _context.Products
+                .AsNoTracking()
+                .Where(p => productIds.Contains(p.ProductId))
+                .ToListAsync();
+
+            // Load Brands and Categories separately
+            var brandIds = products.Select(p => p.BrandId).Where(id => id.HasValue).Distinct().ToList();
+            var categoryIds = products.Select(p => p.CategoryId).Where(id => id.HasValue).Distinct().ToList();
+
+            var brands = brandIds.Any()
+                ? await _context.Brands.AsNoTracking().Where(b => brandIds.Contains(b.BrandId)).ToListAsync()
+                : new List<Brand>();
+
+            var categories = categoryIds.Any()
+                ? await _context.Categories.AsNoTracking().Where(c => categoryIds.Contains(c.CategoryId)).ToListAsync()
+                : new List<Category>();
+
+            // Attach Brands and Categories to products
+            foreach (var product in products)
+            {
+                if (product.BrandId.HasValue)
+                    product.Brand = brands.FirstOrDefault(b => b.BrandId == product.BrandId);
+                if (product.CategoryId.HasValue)
+                    product.Category = categories.FirstOrDefault(c => c.CategoryId == product.CategoryId);
+            }
+
+            // Load variant images for display
+            var variantImages = await _context.ProductVariants
+                .AsNoTracking()
+                .Include(v => v.ProductVariantImages.OrderBy(i => i.DisplayOrder))
+                .Where(v => productIds.Contains(v.ProductId) && (v.IsActive == true || v.IsActive == null))
+                .OrderByDescending(v => v.IsDefault == true)
+                .ThenBy(v => v.DisplayOrder)
+                .ToListAsync();
+
+            // Attach variants to products
+            foreach (var product in products)
+            {
+                product.ProductVariants = variantImages
+                    .Where(v => v.ProductId == product.ProductId)
+                    .ToList();
+            }
+
+            // Maintain order
+            return products.OrderBy(p => productIds.IndexOf(p.ProductId));
         }
     }
 }

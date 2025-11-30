@@ -39,3 +39,107 @@ body[data-page^='brands'] { overflow-x: hidden; }
 
 .brands-page .staff-table th:nth-child(7),
 .brands-page .staff-table td:nth-child(7) { width: 170px; text-align: center; padding-left: 12px; padding-right: 12px; }
+
+/* Delete Confirmation Modal */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.75);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    backdrop-filter: blur(4px);
+}
+
+.modal-container {
+    background: var(--bg-secondary, #1a1d24);
+    border: 1px solid var(--stroke, #2a2d35);
+    border-radius: 12px;
+    width: 90%;
+    max-width: 500px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+    animation: modalFadeIn 0.2s ease-out;
+}
+
+@keyframes modalFadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95) translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.modal-header {
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--stroke, #2a2d35);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-header h3 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-primary, #fff);
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    color: var(--text-secondary, #9ca3af);
+    font-size: 28px;
+    cursor: pointer;
+    padding: 0;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+}
+
+.modal-close:hover {
+    background: var(--bg-tertiary, #2a2d35);
+    color: var(--text-primary, #fff);
+}
+
+.modal-body {
+    padding: 24px;
+}
+
+.modal-body p {
+    margin: 0 0 16px 0;
+    color: var(--text-secondary, #9ca3af);
+    line-height: 1.5;
+}
+
+.modal-category-info {
+    background: var(--bg-tertiary, #2a2d35);
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin-top: 16px;
+    color: var(--text-secondary, #9ca3af);
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.modal-category-info strong {
+    color: var(--text-primary, #fff);
+}
+
+.modal-footer {
+    padding: 16px 24px;
+    border-top: 1px solid var(--stroke, #2a2d35);
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+}

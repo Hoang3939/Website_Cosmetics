@@ -34,10 +34,40 @@
                     <select id="status" name="status" class="form-control" required>
                         @foreach (var s in statusList)
                         {
-                            <option value="@s" selected="@(Model.Status == s)">@s</option>
+                            bool isDisabled = false;
+                            string disabledReason = "";
+                            
+                            // Disable options if order is Delivered
+                            if (Model.Status == "Delivered" && s != "Delivered")
+                            {
+                                isDisabled = true;
+                                disabledReason = " (Cannot revert from Delivered)";
+                            }
+                            
+                            // Disable options if order is Cancelled
+                            if (Model.Status == "Cancelled" && s != "Cancelled")
+                            {
+                                isDisabled = true;
+                                disabledReason = " (Cannot reactivate cancelled order)";
+                            }
+                            
+                            <option value="@s" selected="@(Model.Status == s)" disabled="@isDisabled">@s@disabledReason</option>
                         }
                     </select>
-                    <small class="form-text text-muted">Valid states: Pending, Processing, Shipped, Delivered, Cancelled.</small>
+                    <small class="form-text text-muted">
+                        @if (Model.Status == "Delivered")
+                        {
+                            <span class="text-danger"><strong>Note:</strong> Orders with "Delivered" status cannot be reverted to previous statuses.</span>
+                        }
+                        else if (Model.Status == "Cancelled")
+                        {
+                            <span class="text-danger"><strong>Note:</strong> Cancelled orders cannot be reactivated.</span>
+                        }
+                        else
+                        {
+                            <span>Valid states: Pending, Processing, Shipped, Delivered, Cancelled.</span>
+                        }
+                    </small>
                 </div>
                 <div class="form-group">
                     <label for="paymentStatus">Payment Status</label>

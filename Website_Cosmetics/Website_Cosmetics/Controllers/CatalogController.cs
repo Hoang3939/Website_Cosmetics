@@ -33,6 +33,7 @@ namespace Website_Cosmetics.Controllers
                 .Include(p => p.Category)
                 .Include(p => p.ProductImages)
                 .Include(p => p.ProductVariants)
+                    .ThenInclude(v => v.ProductVariantImages)
                 .Where(p => p.IsActive == true)
                 .OrderByDescending(p => p.CreatedAt)
                 .ToListAsync();
@@ -75,6 +76,7 @@ namespace Website_Cosmetics.Controllers
                     .Include(p => p.Category)
                     .Include(p => p.ProductImages)
                     .Include(p => p.ProductVariants)
+                        .ThenInclude(v => v.ProductVariantImages)
                     .Where(p => p.IsActive == true && p.CategoryId == makeupCategory.CategoryId)
                     .OrderByDescending(p => p.CreatedAt)
                     .ToListAsync();
@@ -87,6 +89,7 @@ namespace Website_Cosmetics.Controllers
                     .Include(p => p.Category)
                     .Include(p => p.ProductImages)
                     .Include(p => p.ProductVariants)
+                        .ThenInclude(v => v.ProductVariantImages)
                     .Where(p => p.IsActive == true && 
                            (p.Name.ToLower().Contains("makeup") || 
                             p.Category != null && p.Category.Name.ToLower().Contains("makeup")))
@@ -134,6 +137,7 @@ namespace Website_Cosmetics.Controllers
                     .Include(p => p.Category)
                     .Include(p => p.ProductImages)
                     .Include(p => p.ProductVariants)
+                        .ThenInclude(v => v.ProductVariantImages)
                     .Where(p => p.IsActive == true && p.CategoryId == toolsCategory.CategoryId)
                     .OrderByDescending(p => p.CreatedAt)
                     .ToListAsync();
@@ -146,6 +150,7 @@ namespace Website_Cosmetics.Controllers
                     .Include(p => p.Category)
                     .Include(p => p.ProductImages)
                     .Include(p => p.ProductVariants)
+                        .ThenInclude(v => v.ProductVariantImages)
                     .Where(p => p.IsActive == true && 
                            (p.Name.ToLower().Contains("tool") || 
                             p.Name.ToLower().Contains("brush") ||
@@ -173,6 +178,19 @@ namespace Website_Cosmetics.Controllers
             ViewBag.PageDescription = "Professional beauty tools and brushes";
 
             return View("Catalog", products);
+        }
+
+        // GET: /Catalog/Gifts
+        public IActionResult Gifts()
+        {
+            ViewBag.PageTitle = "Gift & Value Sets";
+            ViewBag.PageDescription = "Special gift sets and value bundles";
+            ViewBag.CurrentPage = 1;
+            ViewBag.TotalPages = 0;
+            ViewBag.TotalProducts = 0;
+
+            // Return empty list to show "No products found" message
+            return View("Catalog", new List<Product>());
         }
     }
 }

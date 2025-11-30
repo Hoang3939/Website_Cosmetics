@@ -33,12 +33,20 @@
             <div class="grid grid--products">
                 @foreach (var product in Model)
                 {
-                    var productImage = product.ProductImages?.FirstOrDefault(img => img.ImageType == "cover")?.Url 
-                                     ?? product.ProductImages?.FirstOrDefault()?.Url
-                                     ?? "/public/images/products/img-cart-lip.png";
-                    var saleVariant = product.ProductVariants?.FirstOrDefault(v => v.Price.HasValue && v.Price < product.BasePrice);
-                    var salePrice = saleVariant?.Price ?? product.BasePrice;
-                    var discountPercent = saleVariant != null ? (int)((1 - (salePrice / product.BasePrice)) * 100) : 0;
+                    // Get image from default variant's primary image, fallback to first variant image, then product image, then default
+                    var defaultVariant = product.ProductVariants?.FirstOrDefault(v => v.IsDefault == true && (v.IsActive == true || v.IsActive == null)) 
+                                         ?? product.ProductVariants?.FirstOrDefault(v => v.IsActive == true || v.IsActive == null)
+                                         ?? product.ProductVariants?.FirstOrDefault();
+                    var productImage = defaultVariant?.ProductVariantImages?.FirstOrDefault(img => img.IsPrimary)?.Url
+                                    ?? defaultVariant?.ProductVariantImages?.FirstOrDefault()?.Url
+                                    ?? product.ProductImages?.FirstOrDefault(img => img.ImageType == "cover")?.Url
+                                    ?? product.ProductImages?.FirstOrDefault()?.Url
+                                    ?? "/public/images/products/img-cart-lip.png";
+                    // Get price from default variant (use variant.Price if exists, otherwise use product.BasePrice)
+                    var currentPrice = defaultVariant?.Price ?? product.BasePrice;
+                    var comparePrice = defaultVariant?.CompareAtPrice ?? product.BasePrice;
+                    var hasDiscount = comparePrice > currentPrice;
+                    var discountPercent = hasDiscount ? (int)((1 - (currentPrice / comparePrice)) * 100) : 0;
                     
                     <div class="card product product--sale" data-product-id="@product.ProductId">
                         <div class="product__header">
@@ -67,8 +75,8 @@
                                 </div>
                             }
                             <div class="product__price">
-                                <span class="price--now">$@salePrice.ToString("0.00")</span>
-                                <span class="price--old">$@product.BasePrice.ToString("0.00")</span>
+                                <span class="price--now">$@currentPrice.ToString("0.00")</span>
+                                <span class="price--old">$@comparePrice.ToString("0.00")</span>
                             </div>
                             <div class="product__actions">
                                 <button type="button" class="btn" data-quickview>Quick view</button>

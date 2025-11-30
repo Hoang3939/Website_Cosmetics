@@ -12,6 +12,25 @@
 
         @await Html.PartialAsync("_Alerts")
 
+        <!-- Delete Confirmation Modal -->
+        <div id="deleteModal" class="modal-overlay">
+            <div class="modal">
+                <button type="button" class="modal__close" onclick="closeDeleteModal()">
+                    <i data-lucide="x"></i>
+                </button>
+                <h3 style="margin-top: 0; margin-bottom: 16px; font-size: 20px; font-weight: 600;">Remove from Wishlist</h3>
+                <p style="margin-bottom: 24px; color: #6b7280;">Are you sure you want to remove this item from your wishlist?</p>
+                <div style="display: flex; gap: 12px; justify-content: flex-end;">
+                    <button type="button" class="btn btn--secondary" onclick="closeDeleteModal()">Cancel</button>
+                    <form id="deleteForm" asp-controller="Wishlist" asp-action="Remove" method="post" style="display: inline;">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="likeId" id="deleteLikeId" />
+                        <button type="submit" class="btn btn--danger">Remove</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
         @if (Model == null || !Model.Any())
         {
             <div class="wishlist-empty">
@@ -29,10 +48,22 @@
                 @foreach (var item in Model)
                 {
                     var product = item.Product;
-                    var productImage = product.ProductImages?.FirstOrDefault()?.Url ?? "/public/images/products/img-cart-lip.png";
-                    var defaultVariant = product.ProductVariants?.FirstOrDefault(v => v.IsDefault == true) ?? product.ProductVariants?.FirstOrDefault();
+                    // Get image from default variant's primary image, fallback to first variant image, then product image, then default
+                    var defaultVariant = product.ProductVariants?.FirstOrDefault(v => v.IsDefault == true && (v.IsActive == true || v.IsActive == null)) 
+                                         ?? product.ProductVariants?.FirstOrDefault(v => v.IsActive == true || v.IsActive == null)
+                                         ?? product.ProductVariants?.FirstOrDefault();
+                    var productImage = defaultVariant?.ProductVariantImages?.FirstOrDefault(img => img.IsPrimary)?.Url
+                                    ?? defaultVariant?.ProductVariantImages?.FirstOrDefault()?.Url
+                                    ?? product.ProductImages?.FirstOrDefault(img => img.ImageType == "cover")?.Url
+                                    ?? product.ProductImages?.FirstOrDefault()?.Url
+                                    ?? "/public/images/products/img-cart-lip.png";
+                    // Get price from default variant (use variant.Price if exists, otherwise use product.BasePrice)
                     var currentPrice = defaultVariant?.Price ?? product.BasePrice;
-                    var comparePrice = defaultVariant?.CompareAtPrice ?? product.BasePrice * 1.33m;
+                    // Compare price: use CompareAtPrice if exists, otherwise use BasePrice
+                    var comparePrice = defaultVariant?.CompareAtPrice ?? product.BasePrice;
+                    // Check if there's a discount: CompareAtPrice > currentPrice OR (variant.Price < BasePrice)
+                    var hasDiscount = (defaultVariant?.CompareAtPrice != null && defaultVariant.CompareAtPrice > currentPrice) 
+                                    || (defaultVariant?.Price != null && defaultVariant.Price < product.BasePrice);
 
                     <div class="card product" data-product-id="@product.ProductId">
                         <div class="product__header">
@@ -55,18 +86,14 @@
                             </div>
                             <div class="product__price">
                                 <span class="price--now">$@currentPrice.ToString("0.00")</span>
-                                @if (comparePrice > currentPrice)
+                                @if (hasDiscount && comparePrice > currentPrice)
                                 {
                                     <span class="price--old">$@comparePrice.ToString("0.00")</span>
                                 }
                             </div>
                             <div class="product__actions">
                                 <a asp-controller="Products" asp-action="Details" asp-route-id="@product.ProductId" class="btn btn--brand">View Details</a>
-                                <form asp-controller="Wishlist" asp-action="Remove" method="post" class="wishlist-remove-form" onsubmit="return confirm('Are you sure you want to remove this item from your wishlist?');">
-                                    @Html.AntiForgeryToken()
-                                    <input type="hidden" name="likeId" value="@item.LikeId" />
-                                    <button type="submit" class="btn btn--danger">Remove</button>
-                                </form>
+                                <button type="button" class="btn btn--danger" onclick="showDeleteModal(@item.LikeId)">Remove</button>
                             </div>
                         </div>
                     </div>
@@ -78,8 +105,41 @@
 
 @section Styles {
     <link rel="stylesheet" href="~/public/css/pages/wishlist.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/public/css/components/modal.css" asp-append-version="true" />
 }
 
 @section Scripts {
     <script src="~/public/js/components/wishlist.js" asp-append-version="true"></script>
+    <script>
+        // Show delete confirmation modal
+        function showDeleteModal(likeId) {
+            const modal = document.getElementById('deleteModal');
+            const form = document.getElementById('deleteForm');
+            const likeIdInput = document.getElementById('deleteLikeId');
+            
+            if (modal && form && likeIdInput) {
+                likeIdInput.value = likeId;
+                modal.classList.add('is-open');
+                document.body.classList.add('no-scroll');
+            }
+        }
+
+        // Close delete confirmation modal
+        function closeDeleteModal() {
+            const modal = document.getElementById('deleteModal');
+            if (modal) {
+                modal.classList.remove('is-open');
+                document.body.classList.remove('no-scroll');
+            }
+        }
+
+        // Submit delete form (form will submit normally after confirmation)
+
+        // Close modal when clicking outside
+        document.getElementById('deleteModal')?.addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeDeleteModal();
+            }
+        });
+    </script>
 }

@@ -40,6 +40,17 @@
     border-color: var(--muted);
 }
 
+.btn--danger {
+    background: #dc2626;
+    color: #fff;
+    border-color: #dc2626;
+}
+
+.btn--danger:hover {
+    background: #b91c1c;
+    border-color: #b91c1c;
+}
+
 .btn--sm {
     padding: 0.4rem 0.8rem;
     font-size: var(--fs-sm);

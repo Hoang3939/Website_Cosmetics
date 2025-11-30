@@ -8,7 +8,7 @@ using Website_Cosmetics.Models;
 namespace Website_Cosmetics.Areas.Admin.Controllers
 {
     [Area("Admin")]
-    [Authorize(Roles = "Admin")]
+    [RequirePermissionOrAdmin("Category.Manage")]
     public class CategoriesController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -114,10 +114,18 @@ namespace Website_Cosmetics.Areas.Admin.Controllers
         {
             try
             {
+                // VALIDATION: Check name length
+                if (!string.IsNullOrWhiteSpace(category.Name) && category.Name.Length > 100)
+                {
+                    ModelState.AddModelError(nameof(category.Name), "Category name cannot exceed 100 characters.");
+                    return View(category);
+                }
+
                 if (ModelState.IsValid)
                 {
-                    // Check if category name already exists
-                    if (await _context.Categories.AnyAsync(c => c.Name == category.Name))
+                    // VALIDATION: Check if category name already exists (case-insensitive)
+                    var trimmedName = category.Name?.Trim();
+                    if (!string.IsNullOrWhiteSpace(trimmedName) && await _context.Categories.AnyAsync(c => c.Name != null && c.Name.Trim().ToLower() == trimmedName.ToLower()))
                     {
                         ModelState.AddModelError(nameof(category.Name), "Category name already exists. Please choose a different name.");
                         return View(category);
@@ -173,10 +181,18 @@ namespace Website_Cosmetics.Areas.Admin.Controllers
 
             try
             {
+                // VALIDATION: Check name length
+                if (!string.IsNullOrWhiteSpace(category.Name) && category.Name.Length > 100)
+                {
+                    ModelState.AddModelError(nameof(category.Name), "Category name cannot exceed 100 characters.");
+                    return View(category);
+                }
+
                 if (ModelState.IsValid)
                 {
-                    // Check if category name already exists (different from current category)
-                    if (await _context.Categories.AnyAsync(c => c.Name == category.Name && c.CategoryId != id))
+                    // VALIDATION: Check if category name already exists (case-insensitive, different from current category)
+                    var trimmedName = category.Name?.Trim();
+                    if (!string.IsNullOrWhiteSpace(trimmedName) && await _context.Categories.AnyAsync(c => c.CategoryId != id && c.Name != null && c.Name.Trim().ToLower() == trimmedName.ToLower()))
                     {
                         ModelState.AddModelError(nameof(category.Name), "Category name already exists. Please choose a different name.");
                         return View(category);
@@ -189,7 +205,7 @@ namespace Website_Cosmetics.Areas.Admin.Controllers
                     }
 
                     // Update category properties
-                    existingCategory.Name = category.Name;
+                    existingCategory.Name = category.Name ?? existingCategory.Name;
                     existingCategory.Description = category.Description;
                     existingCategory.IsActive = category.IsActive ?? true;
                     existingCategory.UpdatedAt = DateTime.UtcNow;
@@ -260,11 +276,12 @@ namespace Website_Cosmetics.Areas.Admin.Controllers
                     return NotFound();
                 }
 
-                // Check if there are any products using this category
+                // VALIDATION: Check if there are any products using this category
                 var productCount = category.Products?.Count ?? 0;
                 if (productCount > 0)
                 {
                     TempData["ErrorMessage"] = $"Cannot delete category '{category.Name}' because {productCount} product(s) are using this category. Please remove or reassign those products first.";
+                    _logger.LogWarning("Attempted to delete category {CategoryId} ({CategoryName}) with {ProductCount} associated products", id, category.Name, productCount);
                     return RedirectToAction(nameof(Delete), new { id = id });
                 }
 

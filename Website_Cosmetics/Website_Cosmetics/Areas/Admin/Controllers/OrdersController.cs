@@ -4,20 +4,23 @@ using Microsoft.AspNetCore.Authorization;
 using Website_Cosmetics.Attributes;
 using Website_Cosmetics.Data;
 using Website_Cosmetics.Models;
+using Website_Cosmetics.Services;
 
 namespace Website_Cosmetics.Areas.Admin.Controllers
 {
     [Area("Admin")]
-    [Authorize(Roles = "Admin")]
+    [RequirePermissionOrAdmin("Order.Manage")]
     public class OrdersController : Controller
     {
         private readonly ApplicationDbContext _context;
         private readonly ILogger<OrdersController> _logger;
+        private readonly IEmailService _emailService;
 
-        public OrdersController(ApplicationDbContext context, ILogger<OrdersController> logger)
+        public OrdersController(ApplicationDbContext context, ILogger<OrdersController> logger, IEmailService emailService)
         {
             _context = context;
             _logger = logger;
+            _emailService = emailService;
         }
 
         // GET: /Admin/Orders/
@@ -158,6 +161,26 @@ namespace Website_Cosmetics.Areas.Admin.Controllers
                     return View(order);
                 }
 
+                // VALIDATION: Không cho phép chuyển từ "Delivered" về các trạng thái trước đó
+                if (order.Status == "Delivered" && status != "Delivered")
+                {
+                    ModelState.AddModelError("Status", "Cannot change order status from 'Delivered' to another status. Once an order is delivered, it cannot be reverted.");
+                    ViewBag.StatusList = validStatuses;
+                    ViewBag.PaymentStatusList = new List<string> { "Pending", "Paid", "Failed", "Refunded" };
+                    TempData["ErrorMessage"] = "Cannot change order status from 'Delivered' to another status. Once an order is delivered, it cannot be reverted.";
+                    return RedirectToAction(nameof(Details), new { id = id });
+                }
+
+                // VALIDATION: Không cho phép chuyển từ "Cancelled" về các trạng thái khác (trừ khi có lý do đặc biệt)
+                if (order.Status == "Cancelled" && status != "Cancelled")
+                {
+                    ModelState.AddModelError("Status", "Cannot change order status from 'Cancelled' to another status. A cancelled order cannot be reactivated.");
+                    ViewBag.StatusList = validStatuses;
+                    ViewBag.PaymentStatusList = new List<string> { "Pending", "Paid", "Failed", "Refunded" };
+                    TempData["ErrorMessage"] = "Cannot change order status from 'Cancelled' to another status. A cancelled order cannot be reactivated.";
+                    return RedirectToAction(nameof(Details), new { id = id });
+                }
+
                 // Nếu hủy đơn hàng, tự động set PaymentStatus = Refunded (nếu đã thanh toán)
                 if (status == "Cancelled" && order.PaymentStatus == "Paid")
                 {
@@ -173,10 +196,45 @@ namespace Website_Cosmetics.Areas.Admin.Controllers
                     }
                 }
 
+                // Store old status to check if it changed
+                var oldStatus = order.Status;
                 order.Status = status;
                 order.UpdatedAt = DateTime.UtcNow;
 
                 await _context.SaveChangesAsync();
+
+                // Send email notification if status changed and customer email exists
+                if (oldStatus != status)
+                {
+                    // Load order with user to get email
+                    var orderWithUser = await _context.Orders
+                        .Include(o => o.User)
+                        .FirstOrDefaultAsync(o => o.OrderId == id);
+
+                    if (orderWithUser?.User != null && !string.IsNullOrWhiteSpace(orderWithUser.User.Email))
+                    {
+                        try
+                        {
+                            var customerName = !string.IsNullOrWhiteSpace(orderWithUser.User.FirstName) 
+                                ? $"{orderWithUser.User.FirstName} {orderWithUser.User.LastName}".Trim()
+                                : orderWithUser.User.Username;
+
+                            await _emailService.SendOrderStatusUpdateAsync(
+                                orderWithUser.User.Email,
+                                customerName,
+                                orderWithUser.OrderNumber,
+                                status,
+                                orderWithUser.Total,
+                                orderWithUser.ShippingAddress
+                            );
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogError(ex, "Failed to send order status update email for order {OrderId}", id);
+                            // Don't fail the request if email fails, just log it
+                        }
+                    }
+                }
 
                 TempData["SuccessMessage"] = $"Trạng thái đơn hàng '{order.OrderNumber}' đã được cập nhật thành công.";
                 return RedirectToAction(nameof(Details), new { id = id });
@@ -275,6 +333,35 @@ namespace Website_Cosmetics.Areas.Admin.Controllers
                 order.UpdatedAt = DateTime.UtcNow;
 
                 await _context.SaveChangesAsync();
+
+                // Send email notification to customer
+                var orderWithUser = await _context.Orders
+                    .Include(o => o.User)
+                    .FirstOrDefaultAsync(o => o.OrderId == id);
+
+                if (orderWithUser?.User != null && !string.IsNullOrWhiteSpace(orderWithUser.User.Email))
+                {
+                    try
+                    {
+                        var customerName = !string.IsNullOrWhiteSpace(orderWithUser.User.FirstName) 
+                            ? $"{orderWithUser.User.FirstName} {orderWithUser.User.LastName}".Trim()
+                            : orderWithUser.User.Username;
+
+                        await _emailService.SendOrderStatusUpdateAsync(
+                            orderWithUser.User.Email,
+                            customerName,
+                            orderWithUser.OrderNumber,
+                            "Cancelled",
+                            orderWithUser.Total,
+                            orderWithUser.ShippingAddress
+                        );
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Failed to send order cancellation email for order {OrderId}", id);
+                        // Don't fail the request if email fails, just log it
+                    }
+                }
 
                 TempData["SuccessMessage"] = $"Đơn hàng '{order.OrderNumber}' đã được hủy thành công.";
                 return RedirectToAction(nameof(Details), new { id = id });

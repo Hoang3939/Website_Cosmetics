@@ -27,12 +27,22 @@ namespace Website_Cosmetics.Controllers
                 .Include(p => p.Category)
                 .Include(p => p.ProductImages)
                 .Include(p => p.ProductVariants)
+                    .ThenInclude(v => v.ProductVariantImages)
                 .Where(p => p.IsActive == true)
                 .ToListAsync();
 
-            // Filter products that have variants with sale prices (price < base price)
+            // Filter products that have variants with sale prices (CompareAtPrice > Price or Price < BasePrice)
             var saleProducts = allProducts
-                .Where(p => p.ProductVariants.Any(v => v.Price.HasValue && v.Price < p.BasePrice))
+                .Where(p => 
+                {
+                    var defaultVariant = p.ProductVariants?.FirstOrDefault(v => v.IsDefault == true && (v.IsActive == true || v.IsActive == null))
+                                     ?? p.ProductVariants?.FirstOrDefault(v => v.IsActive == true || v.IsActive == null)
+                                     ?? p.ProductVariants?.FirstOrDefault();
+                    if (defaultVariant == null) return false;
+                    var currentPrice = defaultVariant.Price ?? p.BasePrice;
+                    var comparePrice = defaultVariant.CompareAtPrice ?? p.BasePrice;
+                    return comparePrice > currentPrice || (defaultVariant.Price.HasValue && defaultVariant.Price < p.BasePrice);
+                })
                 .OrderByDescending(p => p.CreatedAt)
                 .ToList();
 

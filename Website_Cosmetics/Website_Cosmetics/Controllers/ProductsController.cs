@@ -31,7 +31,7 @@ namespace Website_Cosmetics.Controllers
         }
 
         // GET: /Products
-        public async Task<IActionResult> Index(int page = 1, int? categoryId = null, string? search = null, string? sortBy = null)
+        public async Task<IActionResult> Index(int page = 1, int? categoryId = null, string? search = null, string? sortBy = null, decimal? minPrice = null, decimal? maxPrice = null)
         {
             const int pageSize = 9; // 9 sản phẩm mỗi trang
             
@@ -60,6 +60,38 @@ namespace Website_Cosmetics.Controllers
                 allProducts = await _productRepository.GetAllAsync();
             }
             
+            // Apply price filter
+            if (minPrice.HasValue || maxPrice.HasValue)
+            {
+                allProducts = allProducts.Where(p =>
+                {
+                    // Get the minimum price from variants or use BasePrice
+                    var minVariantPrice = p.ProductVariants?
+                        .Where(v => v.IsActive == true || v.IsActive == null)
+                        .Select(v => v.Price ?? p.BasePrice)
+                        .DefaultIfEmpty(p.BasePrice)
+                        .Min() ?? p.BasePrice;
+                    
+                    var maxVariantPrice = p.ProductVariants?
+                        .Where(v => v.IsActive == true || v.IsActive == null)
+                        .Select(v => v.Price ?? p.BasePrice)
+                        .DefaultIfEmpty(p.BasePrice)
+                        .Max() ?? p.BasePrice;
+                    
+                    // Product matches if any variant price falls within range
+                    var productMinPrice = Math.Min(minVariantPrice, p.BasePrice);
+                    var productMaxPrice = Math.Max(maxVariantPrice, p.BasePrice);
+                    
+                    bool matchesMin = !minPrice.HasValue || productMaxPrice >= minPrice.Value;
+                    bool matchesMax = !maxPrice.HasValue || productMinPrice <= maxPrice.Value;
+                    
+                    return matchesMin && matchesMax;
+                });
+                
+                ViewBag.MinPrice = minPrice;
+                ViewBag.MaxPrice = maxPrice;
+            }
+            
             // Apply sorting
             if (!string.IsNullOrWhiteSpace(sortBy))
             {
@@ -85,6 +117,25 @@ namespace Website_Cosmetics.Controllers
             {
                 // Default: newest first
                 allProducts = allProducts.OrderByDescending(p => p.CreatedAt);
+            }
+            
+            // Get price range for slider
+            var allProductsForRange = await _productRepository.GetAllAsync();
+            var priceList = allProductsForRange
+                .SelectMany(p => p.ProductVariants?
+                    .Where(v => v.IsActive == true || v.IsActive == null)
+                    .Select(v => v.Price ?? p.BasePrice) ?? new[] { p.BasePrice })
+                .ToList();
+            
+            if (priceList.Any())
+            {
+                ViewBag.MinPriceRange = (int)Math.Floor(priceList.Min());
+                ViewBag.MaxPriceRange = (int)Math.Ceiling(priceList.Max());
+            }
+            else
+            {
+                ViewBag.MinPriceRange = 0;
+                ViewBag.MaxPriceRange = 1000;
             }
             
             var totalProducts = allProducts.Count();
@@ -121,22 +172,6 @@ namespace Website_Cosmetics.Controllers
             // Get default variant if exists
             var defaultVariant = await _productRepository.GetDefaultVariantAsync(id);
             
-            // Debug logging
-            if (defaultVariant != null)
-            {
-                Console.WriteLine($"DefaultVariant found: VariantId={defaultVariant.VariantId}, Stock={defaultVariant.Stock}, IsActive={defaultVariant.IsActive}, IsDefault={defaultVariant.IsDefault}");
-            }
-            else
-            {
-                Console.WriteLine($"DefaultVariant is null for ProductId={id}");
-                var allVariants = product.ProductVariants?.ToList() ?? new List<ProductVariant>();
-                Console.WriteLine($"Total variants loaded: {allVariants.Count}");
-                foreach (var v in allVariants)
-                {
-                    Console.WriteLine($"  Variant {v.VariantId}: Stock={v.Stock}, IsActive={v.IsActive}, IsDefault={v.IsDefault}");
-                }
-            }
-            
             ViewBag.DefaultVariant = defaultVariant;
             
             return View(product); 
@@ -146,24 +181,10 @@ namespace Website_Cosmetics.Controllers
         [HttpGet]
         public async Task<IActionResult> GetVariant(int variantId)
         {
-            Console.WriteLine($"GetVariant called with variantId: {variantId}");
-            
             var variant = await _productRepository.GetVariantByIdAsync(variantId);
             if (variant == null)
             {
-                Console.WriteLine($"Variant {variantId} not found");
                 return NotFound();
-            }
-
-            Console.WriteLine($"Variant found: {variant.VariantName}, Images count: {variant.ProductVariantImages?.Count() ?? 0}");
-            
-            // Log each image URL
-            if (variant.ProductVariantImages != null)
-            {
-                foreach (var img in variant.ProductVariantImages)
-                {
-                    Console.WriteLine($"  - Image {img.ImageId}: {img.Url}, IsPrimary: {img.IsPrimary}, DisplayOrder: {img.DisplayOrder}");
-                }
             }
 
             // Create images list - always return a list (empty if no images)
@@ -181,6 +202,9 @@ namespace Website_Cosmetics.Controllers
                 })
                 .ToList();
 
+            // Calculate price: use variant.Price if exists, otherwise use product.BasePrice
+            var price = variant.Price ?? variant.Product?.BasePrice ?? 0;
+            
             var response = new
             {
                 variantId = variant.VariantId,
@@ -188,7 +212,7 @@ namespace Website_Cosmetics.Controllers
                 colorName = variant.ColorName,
                 colorCode = variant.ColorCode,
                 size = variant.Size,
-                price = variant.FinalPrice,
+                price = price,
                 compareAtPrice = variant.CompareAtPrice,
                 stock = variant.Stock,
                 isLowStock = variant.IsLowStock,

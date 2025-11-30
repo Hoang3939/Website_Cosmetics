@@ -8,6 +8,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>@ViewData["Title"] - Cosmetic</title>
     <link rel="stylesheet" href="~/public/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/public/css/components/search-dropdown.css" asp-append-version="true" />
     <script src="https://unpkg.com/lucide@latest"></script>
     <script>
         // Ensure Lucide is initialized after DOM is ready
@@ -36,7 +37,7 @@
         <div class="container header__row">
             <a asp-controller="Home" asp-action="Index" class="header__brand">COSMETIC</a>
             <div class="header__search">
-                <input placeholder="Search products, brands..." />
+                <input type="text" placeholder="Search products, brands..." autocomplete="off" />
             </div>
             <div class="header__actions">
                 @if (User.Identity?.IsAuthenticated == true)
@@ -171,9 +172,25 @@
         </div>
     </footer>
 
+    <!-- Wishlist Remove Confirmation Modal -->
+    <div id="wishlistRemoveModal" class="modal-overlay">
+        <div class="modal" style="max-width: 400px;">
+            <button type="button" class="modal__close" onclick="Wishlist.closeRemoveModal()">
+                <i data-lucide="x"></i>
+            </button>
+            <h3 style="margin-top: 0; margin-bottom: 16px; font-size: 20px; font-weight: 600;">Remove from Wishlist</h3>
+            <p style="margin-bottom: 24px; color: #6b7280;">Are you sure you want to remove this item from your wishlist?</p>
+            <div style="display: flex; gap: 12px; justify-content: flex-end;">
+                <button type="button" class="btn btn--secondary" onclick="Wishlist.closeRemoveModal()">Cancel</button>
+                <button type="button" class="btn btn--danger" id="confirmRemoveBtn">Remove</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Scripts -->
     <script src="~/public/js/components/modal.js" asp-append-version="true"></script>
     <script src="~/public/js/components/toast.js" asp-append-version="true"></script>
+    <script src="~/public/js/components/search.js" asp-append-version="true"></script>
     <script src="~/public/js/components/quickview.js" asp-append-version="true"></script>
     <script src="~/public/js/components/wishlist.js" asp-append-version="true"></script>
     <script src="~/public/js/components/cart.js" asp-append-version="true"></script>

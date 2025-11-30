@@ -6,20 +6,9 @@
     
     var defaultVariant = ViewBag.DefaultVariant as ProductVariant;
     
-    // Debug: Log all variants
-    var allVariants = Model.ProductVariants?.ToList() ?? new List<ProductVariant>();
-    System.Diagnostics.Debug.WriteLine($"=== Product {Model.ProductId} Variants Debug ===");
-    System.Diagnostics.Debug.WriteLine($"DefaultVariant from ViewBag: {(defaultVariant != null ? $"VariantId={defaultVariant.VariantId}, Stock={defaultVariant.Stock}, IsActive={defaultVariant.IsActive}, IsDefault={defaultVariant.IsDefault}" : "NULL")}");
-    System.Diagnostics.Debug.WriteLine($"Total variants in Model: {allVariants.Count}");
-    foreach (var v in allVariants)
-    {
-        System.Diagnostics.Debug.WriteLine($"  Variant {v.VariantId}: Stock={v.Stock}, IsActive={v.IsActive}, IsDefault={v.IsDefault}, DisplayOrder={v.DisplayOrder}");
-    }
-    
     // Fallback: Get first active variant if defaultVariant is null
     // Note: IsActive is bool? (nullable), so we need to check for true explicitly
     var activeVariants = Model.ProductVariants?.Where(v => v.IsActive == true || v.IsActive == null).OrderBy(v => v.DisplayOrder).ToList();
-    System.Diagnostics.Debug.WriteLine($"Active variants count: {activeVariants?.Count ?? 0}");
     
     var currentVariant = defaultVariant ?? activeVariants?.FirstOrDefault();
     
@@ -29,22 +18,23 @@
         currentVariant = Model.ProductVariants?.OrderBy(v => v.DisplayOrder).FirstOrDefault();
     }
     
-    System.Diagnostics.Debug.WriteLine($"Selected CurrentVariant: {(currentVariant != null ? $"VariantId={currentVariant.VariantId}, Stock={currentVariant.Stock}, IsActive={currentVariant.IsActive}" : "NULL")}");
-    System.Diagnostics.Debug.WriteLine($"=== End Debug ===");
-    
     // Lấy ảnh từ variant hoặc product
-    var variantImages = currentVariant?.ProductVariantImages?.ToList() ?? new List<ProductVariantImage>();
+    var variantImages = currentVariant?.ProductVariantImages?.OrderBy(img => img.DisplayOrder).ToList() ?? new List<ProductVariantImage>();
     var productImages = Model.ProductImages?.ToList() ?? new List<ProductImage>();
     
-    var coverImage = variantImages.FirstOrDefault(img => img.IsPrimary == true) ?? variantImages.FirstOrDefault();
+    // Try to get primary image from variant, then first variant image, then product image, then default
+    ProductVariantImage? coverVariantImage = variantImages.FirstOrDefault(img => img.IsPrimary == true) ?? variantImages.FirstOrDefault();
+    ProductImage? coverProductImage = productImages.FirstOrDefault();
+    
     // URL from database may be URL-encoded, ensure it's rendered correctly in HTML
-    var coverImageUrl = coverImage?.Url ?? "/public/images/products/img-cart-lip.png";
+    var coverImageUrl = coverVariantImage?.Url ?? coverProductImage?.Url ?? "/public/images/products/img-cart-lip.png";
     // If URL starts with /public, use it as-is (it's already a relative path)
     // Browser will automatically decode URL-encoded characters (%23 -> #, %20 -> space)
     
-    var currentPrice = currentVariant?.FinalPrice ?? Model.BasePrice;
+    // Get price from current variant (use variant.Price if exists, otherwise use product.BasePrice)
+    var currentPrice = currentVariant?.Price ?? Model.BasePrice;
     var comparePrice = currentVariant?.CompareAtPrice ?? Model.BasePrice * 1.33m;
-    var hasDiscount = currentVariant?.CompareAtPrice != null && currentVariant.CompareAtPrice > currentVariant.Price;
+    var hasDiscount = currentVariant?.CompareAtPrice != null && currentVariant.CompareAtPrice > currentPrice;
 }
 
 <div class="product-details">
@@ -221,7 +211,7 @@
                                                 data-variant-id="@variant.VariantId"
                                                 data-variant-name="@variant.VariantName"
                                                 data-color-name="@variant.ColorName"
-                                                data-price="@variant.FinalPrice"
+                                                data-price="@(variant.Price ?? Model.BasePrice)"
                                                 data-compare-price="@variant.CompareAtPrice"
                                                 data-stock="@variant.Stock"
                                                 data-sku="@variant.SKU"
@@ -261,7 +251,7 @@
                                                 data-variant-id="@variant.VariantId"
                                                 data-variant-name="@variant.VariantName"
                                                 data-size="@variant.Size"
-                                                data-price="@variant.FinalPrice"
+                                                data-price="@(variant.Price ?? Model.BasePrice)"
                                                 data-compare-price="@variant.CompareAtPrice"
                                                 data-stock="@variant.Stock"
                                                 @(variant.Stock <= 0 ? "disabled" : "")>
@@ -281,20 +271,6 @@
                             @if (currentVariant != null)
                             {
                                 var stock = currentVariant.Stock;
-                                @* Debug info - temporary *@
-                                <div style="font-size: 10px; color: red; margin-bottom: 4px;">
-                                    DEBUG: VariantId=@currentVariant.VariantId, Stock=@stock, IsActive=@currentVariant.IsActive, IsDefault=@currentVariant.IsDefault
-                                    @if (defaultVariant != null)
-                                    {
-                                        <br />
-                                        <text>DefaultVariant: VariantId=@defaultVariant.VariantId, Stock=@defaultVariant.Stock</text>
-                                    }
-                                    else
-                                    {
-                                        <br />
-                                        <text>DefaultVariant: NULL</text>
-                                    }
-                                </div>
                                 @if (stock > 0)
                                 {
                                     <span class="stock-available">
@@ -306,12 +282,12 @@
                                 }
                                 else
                                 {
-                                    <span class="stock-out">Out of stock (Stock: @stock)</span>
+                                    <span class="stock-out">Out of stock</span>
                                 }
                             }
                             else
                             {
-                                <span class="stock-out">Out of stock (No variant selected)</span>
+                                <span class="stock-out">Out of stock</span>
                             }
                         </div>
 
@@ -670,12 +646,6 @@
                     if (this.disabled) return;
                     
                     const variantId = this.dataset.variantId;
-                    const stock = parseInt(this.dataset.stock) || 0;
-                    updateAddToCartButton(variantId, stock);
-                    const colorName = this.dataset.colorName;
-                    const size = this.dataset.size;
-                    const price = parseFloat(this.dataset.price);
-                    const comparePrice = this.dataset.comparePrice ? parseFloat(this.dataset.comparePrice) : null;
                     
                     // Update active state
                     this.closest('.variant-options').querySelectorAll('.variant-option').forEach(opt => {
@@ -683,28 +653,54 @@
                     });
                     this.classList.add('active');
                     
+                    // Fetch full variant data from API
+                    try {
+                        const response = await fetch(`/Products/GetVariant?variantId=${variantId}`);
+                        
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+                        
+                        const data = await response.json();
+                    
                     // Update selected variant ID
                     selectedVariantInput.value = variantId;
                     
-                    // Update display
-                    if (colorName) {
-                        document.getElementById('selectedColorName').textContent = colorName;
-                    }
-                    if (size) {
-                        document.getElementById('selectedSize').textContent = size;
+                        // Update variant name display
+                        if (data.colorName) {
+                            const colorNameEl = document.getElementById('selectedColorName');
+                            if (colorNameEl) {
+                                colorNameEl.textContent = data.colorName;
+                            }
+                        }
+                        if (data.size) {
+                            const sizeEl = document.getElementById('selectedSize');
+                            if (sizeEl) {
+                                sizeEl.textContent = data.size;
+                            }
                     }
                     
                     // Update price
+                        const price = parseFloat(data.price) || 0;
+                        const comparePrice = data.compareAtPrice ? parseFloat(data.compareAtPrice) : null;
+                        
+                        if (currentPriceEl) {
                     currentPriceEl.textContent = '$' + price.toFixed(2);
+                        }
+                        
+                        if (comparePriceEl) {
                     if (comparePrice && comparePrice > price) {
                         comparePriceEl.textContent = '$' + comparePrice.toFixed(2);
                         comparePriceEl.style.display = 'inline';
                     } else {
                         comparePriceEl.style.display = 'none';
+                            }
                     }
                     
                     // Update stock
+                        const stock = parseInt(data.stock) || 0;
                     if (stock > 0) {
+                            if (stockInfoEl) {
                         stockInfoEl.innerHTML = `
                             <span class="stock-available">
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -713,37 +709,41 @@
                                 ${stock} items in stock
                             </span>
                         `;
+                            }
+                            if (quantityInput) {
                         quantityInput.max = stock;
+                                if (parseInt(quantityInput.value) > stock) {
+                                    quantityInput.value = stock;
+                                }
+                            }
+                            if (addToCartBtn) {
                         addToCartBtn.disabled = false;
+                            }
+                            if (buyNowBtn) {
                         buyNowBtn.disabled = false;
+                            }
                     } else {
+                            if (stockInfoEl) {
                         stockInfoEl.innerHTML = '<span class="stock-out">Out of stock</span>';
+                            }
+                            if (addToCartBtn) {
                         addToCartBtn.disabled = true;
+                            }
+                            if (buyNowBtn) {
                         buyNowBtn.disabled = true;
                     }
-                    
-                    // Fetch and update images for this variant
-                    try {
-                        console.log('Fetching variant images for variantId:', variantId);
-                        const response = await fetch(`/Products/GetVariant?variantId=${variantId}`);
-                        
-                        if (!response.ok) {
-                            throw new Error(`HTTP error! status: ${response.status}`);
                         }
                         
-                        const data = await response.json();
-                        console.log('Variant data received:', data);
+                        // Update add to cart button
+                        updateAddToCartButton(variantId, stock);
                         
+                        // Update images for this variant
                         if (data.images && data.images.length > 0) {
-                            console.log('Updating gallery with', data.images.length, 'images');
-                            
                             // Update gallery thumbs
                             let thumbsHtml = '';
                             data.images.forEach((img, index) => {
-                                // Use original URL in data-image for consistency
                                 const imageUrl = img.url;
                                 const isActive = index === 0;
-                                console.log(`  Adding image ${index}: ${imageUrl}, IsPrimary: ${img.isPrimary}`);
                                 thumbsHtml += `
                                     <button class="gallery__thumb ${isActive ? 'active' : ''}" 
                                             data-index="${index}"
@@ -752,34 +752,27 @@
                                         <img src="${imageUrl.replace(/"/g, '&quot;')}" 
                                              alt="${(img.altText || 'Product image').replace(/"/g, '&quot;')}" 
                                              loading="lazy"
-                                             onerror="console.error('Failed to load thumbnail:', this.src); this.onerror=null; this.src='/public/images/products/img-cart-lip.png';" />
+                                             onerror="this.onerror=null; this.src='/public/images/products/img-cart-lip.png';" />
                                     </button>
                                 `;
                             });
+                            if (galleryThumbs) {
                             galleryThumbs.innerHTML = thumbsHtml;
-                            console.log('Gallery thumbs HTML updated');
+                            }
                             
-                            // Update currentImages array directly from data.images (don't rely on DOM)
+                            // Update currentImages array
                             currentImages = data.images.map(img => img.url);
                             currentIndex = 0;
-                            console.log('Current images updated:', currentImages);
                             
                             // Update main image
                             const primaryImage = data.images.find(img => img.isPrimary) || data.images[0];
-                            if (primaryImage && primaryImage.url) {
+                            if (primaryImage && primaryImage.url && mainImage) {
                                 const mainImageUrl = primaryImage.url;
-                                console.log('Updating main image to:', mainImageUrl);
                                 
-                                // Create new image to preload and verify it loads
+                                // Preload image before updating
                                 const imgPreload = new Image();
                                 imgPreload.onload = function() {
-                                    console.log('✅ Main image preloaded successfully:', mainImageUrl);
-                                    // Update main image
                                     mainImage.src = mainImageUrl;
-                                    // Force browser to show new image by triggering reflow
-                                    void mainImage.offsetHeight;
-                                    
-                                    // Update active thumb
                                     updateActiveThumb();
                                     
                                     // Update nav buttons visibility
@@ -795,58 +788,24 @@
                                     }
                                 };
                                 imgPreload.onerror = function() {
-                                    console.error('❌ Failed to preload main image:', mainImageUrl);
-                                    console.error('Image URL might be incorrect or file does not exist');
-                                    // Try to load the image anyway - sometimes browser cache helps
                                     mainImage.src = mainImageUrl;
                                     mainImage.onerror = function() {
-                                        console.error('❌ Main image failed to load after retry:', mainImageUrl);
-                                        this.onerror = null; // Prevent infinite loop
+                                        this.onerror = null;
                                         this.src = '/public/images/products/img-cart-lip.png';
                                     };
-                                    
-                                    // Update active thumb
                                     updateActiveThumb();
-                                    
-                                    // Update nav buttons visibility
-                                    const galleryNav = document.querySelector('.gallery__nav');
-                                    if (data.images.length > 1) {
-                                        if (galleryNav) galleryNav.style.display = 'flex';
-                                        if (prevBtn) prevBtn.style.display = 'flex';
-                                        if (nextBtn) nextBtn.style.display = 'flex';
-                                    } else {
-                                        if (galleryNav) galleryNav.style.display = 'none';
-                                        if (prevBtn) prevBtn.style.display = 'none';
-                                        if (nextBtn) nextBtn.style.display = 'none';
-                                    }
                                 };
-                                // Start preloading
                                 imgPreload.src = mainImageUrl;
-                            } else {
-                                console.warn('⚠️ No primary image found, using first image');
-                                const firstImage = data.images[0];
-                                if (firstImage && firstImage.url) {
-                                    console.log('Using first image:', firstImage.url);
-                                    mainImage.src = firstImage.url;
-                                    updateActiveThumb();
-                                } else {
-                                    console.error('❌ No images available for variant');
-                                }
                             }
                             
-                            // No need to reattach - event delegation handles it automatically
-                            
                             // Update sample image in Virtual Try-On modal when variant changes
-                            // This works whether modal is open or closed
                             if (window.virtualTryOnInstance) {
                                 window.virtualTryOnInstance.loadSampleImageFromVariant(variantId, data.images);
                             }
-                        } else {
-                            console.warn('No images found for variant:', variantId);
                         }
                     } catch (error) {
-                        console.error('Error fetching variant images:', error);
-                        alert('Không thể tải ảnh của màu sản phẩm này. Vui lòng thử lại.');
+                        console.error('Error fetching variant data:', error);
+                        alert('Unable to load variant information. Please try again.');
                     }
                 });
             });

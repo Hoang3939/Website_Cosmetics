@@ -25,6 +25,16 @@ namespace Website_Cosmetics.Controllers
             ViewData["MostLovedProducts"] = mostLovedProducts;
             ViewData["OnSaleProducts"] = onSaleProducts;
 
+            // Calculate real product counts for collections
+            var trendingCount = await _productRepository.GetTrendingCountAsync();
+            var makeupCount = await _productRepository.GetMakeupCountAsync();
+            var toolsCount = await _productRepository.GetToolsCountAsync();
+            
+            ViewData["TrendingCount"] = trendingCount;
+            ViewData["MakeupCount"] = makeupCount;
+            ViewData["ToolsCount"] = toolsCount;
+            ViewData["GiftsCount"] = 0; // Gift & Value Sets not developed yet
+
             return View();
         }
 

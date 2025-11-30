@@ -22,5 +22,10 @@ namespace Website_Cosmetics.Repositories
         Task<ProductVariant?> GetVariantByIdAsync(int variantId);
         Task<IEnumerable<ProductVariant>> GetVariantsByProductIdAsync(int productId);
         Task<ProductVariant?> GetDefaultVariantAsync(int productId);
+
+        // Product count operations
+        Task<int> GetTrendingCountAsync();
+        Task<int> GetMakeupCountAsync();
+        Task<int> GetToolsCountAsync();
     }
 }

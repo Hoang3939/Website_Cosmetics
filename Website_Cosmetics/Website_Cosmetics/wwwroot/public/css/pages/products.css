@@ -19,12 +19,27 @@
 
 .product-filters {
     display: flex;
+    flex-direction: column;
     gap: var(--gap-3);
     margin-bottom: var(--gap-4);
     padding: var(--gap-3);
     background: var(--panel);
     border-radius: var(--r-sm);
+}
+
+.filter-row {
+    display: flex;
+    gap: var(--gap-3);
     align-items: flex-end;
+}
+
+.filter-row--price {
+    width: 100%;
+}
+
+.filter-row--main {
+    width: 100%;
+    justify-content: flex-start;
 }
 
 .filter-group {
@@ -198,8 +213,17 @@
     }
     
     .product-filters {
+        gap: var(--gap-2);
+    }
+    
+    .filter-row {
         flex-direction: column;
         gap: var(--gap-2);
+        align-items: stretch;
+    }
+    
+    .filter-group {
+        width: 100%;
     }
     
     .page-header {

@@ -78,6 +78,21 @@
     height: 50px;
     padding: 4px;
     cursor: pointer;
+    width: 80px;
+    flex-shrink: 0;
+}
+
+.color-input-group {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.form__input--color-code {
+    flex: 1;
+    font-family: 'Courier New', monospace;
+    text-transform: uppercase;
+    letter-spacing: 1px;
 }
 
 .form__input--search {
