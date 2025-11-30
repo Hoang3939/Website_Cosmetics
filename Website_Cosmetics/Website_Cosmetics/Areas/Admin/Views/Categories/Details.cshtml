@@ -1,0 +1,72 @@
+@model Website_Cosmetics.Models.Category
+@{
+    ViewData["Title"] = "Category Details";
+    var productCount = Model.Products?.Count() ?? 0;
+}
+
+<div class="page-header">
+    <div class="page-header__title">
+        <h1>Category: @Model.Name</h1>
+    </div>
+    <div class="page-header__actions">
+        <a asp-action="Index" class="btn btn-secondary">← Back to List</a>
+        <a asp-action="Edit" asp-route-id="@Model.CategoryId" class="btn btn-primary">Edit</a>
+    </div>
+</div>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+}
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+}
+
+<div class="card mb-4">
+    <div class="card-header">
+        <h3>Basic Information</h3>
+    </div>
+    <div class="card-body">
+        <dl class="detail-list">
+            <div class="detail-item">
+                <dt>Category ID</dt>
+                <dd>@Model.CategoryId</dd>
+            </div>
+            <div class="detail-item">
+                <dt>Name</dt>
+                <dd>@Model.Name</dd>
+            </div>
+            <div class="detail-item">
+                <dt>Description</dt>
+                <dd>@(string.IsNullOrWhiteSpace(Model.Description) ? "—" : Model.Description)</dd>
+            </div>
+            <div class="detail-item">
+                <dt>Status</dt>
+                <dd>
+                    @if ((Model.IsActive ?? true) == true)
+                    {
+                        <span class="badge badge-success">Active</span>
+                    }
+                    else
+                    {
+                        <span class="badge badge-danger">Inactive</span>
+                    }
+                </dd>
+            </div>
+            <div class="detail-item">
+                <dt>Products</dt>
+                <dd>@productCount</dd>
+            </div>
+            <div class="detail-item">
+                <dt>Created At</dt>
+                <dd>@Model.CreatedAt.ToString("MM/dd/yyyy HH:mm")</dd>
+            </div>
+            <div class="detail-item">
+                <dt>Updated At</dt>
+                <dd>@Model.UpdatedAt.ToString("MM/dd/yyyy HH:mm")</dd>
+            </div>
+        </dl>
+    </div>
+</div>
+
