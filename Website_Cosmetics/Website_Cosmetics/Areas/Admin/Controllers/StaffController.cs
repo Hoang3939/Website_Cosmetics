@@ -202,7 +202,15 @@ namespace Website_Cosmetics.Areas.Admin.Controllers
                         await _context.SaveChangesAsync();
                     }
 
-                    TempData["SuccessMessage"] = $"Nhân viên '{user.FullName}' đã được tạo thành công. Mật khẩu mặc định: Staff123!";
+                    // Assign default permissions: Order.Manage và Customer.Manage
+                    var currentUserId = int.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? "0");
+                    var defaultPermissions = new[] { "Admin.Order.Manage", "Admin.Customer.Manage" };
+                    foreach (var permissionName in defaultPermissions)
+                    {
+                        await _authService.GrantPermissionAsync(user.UserId, permissionName, currentUserId);
+                    }
+
+                    TempData["SuccessMessage"] = $"Nhân viên '{user.FullName}' đã được tạo thành công. Mật khẩu mặc định: Staff123! Đã cấp quyền mặc định: Quản lý đơn hàng và Quản lý khách hàng.";
                     return RedirectToAction(nameof(Index));
                 }
             }
