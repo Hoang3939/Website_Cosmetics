@@ -11,7 +11,8 @@
 
 <div class="page-header">
     <div class="page-header__title">
-    <h1>Staff Management</h1>
+        <h1>Staff Management</h1>
+        <span class="page-header__count">@totalCount staff(s)</span>
     </div>
     <div class="page-header__actions">
         <a asp-action="Create" class="btn btn-primary">+ Add New Staff</a>
@@ -59,18 +60,17 @@
                         <i data-lucide="filter"></i>
                         <span class="tooltip">Apply filters</span>
                     </button>
-                    <a asp-action="Index" class="btn btn-icon btn-secondary" id="resetBtn" title="Reset filters" style="display: none;">
-                        <i data-lucide="x"></i>
-                        <span class="tooltip">Reset filters</span>
-                    </a>
+                    @if (!string.IsNullOrWhiteSpace(search) || !string.IsNullOrWhiteSpace(status))
+                    {
+                        <a asp-action="Index" class="btn btn-icon btn-secondary" title="Reset filters">
+                            <i data-lucide="x"></i>
+                            <span class="tooltip">Reset filters</span>
+                        </a>
+                    }
                 </div>
             </div>
         </form>
     </div>
-</div>
-
-<div class="d-flex justify-content-between align-items-center mb-3">
-    <h3>Staff List (@totalCount total)</h3>
 </div>
 
 @if (!Model.Any())

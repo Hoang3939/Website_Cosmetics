@@ -48,10 +48,13 @@
                         <i data-lucide="filter"></i>
                         <span class="tooltip">Apply filters</span>
                     </button>
-                    <a asp-action="Index" class="btn btn-icon btn-secondary" id="resetBtn" title="Reset filters" style="display: none;">
-                        <i data-lucide="x"></i>
-                        <span class="tooltip">Reset filters</span>
-                    </a>
+                    @if (!string.IsNullOrWhiteSpace(search) || !string.IsNullOrWhiteSpace(status))
+                    {
+                        <a asp-action="Index" class="btn btn-icon btn-secondary" title="Reset filters">
+                            <i data-lucide="x"></i>
+                            <span class="tooltip">Reset filters</span>
+                        </a>
+                    }
                 </div>
             </div>
         </form>

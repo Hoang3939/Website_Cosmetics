@@ -5,7 +5,32 @@
     ViewData["Title"] = Model.Name;
     
     var defaultVariant = ViewBag.DefaultVariant as ProductVariant;
-    var currentVariant = defaultVariant ?? Model.ProductVariants?.FirstOrDefault();
+    
+    // Debug: Log all variants
+    var allVariants = Model.ProductVariants?.ToList() ?? new List<ProductVariant>();
+    System.Diagnostics.Debug.WriteLine($"=== Product {Model.ProductId} Variants Debug ===");
+    System.Diagnostics.Debug.WriteLine($"DefaultVariant from ViewBag: {(defaultVariant != null ? $"VariantId={defaultVariant.VariantId}, Stock={defaultVariant.Stock}, IsActive={defaultVariant.IsActive}, IsDefault={defaultVariant.IsDefault}" : "NULL")}");
+    System.Diagnostics.Debug.WriteLine($"Total variants in Model: {allVariants.Count}");
+    foreach (var v in allVariants)
+    {
+        System.Diagnostics.Debug.WriteLine($"  Variant {v.VariantId}: Stock={v.Stock}, IsActive={v.IsActive}, IsDefault={v.IsDefault}, DisplayOrder={v.DisplayOrder}");
+    }
+    
+    // Fallback: Get first active variant if defaultVariant is null
+    // Note: IsActive is bool? (nullable), so we need to check for true explicitly
+    var activeVariants = Model.ProductVariants?.Where(v => v.IsActive == true || v.IsActive == null).OrderBy(v => v.DisplayOrder).ToList();
+    System.Diagnostics.Debug.WriteLine($"Active variants count: {activeVariants?.Count ?? 0}");
+    
+    var currentVariant = defaultVariant ?? activeVariants?.FirstOrDefault();
+    
+    // If still null, try to get any variant (even inactive) as last resort
+    if (currentVariant == null)
+    {
+        currentVariant = Model.ProductVariants?.OrderBy(v => v.DisplayOrder).FirstOrDefault();
+    }
+    
+    System.Diagnostics.Debug.WriteLine($"Selected CurrentVariant: {(currentVariant != null ? $"VariantId={currentVariant.VariantId}, Stock={currentVariant.Stock}, IsActive={currentVariant.IsActive}" : "NULL")}");
+    System.Diagnostics.Debug.WriteLine($"=== End Debug ===");
     
     // Lấy ảnh từ variant hoặc product
     var variantImages = currentVariant?.ProductVariantImages?.ToList() ?? new List<ProductVariantImage>();
@@ -176,8 +201,9 @@
                 {
                     <div class="product-details__variants">
                         @{
-                            var colorVariants = Model.ProductVariants.Where(v => !string.IsNullOrEmpty(v.ColorName) && v.IsActive == true).ToList();
-                            var sizeVariants = Model.ProductVariants.Where(v => !string.IsNullOrEmpty(v.Size) && v.IsActive == true).ToList();
+                            // IsActive is bool? (nullable), so check for true or null (treat null as active)
+                            var colorVariants = Model.ProductVariants.Where(v => !string.IsNullOrEmpty(v.ColorName) && (v.IsActive == true || v.IsActive == null)).ToList();
+                            var sizeVariants = Model.ProductVariants.Where(v => !string.IsNullOrEmpty(v.Size) && (v.IsActive == true || v.IsActive == null)).ToList();
                         }
 
                         @* COLOR SELECTION *@
@@ -254,19 +280,38 @@
                         <div class="stock-info" id="stockInfo">
                             @if (currentVariant != null)
                             {
-                                @if (currentVariant.Stock > 0)
+                                var stock = currentVariant.Stock;
+                                @* Debug info - temporary *@
+                                <div style="font-size: 10px; color: red; margin-bottom: 4px;">
+                                    DEBUG: VariantId=@currentVariant.VariantId, Stock=@stock, IsActive=@currentVariant.IsActive, IsDefault=@currentVariant.IsDefault
+                                    @if (defaultVariant != null)
+                                    {
+                                        <br />
+                                        <text>DefaultVariant: VariantId=@defaultVariant.VariantId, Stock=@defaultVariant.Stock</text>
+                                    }
+                                    else
+                                    {
+                                        <br />
+                                        <text>DefaultVariant: NULL</text>
+                                    }
+                                </div>
+                                @if (stock > 0)
                                 {
                                     <span class="stock-available">
                                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                             <polyline points="20 6 9 17 4 12"></polyline>
                                         </svg>
-                                        @currentVariant.Stock items in stock
+                                        @stock items in stock
                                     </span>
                                 }
                                 else
                                 {
-                                    <span class="stock-out">Out of stock</span>
+                                    <span class="stock-out">Out of stock (Stock: @stock)</span>
                                 }
+                            }
+                            else
+                            {
+                                <span class="stock-out">Out of stock (No variant selected)</span>
                             }
                         </div>
 

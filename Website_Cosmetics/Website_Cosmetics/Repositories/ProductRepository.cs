@@ -156,6 +156,18 @@ namespace Website_Cosmetics.Repositories
                 }
             }
 
+            // Step 8: Load ProductVariants for stock calculation
+            var variants = await _context.ProductVariants
+                                .AsNoTracking()
+                                .Where(v => productIds.Contains(v.ProductId) && v.IsActive == true)
+                                .ToListAsync();
+
+            // Attach variants to products
+            foreach (var product in products)
+            {
+                product.ProductVariants = variants.Where(v => v.ProductId == product.ProductId).ToList();
+            }
+
             return products;
         }
 
@@ -244,6 +256,18 @@ namespace Website_Cosmetics.Repositories
                 }
             }
 
+            // Step 9: Load ProductVariants for stock calculation
+            var variants = await _context.ProductVariants
+                                .AsNoTracking()
+                                .Where(v => productIds.Contains(v.ProductId) && v.IsActive == true)
+                                .ToListAsync();
+
+            // Attach variants to products
+            foreach (var product in products)
+            {
+                product.ProductVariants = variants.Where(v => v.ProductId == product.ProductId).ToList();
+            }
+
             return products;
         }
 
@@ -301,20 +325,39 @@ namespace Website_Cosmetics.Repositories
 
         public async Task<ProductVariant?> GetDefaultVariantAsync(int productId)
         {
-            var defaultVariant = await _context.ProductVariants
+            // IsActive is bool? (nullable), so check for true or null (treat null as active)
+            // If multiple variants have IsDefault = true, prioritize the one with stock > 0
+            var defaultVariants = await _context.ProductVariants
                                               .Include(v => v.ProductVariantImages.OrderBy(i => i.DisplayOrder))
-                                              .FirstOrDefaultAsync(v => v.ProductId == productId && 
-                                                                       v.IsDefault == true && 
-                                                                       v.IsActive == true);
+                                              .Where(v => v.ProductId == productId && 
+                                                         v.IsDefault == true && 
+                                                         (v.IsActive == true || v.IsActive == null))
+                                              .ToListAsync();
 
-            // If no default variant, return the first active variant
+            ProductVariant? defaultVariant = null;
+            
+            // If multiple default variants, prioritize the one with stock > 0
+            if (defaultVariants.Any())
+            {
+                defaultVariant = defaultVariants
+                    .OrderByDescending(v => v.Stock > 0) // Variants with stock > 0 first
+                    .ThenBy(v => v.DisplayOrder)
+                    .FirstOrDefault();
+            }
+
+            // If no default variant, return the first active variant with stock > 0 (if available)
             if (defaultVariant == null)
             {
-                defaultVariant = await _context.ProductVariants
-                                              .Include(v => v.ProductVariantImages.OrderBy(i => i.DisplayOrder))
-                                              .Where(v => v.ProductId == productId && v.IsActive == true)
-                                              .OrderBy(v => v.DisplayOrder)
-                                              .FirstOrDefaultAsync();
+                var activeVariants = await _context.ProductVariants
+                                                  .Include(v => v.ProductVariantImages.OrderBy(i => i.DisplayOrder))
+                                                  .Where(v => v.ProductId == productId && (v.IsActive == true || v.IsActive == null))
+                                                  .ToListAsync();
+                
+                // Prioritize variants with stock > 0
+                defaultVariant = activeVariants
+                    .OrderByDescending(v => v.Stock > 0) // Variants with stock > 0 first
+                    .ThenBy(v => v.DisplayOrder)
+                    .FirstOrDefault();
             }
 
             return defaultVariant;
