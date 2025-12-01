@@ -26,6 +26,9 @@
     <!-- Additional useful packages -->
     <PackageReference Include="Serilog.AspNetCore" Version="8.0.2" />
     <PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
+    
+    <!-- JSON serialization for RAG service -->
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
   </ItemGroup>
 
 </Project>

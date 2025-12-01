@@ -25,6 +25,12 @@ public partial class Product
 
     public string? Description { get; set; }
 
+    /// <summary>
+    /// Embedding vector for RAG (stored as JSON string)
+    /// </summary>
+    [Column(TypeName = "nvarchar(max)")]
+    public string? Embedding { get; set; }
+
     public string? Ingredients { get; set; }
 
     [Column(TypeName = "decimal(3, 2)")]

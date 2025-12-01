@@ -40,11 +40,23 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IAuthorizationService, AuthorizationService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 
+// Add RAG Service
+builder.Services.AddScoped<IRAGService, RAGService>();
+
 // Add HttpClient for VirtualMakeupService
 builder.Services.AddHttpClient();
 
 // Add VirtualMakeupService
 builder.Services.AddScoped<VirtualMakeupService>();
+
+// Add Session support (for chat session management)
+builder.Services.AddDistributedMemoryCache();
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromMinutes(30);
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+});
 
 var app = builder.Build();
 
@@ -97,6 +109,8 @@ var staticFileOptions = new StaticFileOptions
 app.UseStaticFiles(staticFileOptions);
 
 app.UseRouting();
+
+app.UseSession();
 
 app.UseAuthentication();
 app.UseAuthorization();
