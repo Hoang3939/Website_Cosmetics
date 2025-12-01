@@ -28,14 +28,26 @@
                         {
                             var variant = item.ProductVariant;
                             var product = variant?.Product;
-                            var productImage = variant?.ProductVariantImages?.FirstOrDefault(pi => pi.IsPrimary)?.Url 
-                                ?? variant?.ProductVariantImages?.FirstOrDefault()?.Url 
-                                ?? product?.ProductImages?.FirstOrDefault()?.Url 
+                            // Priority: Variant primary image > Variant first image > Product cover image > Product first image > Default
+                            var productImage = variant?.ProductVariantImages?
+                                .Where(img => img.IsPrimary == true)
+                                .OrderBy(img => img.DisplayOrder)
+                                .FirstOrDefault()?.Url
+                                ?? variant?.ProductVariantImages?
+                                    .OrderBy(img => img.DisplayOrder)
+                                    .FirstOrDefault()?.Url
+                                ?? product?.ProductImages?
+                                    .Where(img => img.ImageType == "cover")
+                                    .OrderBy(img => img.DisplayOrder)
+                                    .FirstOrDefault()?.Url
+                                ?? product?.ProductImages?
+                                    .OrderBy(img => img.DisplayOrder)
+                                    .FirstOrDefault()?.Url
                                 ?? "/public/images/products/img-cart-lip.png";
 
                             <div class="order-item">
                                 <div class="order-item__image">
-                                    <img src="@productImage" alt="@item.ProductName" />
+                                    <img src="@productImage" alt="@item.ProductName" onerror="this.src='/public/images/products/img-cart-lip.png'" />
                                 </div>
                                 <div class="order-item__details">
                                     <h3 class="order-item__name">@item.ProductName</h3>

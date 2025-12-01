@@ -32,6 +32,10 @@ namespace Website_Cosmetics.Controllers
                 .Include(o => o.OrderItems)
                     .ThenInclude(oi => oi.ProductVariant)
                         .ThenInclude(pv => pv.Product)
+                            .ThenInclude(p => p.ProductImages)
+                .Include(o => o.OrderItems)
+                    .ThenInclude(oi => oi.ProductVariant)
+                        .ThenInclude(pv => pv.ProductVariantImages)
                 .OrderByDescending(o => o.CreatedAt)
                 .ToListAsync();
 
@@ -53,6 +57,10 @@ namespace Website_Cosmetics.Controllers
                     .ThenInclude(oi => oi.ProductVariant)
                         .ThenInclude(pv => pv.Product)
                             .ThenInclude(p => p.Brand)
+                .Include(o => o.OrderItems)
+                    .ThenInclude(oi => oi.ProductVariant)
+                        .ThenInclude(pv => pv.Product)
+                            .ThenInclude(p => p.ProductImages)
                 .Include(o => o.OrderItems)
                     .ThenInclude(oi => oi.ProductVariant)
                         .ThenInclude(pv => pv.ProductVariantImages)

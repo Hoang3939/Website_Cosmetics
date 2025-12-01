@@ -45,12 +45,24 @@
                                     <div class="order-item-preview">
                                         <div class="order-item-preview__image">
                                             @{
-                                                var variantImage = orderItem.ProductVariant?.ProductVariantImages?.FirstOrDefault(pi => pi.IsPrimary)?.Url 
-                                                    ?? orderItem.ProductVariant?.ProductVariantImages?.FirstOrDefault()?.Url 
-                                                    ?? orderItem.ProductVariant?.Product?.ProductImages?.FirstOrDefault()?.Url 
+                                                // Priority: Variant primary image > Variant first image > Product cover image > Product first image > Default
+                                                var variantImage = orderItem.ProductVariant?.ProductVariantImages?
+                                                    .Where(img => img.IsPrimary == true)
+                                                    .OrderBy(img => img.DisplayOrder)
+                                                    .FirstOrDefault()?.Url
+                                                    ?? orderItem.ProductVariant?.ProductVariantImages?
+                                                        .OrderBy(img => img.DisplayOrder)
+                                                        .FirstOrDefault()?.Url
+                                                    ?? orderItem.ProductVariant?.Product?.ProductImages?
+                                                        .Where(img => img.ImageType == "cover")
+                                                        .OrderBy(img => img.DisplayOrder)
+                                                        .FirstOrDefault()?.Url
+                                                    ?? orderItem.ProductVariant?.Product?.ProductImages?
+                                                        .OrderBy(img => img.DisplayOrder)
+                                                        .FirstOrDefault()?.Url
                                                     ?? "/public/images/products/img-cart-lip.png";
                                             }
-                                            <img src="@variantImage" alt="@orderItem.ProductName" />
+                                            <img src="@variantImage" alt="@orderItem.ProductName" onerror="this.src='/public/images/products/img-cart-lip.png'" />
                                         </div>
                                         <div class="order-item-preview__details">
                                             <div class="order-item-preview__name">@orderItem.ProductName</div>
