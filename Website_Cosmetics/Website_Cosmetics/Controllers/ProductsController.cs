@@ -19,15 +19,18 @@ namespace Website_Cosmetics.Controllers
         private readonly IProductRepository _productRepository;
         private readonly VirtualMakeupService _virtualMakeupService;
         private readonly ApplicationDbContext _context;
+        private readonly IRecommendationService _recommendationService;
 
         public ProductsController(
             IProductRepository productRepository,
             VirtualMakeupService virtualMakeupService,
-            ApplicationDbContext context)
+            ApplicationDbContext context,
+            IRecommendationService recommendationService)
         {
             _productRepository = productRepository;
             _virtualMakeupService = virtualMakeupService;
             _context = context;
+            _recommendationService = recommendationService;
         }
 
         // GET: /Products
@@ -173,6 +176,9 @@ namespace Website_Cosmetics.Controllers
             var defaultVariant = await _productRepository.GetDefaultVariantAsync(id);
             
             ViewBag.DefaultVariant = defaultVariant;
+            
+            // Get recommendations (async, won't block page load)
+            ViewBag.ProductId = id;
             
             return View(product); 
         }
