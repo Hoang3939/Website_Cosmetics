@@ -188,3 +188,4 @@ Website_Cosmetics/
 4. Tối ưu performance với vector database (PostgreSQL + pgvector)
 5. Thêm UI chat widget vào frontend
 
+

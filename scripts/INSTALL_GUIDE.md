@@ -70,9 +70,36 @@ Nếu gặp lỗi khi cài `pyodbc`, bạn cần cài **ODBC Driver for SQL Serv
 
 ## Chạy script
 
-Sau khi cài đặt xong:
+### Script SQL Server (hệ thống chính)
 
 ```bash
 python generate_embeddings.py
 ```
+
+### Script RAG demo PostgreSQL (chuyển từ notebook)
+
+Script mới: `rag_demo_pipeline.py`
+
+1. Thiết lập biến môi trường (PowerShell):
+
+```powershell
+$env:GEMINI_API_KEY="your_gemini_api_key"
+$env:PGHOST="localhost"
+$env:PGDATABASE="rag_demo"
+$env:PGUSER="postgres"
+$env:PGPASSWORD="your_password"
+$env:PGPORT="5432"
+```
+
+2. Chạy script:
+
+```bash
+python rag_demo_pipeline.py
+```
+
+Tùy chọn:
+
+- `--dry-run`: tạo embedding nhưng không ghi DB
+- `--all`: xử lý toàn bộ sản phẩm có mô tả (mặc định chỉ xử lý bản ghi thiếu embedding)
+
 

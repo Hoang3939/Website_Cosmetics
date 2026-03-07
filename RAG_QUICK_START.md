@@ -140,3 +140,4 @@ Generate embeddings (cần authentication)
 3. Thêm conversation history vào database
 4. Tối ưu performance với caching
 
+
