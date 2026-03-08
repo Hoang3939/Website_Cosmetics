@@ -1,0 +1,134 @@
+@model Website_Cosmetics.Models.Product
+@{
+    ViewData["Title"] = "Create Product";
+}
+
+<div class="page-header">
+    <div class="page-header__title">
+        <h1>Create New Product</h1>
+    </div>
+    <div class="page-header__actions">
+    <a asp-action="Index" class="btn btn-secondary">← Back to Products</a>
+    </div>
+</div>
+
+<div class="card">
+    <form asp-action="Create" method="post" enctype="multipart/form-data" class="form">
+        @Html.AntiForgeryToken()
+
+        <div class="form__section">
+            <h3 class="form__section-title">Basic Information</h3>
+            
+            <div class="form__group">
+                <label asp-for="Name" class="form__label">Product Name <span class="form__required">*</span></label>
+                <input asp-for="Name" class="form__input" required />
+                <span asp-validation-for="Name" class="form__error"></span>
+            </div>
+
+            <div class="form__group">
+                <label asp-for="Slug" class="form__label">Slug</label>
+                <input asp-for="Slug" class="form__input" />
+                <small class="form__help">Leave empty to auto-generate from product name</small>
+            </div>
+
+            <div class="form__row">
+                <div class="form__group form__group--half">
+                    <label class="form__label">Brand</label>
+                    <select name="brandId" class="form__select">
+                        <option value="">-- Select Brand --</option>
+                        @if (ViewBag.Brands != null)
+                        {
+                            var brands = ViewBag.Brands as IEnumerable<Website_Cosmetics.Models.Brand>;
+                            @if (brands != null)
+                            {
+                                @foreach (var brand in brands)
+                                {
+                                    <option value="@brand.BrandId">@brand.Name</option>
+                                }
+                            }
+                        }
+                    </select>
+                </div>
+                <div class="form__group form__group--half">
+                    <label class="form__label">Category</label>
+                    <select name="categoryId" class="form__select">
+                        <option value="">-- Select Category --</option>
+                        @if (ViewBag.Categories != null)
+                        {
+                            var categories = ViewBag.Categories as IEnumerable<Website_Cosmetics.Models.Category>;
+                            @if (categories != null)
+                            {
+                                @foreach (var category in categories)
+                                {
+                                    <option value="@category.CategoryId">@category.Name</option>
+                                }
+                            }
+                        }
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="form__section">
+            <h3 class="form__section-title">Pricing & Details</h3>
+            
+            <div class="form__row">
+                <div class="form__group form__group--half">
+                    <label asp-for="BasePrice" class="form__label">Base Price <span class="form__required">*</span></label>
+                    <input asp-for="BasePrice" type="number" step="0.01" class="form__input" required />
+                    <span asp-validation-for="BasePrice" class="form__error"></span>
+                </div>
+                <div class="form__group form__group--half">
+                    <label asp-for="SPF" class="form__label">SPF</label>
+                    <input asp-for="SPF" class="form__input" />
+                </div>
+            </div>
+
+            <div class="form__row">
+                <div class="form__group form__group--third">
+                    <label asp-for="Size" class="form__label">Size</label>
+                    <input asp-for="Size" class="form__input" />
+                </div>
+                <div class="form__group form__group--third">
+                    <label asp-for="Finish" class="form__label">Finish</label>
+                    <input asp-for="Finish" class="form__input" />
+                </div>
+                <div class="form__group form__group--third">
+                    <label asp-for="IsActive" class="form__label">Status</label>
+                    <select asp-for="IsActive" class="form__select">
+                        <option value="true">Active</option>
+                        <option value="false">Inactive</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="form__section">
+            <h3 class="form__section-title">Description</h3>
+            
+            <div class="form__group">
+                <label asp-for="Description" class="form__label">Description</label>
+                <textarea asp-for="Description" class="form__textarea" rows="4"></textarea>
+            </div>
+
+            <div class="form__group">
+                <label asp-for="Ingredients" class="form__label">Ingredients</label>
+                <textarea asp-for="Ingredients" class="form__textarea" rows="4"></textarea>
+            </div>
+        </div>
+
+        <div class="form__info">
+            <strong>Note:</strong> After creating the product, the system will automatically create a default variant. 
+            You can manage variants (colors, sizes, images) in the next step.
+        </div>
+
+        <div class="form__actions">
+            <button type="submit" class="btn btn-primary">Create Product</button>
+            <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

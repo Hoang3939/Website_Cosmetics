@@ -1,0 +1,163 @@
+.btn {
+    display: inline-block;
+    padding: 10px 16px;
+    border-radius: 10px;
+    border: 1px solid var(--stroke);
+    background: var(--bg-3);
+    color: var(--text);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all var(--t);
+    text-align: center;
+}
+
+.btn:hover {
+    background: #1a1c20;
+    border-color: var(--brand);
+    color: var(--brand);
+}
+
+.btn-primary {
+    background: var(--brand);
+    border-color: var(--brand);
+    color: #fff;
+}
+
+.btn-primary:hover {
+    background: #5d8fff;
+    border-color: #5d8fff;
+    color: #fff;
+}
+
+.btn-secondary {
+    background: var(--bg-3);
+    border-color: var(--stroke);
+    color: var(--text);
+}
+
+.btn-secondary:hover {
+    background: #1a1c20;
+    border-color: var(--brand);
+    color: var(--brand);
+}
+
+.btn-success {
+    background: var(--success);
+    border-color: var(--success);
+    color: #fff;
+}
+
+.btn-success:hover {
+    background: #3db075;
+    border-color: #3db075;
+    color: #fff;
+}
+
+.btn-danger {
+    background: var(--danger);
+    border-color: var(--danger);
+    color: #fff;
+}
+
+.btn-danger:hover {
+    background: #d94545;
+    border-color: #d94545;
+    color: #fff;
+}
+
+.btn-warning {
+    background: var(--warn);
+    border-color: var(--warn);
+    color: #000;
+}
+
+.btn-warning:hover {
+    background: #e0a825;
+    border-color: #e0a825;
+    color: #000;
+}
+
+.btn-info {
+    background: #4A9EFF;
+    border-color: #4A9EFF;
+    color: #fff;
+}
+
+.btn-info:hover {
+    background: #3a8eef;
+    border-color: #3a8eef;
+    color: #fff;
+}
+
+.btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.btn-sm {
+    padding: 6px 12px;
+    font-size: 12px;
+}
+
+.btn-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px;
+    min-width: 36px;
+    width: 36px;
+    height: 36px;
+    position: relative;
+    overflow: visible;
+}
+
+.btn-icon i {
+    width: 18px;
+    height: 18px;
+    stroke-width: 2;
+    flex-shrink: 0;
+}
+
+.btn-sm.btn-icon {
+    padding: 6px;
+    min-width: 28px;
+    width: 28px;
+    height: 28px;
+}
+
+.btn-sm.btn-icon i {
+    width: 16px;
+    height: 16px;
+}
+
+.btn-icon .btn__text {
+    margin-left: 6px;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    align-items: center;
+    position: static;
+    overflow: visible;
+    z-index: auto;
+}
+
+.action-buttons .btn {
+    white-space: nowrap;
+}
+
+.action-form {
+    display: inline-block;
+    margin: 0;
+    padding: 0;
+    vertical-align: middle;
+}
+
+.action-form .btn {
+    margin: 0;
+}
+

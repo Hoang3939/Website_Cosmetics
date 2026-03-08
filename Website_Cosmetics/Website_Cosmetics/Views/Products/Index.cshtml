@@ -1,0 +1,190 @@
+@model IEnumerable<Website_Cosmetics.Models.Product>
+
+@{
+    ViewData["Title"] = "Products";
+}
+
+<div class="container">
+    <div class="page-header">
+        <h1>Beauty Products</h1>
+        <p>Discover our premium collection of beauty products (@Model.Count() products)</p>
+    </div>
+
+    <form asp-action="Index" method="get" class="product-filters" id="filterForm">
+        <div class="filter-row filter-row--price">
+            <div class="filter-group filter-group--price">
+                <label>Price Range:</label>
+                <div class="price-filter">
+                    <div class="price-buttons">
+                        <button type="button" class="price-btn" data-min="" data-max="">All</button>
+                        <button type="button" class="price-btn" data-min="0" data-max="50">$0 - $50</button>
+                        <button type="button" class="price-btn" data-min="50" data-max="100">$50 - $100</button>
+                        <button type="button" class="price-btn" data-min="100" data-max="200">$100 - $200</button>
+                        <button type="button" class="price-btn" data-min="200" data-max="">$200+</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="filter-row filter-row--main">
+            <div class="filter-group">
+                <label>Category:</label>
+                <select name="categoryId" class="filter-select" id="categoryFilter">
+                    <option value="">All</option>
+                    @{
+                        var categories = ViewBag.Categories as IEnumerable<Website_Cosmetics.Models.Category> ?? new List<Website_Cosmetics.Models.Category>();
+                        var selectedCategoryId = ViewBag.CategoryId as int?;
+                    }
+                    @foreach (var category in categories)
+                    {
+                        <option value="@category.CategoryId" selected="@(selectedCategoryId == category.CategoryId)">@category.Name</option>
+                    }
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <label>Sort by:</label>
+                <select name="sortBy" class="filter-select" id="sortFilter">
+                    <option value="newest" selected="@(ViewBag.SortBy == "newest" || ViewBag.SortBy == null)">Newest</option>
+                    <option value="price-low" selected="@(ViewBag.SortBy == "price-low")">Price: Low to High</option>
+                    <option value="price-high" selected="@(ViewBag.SortBy == "price-high")">Price: High to Low</option>
+                    <option value="popular" selected="@(ViewBag.SortBy == "popular")">Most Popular</option>
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <button type="submit" class="btn btn--brand filter-btn">Filter</button>
+            </div>
+        </div>
+    </form>
+
+    <div class="product-grid">
+        @foreach (var product in Model)
+        {
+            // Get image from default variant's primary image, fallback to first variant image, then product image, then default
+            var defaultVariant = product.ProductVariants?.FirstOrDefault(v => v.IsDefault == true && (v.IsActive == true || v.IsActive == null)) 
+                                 ?? product.ProductVariants?.FirstOrDefault(v => v.IsActive == true || v.IsActive == null)
+                                 ?? product.ProductVariants?.FirstOrDefault();
+            var coverImage = defaultVariant?.ProductVariantImages?.FirstOrDefault(img => img.IsPrimary)?.Url
+                            ?? defaultVariant?.ProductVariantImages?.FirstOrDefault()?.Url
+                            ?? product.ProductImages?.FirstOrDefault(img => img.ImageType == "cover")?.Url
+                            ?? product.ProductImages?.FirstOrDefault()?.Url
+                            ?? "/public/images/products/img-cart-lip.png";
+            // Get price from default variant (use variant.Price if exists, otherwise use product.BasePrice)
+            var currentPrice = defaultVariant?.Price ?? product.BasePrice;
+            // Compare price: use CompareAtPrice if exists, otherwise use BasePrice
+            var comparePrice = defaultVariant?.CompareAtPrice ?? product.BasePrice;
+            // Check if there's a discount: CompareAtPrice > currentPrice OR (variant.Price < BasePrice)
+            var hasDiscount = (defaultVariant?.CompareAtPrice != null && defaultVariant.CompareAtPrice > currentPrice) 
+                            || (defaultVariant?.Price != null && defaultVariant.Price < product.BasePrice);
+            
+            <div class="product-card">
+                <a asp-controller="Products" asp-action="Details" asp-route-id="@product.ProductId">
+                    <div class="product-image">
+                        <img src="@coverImage" alt="@product.Name" />
+                    </div>
+                    <div class="product-info">
+                        <h3 class="product-title">@product.Name</h3>
+                        @if (!string.IsNullOrEmpty(product.Description) && product.Description.Length > 60)
+                        {
+                            <p class="product-description">@product.Description.Substring(0, 60)...</p>
+                        }
+                        else
+                        {
+                            <p class="product-description">@product.Description</p>
+                        }
+                        <div class="product-price">
+                            <span class="current-price">$@currentPrice.ToString("0.00")</span>
+                            @if (hasDiscount)
+                            {
+                                <span class="old-price">$@comparePrice.ToString("0.00")</span>
+                            }
+                        </div>
+                        <div class="product-rating">
+                            <span class="stars">★★★★★</span>
+                            <span class="rating-count">(4.8)</span>
+                        </div>
+                        <button class="btn btn--brand btn--full" type="button">View Details</button>
+                    </div>
+                </a>
+            </div>
+        }
+    </div>
+
+    @if (Model.Count() == 0)
+    {
+        <div style="text-align: center; padding: 3rem;">
+            <p>No products found.</p>
+        </div>
+    }
+
+    @* Phân trang *@
+    @if (ViewBag.TotalPages > 1)
+    {
+        <div class="pagination">
+            @* Previous button *@
+            @if (ViewBag.CurrentPage > 1)
+            {
+                var prevRouteValues = new Dictionary<string, string> { { "page", (ViewBag.CurrentPage - 1).ToString() } };
+                if (ViewBag.CategoryId != null) prevRouteValues.Add("categoryId", ViewBag.CategoryId.ToString());
+                if (ViewBag.SortBy != null) prevRouteValues.Add("sortBy", ViewBag.SortBy.ToString());
+                if (ViewBag.MinPrice != null) prevRouteValues.Add("minPrice", ViewBag.MinPrice.ToString());
+                if (ViewBag.MaxPrice != null) prevRouteValues.Add("maxPrice", ViewBag.MaxPrice.ToString());
+                <a asp-action="Index" asp-all-route-data="prevRouteValues" class="btn btn--outline">Previous</a>
+            }
+            else
+            {
+                <button class="btn btn--outline" disabled>Previous</button>
+            }
+
+            <span class="page-numbers">
+                @* Hiển thị các số trang *@
+                @for (int i = 1; i <= ViewBag.TotalPages; i++)
+                {
+                    var routeValues = new Dictionary<string, string> { { "page", i.ToString() } };
+                    if (ViewBag.CategoryId != null) routeValues.Add("categoryId", ViewBag.CategoryId.ToString());
+                    if (ViewBag.SortBy != null) routeValues.Add("sortBy", ViewBag.SortBy.ToString());
+                    if (ViewBag.MinPrice != null) routeValues.Add("minPrice", ViewBag.MinPrice.ToString());
+                    if (ViewBag.MaxPrice != null) routeValues.Add("maxPrice", ViewBag.MaxPrice.ToString());
+                    
+                    @if (i == ViewBag.CurrentPage)
+                    {
+                        <button class="page-number active">@i</button>
+                    }
+                    else
+                    {
+                        <a asp-action="Index" asp-all-route-data="routeValues" class="page-number">@i</a>
+                    }
+                }
+            </span>
+
+            @* Next button *@
+            @if (ViewBag.CurrentPage < ViewBag.TotalPages)
+            {
+                var nextRouteValues = new Dictionary<string, string> { { "page", (ViewBag.CurrentPage + 1).ToString() } };
+                if (ViewBag.CategoryId != null) nextRouteValues.Add("categoryId", ViewBag.CategoryId.ToString());
+                if (ViewBag.SortBy != null) nextRouteValues.Add("sortBy", ViewBag.SortBy.ToString());
+                if (ViewBag.MinPrice != null) nextRouteValues.Add("minPrice", ViewBag.MinPrice.ToString());
+                if (ViewBag.MaxPrice != null) nextRouteValues.Add("maxPrice", ViewBag.MaxPrice.ToString());
+                <a asp-action="Index" asp-all-route-data="nextRouteValues" class="btn btn--outline">Next</a>
+            }
+            else
+            {
+                <button class="btn btn--outline" disabled>Next</button>
+            }
+        </div>
+    }
+</div>
+
+@section Styles {
+    <link rel="stylesheet" href="~/public/css/pages/products.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/public/css/components/price-filter.css" asp-append-version="true" />
+}
+
+@section Scripts {
+    <script src="~/public/js/components/price-filter.js" asp-append-version="true"></script>
+    <script>
+        // Remove slider-related code from price-filter.js if needed
+        // The script now only handles price buttons
+    </script>
+}

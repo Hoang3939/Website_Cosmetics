@@ -1,24 +1,49 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using Website_Cosmetics.Models;
+using Website_Cosmetics.Repositories;
 
 namespace Website_Cosmetics.Controllers
 {
-    public class HomeController : Controller
-    {
+    public class HomeController : Controller   {
         private readonly ILogger<HomeController> _logger;
+        private readonly IProductRepository _productRepository;
 
-        public HomeController(ILogger<HomeController> logger)
+        public HomeController(ILogger<HomeController> logger, IProductRepository productRepository)
         {
             _logger = logger;
+            _productRepository = productRepository;
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
+            // Get Most Loved and On Sale products list
+            var mostLovedProducts = await _productRepository.GetMostLovedAsync(8);
+            var onSaleProducts = await _productRepository.GetOnSaleAsync(8);
+
+            // Pass data to ViewData so view can use it
+            ViewData["MostLovedProducts"] = mostLovedProducts;
+            ViewData["OnSaleProducts"] = onSaleProducts;
+
+            // Calculate real product counts for collections
+            var trendingCount = await _productRepository.GetTrendingCountAsync();
+            var makeupCount = await _productRepository.GetMakeupCountAsync();
+            var toolsCount = await _productRepository.GetToolsCountAsync();
+            
+            ViewData["TrendingCount"] = trendingCount;
+            ViewData["MakeupCount"] = makeupCount;
+            ViewData["ToolsCount"] = toolsCount;
+            ViewData["GiftsCount"] = 0; // Gift & Value Sets not developed yet
+
             return View();
         }
 
         public IActionResult Privacy()
+        {
+            return View();
+        }
+
+        public IActionResult AccessDenied()
         {
             return View();
         }

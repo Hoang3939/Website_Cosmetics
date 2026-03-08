@@ -1,0 +1,63 @@
+﻿.badge {
+    display: inline-block;
+    font-size: 11px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    border: 1px solid var(--stroke);
+    background: #14161B;
+    font-weight: 500;
+}
+
+.badge-success {
+    border-color: #254437;
+    background: #16221b;
+    color: #CFF1DE;
+}
+
+.badge-danger {
+    border-color: #3d2a2a;
+    background: #2a1a1a;
+    color: #FFC8C8;
+}
+
+.badge-warning {
+    border-color: #3d3a2a;
+    background: #2a281a;
+    color: #FFE8A6;
+}
+
+.badge-primary {
+    border-color: #2e3f58;
+    background: #1a2432;
+    color: #C8DAFF;
+}
+
+.badge-secondary {
+    border-color: #3d3f46;
+    background: #23231a;
+    color: #E7E7A6;
+}
+
+.badge-info {
+    border-color: #2e4f58;
+    background: #1a2e32;
+    color: #C8E8FF;
+}
+
+.badge--processing {
+    border-color: #3d3f46;
+    color: #E7E7A6;
+    background: #23231a;
+}
+
+.badge--shipped {
+    border-color: #2e3f58;
+    background: #1a2432;
+    color: #C8DAFF;
+}
+
+.badge--delivered {
+    border-color: #254437;
+    background: #16221b;
+    color: #CFF1DE;
+}

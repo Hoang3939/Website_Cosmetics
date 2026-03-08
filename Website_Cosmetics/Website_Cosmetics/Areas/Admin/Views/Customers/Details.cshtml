@@ -1,0 +1,154 @@
+@model Website_Cosmetics.Models.User
+@{
+    ViewData["Title"] = "Customer Details";
+}
+
+<div class="customers">
+    <div class="page-header">
+        <div class="page-header__title">
+            <h1>Customer Details</h1>
+        </div>
+        <div class="page-header__actions">
+            <a asp-action="Index" class="btn btn-secondary">← Back to List</a>
+            <a asp-action="Edit" asp-route-id="@Model.UserId" class="btn btn-primary">Edit</a>
+        </div>
+    </div>
+
+    <div class="grid-cards mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h3>Basic Information</h3>
+            </div>
+            <div class="card-body">
+                <dl class="detail-list">
+                    <div class="detail-item">
+                        <dt>User ID</dt>
+                        <dd>@Model.UserId</dd>
+                    </div>
+                    <div class="detail-item">
+                        <dt>Username</dt>
+                        <dd>@Model.Username</dd>
+                    </div>
+                    <div class="detail-item">
+                        <dt>Email</dt>
+                        <dd>@Model.Email</dd>
+                    </div>
+                    <div class="detail-item">
+                        <dt>Full Name</dt>
+                        <dd>@(Model.FullName ?? "N/A")</dd>
+                    </div>
+                    <div class="detail-item">
+                        <dt>Phone Number</dt>
+                        <dd>@(Model.PhoneNumber ?? "N/A")</dd>
+                    </div>
+                </dl>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h3>Account</h3>
+            </div>
+            <div class="card-body">
+                <dl class="detail-list">
+                    <div class="detail-item">
+                        <dt>Status</dt>
+                        <dd>
+                            @if (Model.IsActive == true)
+                            {
+                                <span class="badge badge-success">Active</span>
+                            }
+                            else
+                            {
+                                <span class="badge badge-danger">Inactive</span>
+                            }
+                        </dd>
+                    </div>
+                    <div class="detail-item">
+                        <dt>Email Confirmed</dt>
+                        <dd>
+                            @if (Model.IsEmailConfirmed)
+                            {
+                                <span class="badge badge-success">Confirmed</span>
+                            }
+                            else
+                            {
+                                <span class="badge badge-warning">Pending</span>
+                            }
+                        </dd>
+                    </div>
+                    <div class="detail-item">
+                        <dt>Created At</dt>
+                        <dd>@Model.CreatedAt.ToString("MM/dd/yyyy HH:mm")</dd>
+                    </div>
+                    <div class="detail-item">
+                        <dt>Updated At</dt>
+                        <dd>@Model.UpdatedAt.ToString("MM/dd/yyyy HH:mm")</dd>
+                    </div>
+                </dl>
+            </div>
+        </div>
+    </div>
+
+    @if (Model.UserRoles != null && Model.UserRoles.Any())
+    {
+        <div class="card mb-4">
+            <div class="card-header">
+                <h3>Roles</h3>
+            </div>
+            <div class="card-body">
+                <div class="role-list">
+                    @foreach (var userRole in Model.UserRoles)
+                    {
+                        <span class="badge badge-primary">@userRole.Role.RoleName</span>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+
+    @if (Model.UserAddresses != null && Model.UserAddresses.Any())
+    {
+        <div class="card mb-4">
+            <div class="card-header">
+                <h3>Addresses (@Model.UserAddresses.Count())</h3>
+            </div>
+            <div class="card-body">
+                @foreach (var address in Model.UserAddresses)
+                {
+                    <div class="address-item">
+                        <p><strong>@address.FullName</strong></p>
+                        @if (!string.IsNullOrEmpty(address.PhoneNumber))
+                        {
+                            <p class="text-muted">@address.PhoneNumber</p>
+                        }
+                        <p>@address.AddressLine1</p>
+                        @if (!string.IsNullOrEmpty(address.AddressLine2))
+                        {
+                            <p>@address.AddressLine2</p>
+                        }
+                        <p>@address.City, @(address.State ?? "") @(address.PostalCode ?? "")</p>
+                        <p>@address.Country</p>
+                        @if (address.IsDefault)
+                        {
+                            <span class="badge badge-success">Default Address</span>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="card mb-4">
+            <div class="card-body">
+                <p class="text-muted">No addresses found.</p>
+            </div>
+        </div>
+    }
+</div>
+
+@section Styles {
+    <link rel="stylesheet" href="~/admin/css/pages/customers.css" asp-append-version="true" />
+}
+

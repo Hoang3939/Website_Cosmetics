@@ -1,0 +1,177 @@
+@model IEnumerable<Website_Cosmetics.Models.Order>
+@{
+    ViewData["Title"] = "My Orders";
+}
+
+<section class="section">
+    <div class="container">
+        <div class="section__hd">
+            <h1>My Orders</h1>
+            <p>View and track your order history.</p>
+        </div>
+
+        @await Html.PartialAsync("_Alerts")
+
+        @if (Model == null || !Model.Any())
+        {
+            <div class="orders-empty">
+                <div class="orders-empty__icon">
+                    <i data-lucide="package"></i>
+                </div>
+                <h2 class="orders-empty__title">No orders yet</h2>
+                <p class="orders-empty__text">Start shopping to see your orders here!</p>
+                <a asp-controller="Home" asp-action="Index" class="btn btn--brand">Browse Products</a>
+            </div>
+        }
+        else
+        {
+            <div class="orders-list">
+                @foreach (var order in Model)
+                {
+                    <div class="order-card">
+                        <div class="order-card__header">
+                            <div class="order-card__info">
+                                <div class="order-card__number">Order #@order.OrderNumber</div>
+                                <div class="order-card__date">Placed on @order.CreatedAt.ToString("MMMM dd, yyyy")</div>
+                            </div>
+                            <div class="order-card__status">
+                                <span class="order-status order-status--@order.Status.ToLower()">@order.Status</span>
+                            </div>
+                        </div>
+                        <div class="order-card__body">
+                            <div class="order-card__items">
+                                @foreach (var orderItem in order.OrderItems.Take(3))
+                                {
+                                    <div class="order-item-preview">
+                                        <div class="order-item-preview__image">
+                                            @{
+                                                // Priority: Variant primary image > Variant first image > Product cover image > Product first image > Default
+                                                var variantImage = orderItem.ProductVariant?.ProductVariantImages?
+                                                    .Where(img => img.IsPrimary == true)
+                                                    .OrderBy(img => img.DisplayOrder)
+                                                    .FirstOrDefault()?.Url
+                                                    ?? orderItem.ProductVariant?.ProductVariantImages?
+                                                        .OrderBy(img => img.DisplayOrder)
+                                                        .FirstOrDefault()?.Url
+                                                    ?? orderItem.ProductVariant?.Product?.ProductImages?
+                                                        .Where(img => img.ImageType == "cover")
+                                                        .OrderBy(img => img.DisplayOrder)
+                                                        .FirstOrDefault()?.Url
+                                                    ?? orderItem.ProductVariant?.Product?.ProductImages?
+                                                        .OrderBy(img => img.DisplayOrder)
+                                                        .FirstOrDefault()?.Url
+                                                    ?? "/public/images/products/img-cart-lip.png";
+                                            }
+                                            <img src="@variantImage" alt="@orderItem.ProductName" onerror="this.src='/public/images/products/img-cart-lip.png'" />
+                                        </div>
+                                        <div class="order-item-preview__details">
+                                            <div class="order-item-preview__name">@orderItem.ProductName</div>
+                                            <div class="order-item-preview__variant">@orderItem.ColorName</div>
+                                            <div class="order-item-preview__quantity">Qty: @orderItem.Quantity</div>
+                                        </div>
+                                    </div>
+                                }
+                                @if (order.OrderItems.Count > 3)
+                                {
+                                    <div class="order-item-preview order-item-preview--more">
+                                        +@(order.OrderItems.Count - 3) more item(s)
+                                    </div>
+                                }
+                            </div>
+                            <div class="order-card__summary">
+                                <div class="order-card__total">
+                                    <span>Total:</span>
+                                    <strong>$@order.Total.ToString("0.00")</strong>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="order-card__footer">
+                            <a asp-controller="Orders" asp-action="Details" asp-route-id="@order.OrderId" class="btn btn--secondary">View Details</a>
+                            @if (order.Status == "Pending" || order.Status == "Processing")
+                            {
+                                <form asp-controller="Orders" asp-action="Cancel" method="post" class="order-cancel-form" data-order-id="@order.OrderId" style="display: inline;">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@order.OrderId" />
+                                    <button type="submit" class="btn btn--danger">Cancel Order</button>
+                                </form>
+                            }
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+</section>
+
+@section Styles {
+    <link rel="stylesheet" href="~/public/css/pages/orders.css" asp-append-version="true" />
+}
+
+@section Scripts {
+    <script>
+        // Handle order cancellation with AJAX
+        document.addEventListener('DOMContentLoaded', function() {
+            const cancelForms = document.querySelectorAll('.order-cancel-form');
+            
+            cancelForms.forEach(form => {
+                form.addEventListener('submit', async function(e) {
+                    e.preventDefault();
+                    
+                    if (!confirm('Are you sure you want to cancel this order?')) {
+                        return;
+                    }
+                    
+                    const submitBtn = form.querySelector('button[type="submit"]');
+                    const originalText = submitBtn.textContent;
+                    submitBtn.disabled = true;
+                    submitBtn.textContent = 'Cancelling...';
+                    
+                    try {
+                        const formData = new FormData(form);
+                        const response = await fetch('/Orders/Cancel', {
+                            method: 'POST',
+                            body: formData
+                        });
+                        
+                        const data = await response.json();
+                        
+                        if (data.success) {
+                            // Show success toast
+                            if (typeof Toast !== 'undefined' && typeof Toast.show === 'function') {
+                                Toast.show(data.message || 'Order cancelled successfully', 'success');
+                            } else {
+                                alert(data.message || 'Order cancelled successfully');
+                            }
+                            
+                            // Reload page after a short delay to show the toast
+                            setTimeout(() => {
+                                window.location.reload();
+                            }, 1000);
+                        } else {
+                            // Show error toast
+                            if (typeof Toast !== 'undefined' && typeof Toast.show === 'function') {
+                                Toast.show(data.message || 'Failed to cancel order', 'error');
+                            } else {
+                                alert(data.message || 'Failed to cancel order');
+                            }
+                            
+                            submitBtn.disabled = false;
+                            submitBtn.textContent = originalText;
+                        }
+                    } catch (error) {
+                        console.error('Error cancelling order:', error);
+                        if (typeof Toast !== 'undefined' && typeof Toast.show === 'function') {
+                            Toast.show('An error occurred. Please try again.', 'error');
+                        } else {
+                            alert('An error occurred. Please try again.');
+                        }
+                        
+                        submitBtn.disabled = false;
+                        submitBtn.textContent = originalText;
+                    }
+                });
+            });
+        });
+    </script>
+}
+

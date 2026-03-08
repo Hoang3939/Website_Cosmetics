@@ -1,0 +1,129 @@
+/* Search Dropdown */
+.header__search {
+    position: relative;
+}
+
+.search-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    margin-top: 8px;
+    max-height: 500px;
+    overflow-y: auto;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(-10px);
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    z-index: 1000;
+}
+
+.search-dropdown.is-open {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0);
+}
+
+.search-dropdown__content {
+    padding: 8px;
+}
+
+.search-dropdown__loading,
+.search-dropdown__empty,
+.search-dropdown__error {
+    padding: 16px;
+    text-align: center;
+    color: #6b7280;
+    font-size: 14px;
+}
+
+.search-result {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    border-radius: 8px;
+    text-decoration: none;
+    color: inherit;
+    transition: background-color 0.2s ease;
+}
+
+.search-result:hover {
+    background-color: #f3f4f6;
+}
+
+.search-result__image {
+    width: 60px;
+    height: 60px;
+    flex-shrink: 0;
+    border-radius: 6px;
+    overflow: hidden;
+    background: #f9fafb;
+}
+
+.search-result__image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.search-result__info {
+    flex: 1;
+    min-width: 0;
+}
+
+.search-result__brand {
+    font-size: 12px;
+    color: #6b7280;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+}
+
+.search-result__name {
+    font-size: 14px;
+    font-weight: 500;
+    color: #111827;
+    margin-bottom: 4px;
+    line-height: 1.4;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+
+.search-result__name mark {
+    background-color: #fef3c7;
+    color: #92400e;
+    padding: 0 2px;
+    font-weight: 600;
+}
+
+.search-result__price {
+    font-size: 16px;
+    font-weight: 600;
+    color: #dc2626;
+}
+
+/* Scrollbar styling */
+.search-dropdown::-webkit-scrollbar {
+    width: 6px;
+}
+
+.search-dropdown::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 8px;
+}
+
+.search-dropdown::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 8px;
+}
+
+.search-dropdown::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+

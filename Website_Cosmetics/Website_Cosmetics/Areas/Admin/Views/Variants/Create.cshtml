@@ -1,0 +1,282 @@
+@model Website_Cosmetics.Models.ProductVariant
+@{
+    ViewData["Title"] = "Create Variant";
+    var product = ViewBag.Product as Website_Cosmetics.Models.Product;
+    var productId = ViewBag.ProductId as int? ?? 0;
+}
+
+<div class="page-header">
+    <div class="page-header__title">
+        <h1>Create New Variant</h1>
+    </div>
+    <div class="page-header__actions">
+    <a asp-action="Index" asp-route-productId="@productId" class="btn btn-secondary">← Back to Variants</a>
+    </div>
+</div>
+
+<div class="card product-info-card">
+    <div class="product-info-card__header">
+        <h3>Product Information</h3>
+    </div>
+    <div class="product-info-card__body">
+        <div class="product-info-card__row">
+            <div class="product-info-card__item">
+                <span class="product-info-card__label">Product Name:</span>
+                <span class="product-info-card__value">@product?.Name</span>
+            </div>
+            <div class="product-info-card__item">
+                <span class="product-info-card__label">Brand:</span>
+                <span class="product-info-card__value">@(product?.Brand?.Name ?? "N/A")</span>
+            </div>
+            <div class="product-info-card__item">
+                <span class="product-info-card__label">Base Price:</span>
+                <span class="product-info-card__value">@product?.BasePrice.ToString("C")</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <form asp-action="Create" method="post" enctype="multipart/form-data" class="form">
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="productId" value="@productId" />
+
+        <div asp-validation-summary="ModelOnly" class="form__error-box" role="alert"></div>
+
+        <div class="form__section">
+            <h3 class="form__section-title">Basic Information</h3>
+            
+            <div class="form__group">
+                <label asp-for="VariantName" class="form__label">Variant Name <span class="form__required">*</span></label>
+                <input asp-for="VariantName" class="form__input" required placeholder="e.g., Midnight Lily, 100ml, Rose Pink - 10g" />
+                <span asp-validation-for="VariantName" class="form__error"></span>
+                <small class="form__help">Full name of the variant (color, size, type, etc.)</small>
+            </div>
+        </div>
+
+        <div class="form__section">
+            <h3 class="form__section-title">Color Information</h3>
+            
+            <div class="form__row">
+                <div class="form__group form__group--third">
+                    <label asp-for="ColorName" class="form__label">Color Name</label>
+                    <input asp-for="ColorName" class="form__input" placeholder="e.g., Midnight Lily, Rose Pink" />
+                    <span asp-validation-for="ColorName" class="form__error"></span>
+                </div>
+                <div class="form__group form__group--third">
+                    <label asp-for="ColorCode" class="form__label">Color Code</label>
+                    <div class="color-input-group">
+                        <input type="color" class="form__input form__input--color" id="colorPicker" value="@(Model.ColorCode ?? "#666666")" />
+                        <input asp-for="ColorCode" type="text" class="form__input form__input--color-code" id="colorCodeInput" placeholder="#666666" pattern="^#[0-9A-Fa-f]{6}$" maxlength="7" value="@(Model?.ColorCode ?? "")" />
+                    </div>
+                    <span asp-validation-for="ColorCode" class="form__error"></span>
+                    <small class="form__help">Select color or enter hex code (e.g., #666666)</small>
+                </div>
+                <div class="form__group form__group--third">
+                    <label asp-for="ColorFamily" class="form__label">Color Family</label>
+                    <input asp-for="ColorFamily" class="form__input" placeholder="e.g., Red, Pink, Nude, Brown" />
+                </div>
+            </div>
+        </div>
+
+        <div class="form__section">
+            <h3 class="form__section-title">Size Information</h3>
+            
+            <div class="form__row">
+                <div class="form__group form__group--third">
+                    <label asp-for="Size" class="form__label">Size</label>
+                    <input asp-for="Size" class="form__input" placeholder="e.g., 50ml, 100ml, 10g, 0.14 oz" />
+                </div>
+                <div class="form__group form__group--third">
+                    <label asp-for="SizeValue" class="form__label">Numeric Value</label>
+                    <input asp-for="SizeValue" type="number" step="0.01" class="form__input" placeholder="e.g., 50, 100, 10" />
+                </div>
+                <div class="form__group form__group--third">
+                    <label asp-for="SizeUnit" class="form__label">Unit</label>
+                    <input asp-for="SizeUnit" class="form__input" placeholder="e.g., ml, g, oz, fl oz" />
+                </div>
+            </div>
+
+            <div class="form__group">
+                <label asp-for="VariantType" class="form__label">Variant Type</label>
+                <input asp-for="VariantType" class="form__input" placeholder="e.g., For Oily Skin, For Dry Skin, Anti-Aging" />
+                <small class="form__help">Used for skincare products</small>
+            </div>
+        </div>
+
+        <div class="form__section">
+            <h3 class="form__section-title">Sales Information</h3>
+            
+            <div class="form__row">
+                <div class="form__group form__group--third">
+                    <label asp-for="SKU" class="form__label">SKU Code</label>
+                    <input asp-for="SKU" class="form__input" />
+                </div>
+                <div class="form__group form__group--third">
+                    <label asp-for="Barcode" class="form__label">Barcode</label>
+                    <input asp-for="Barcode" class="form__input" />
+                </div>
+                <div class="form__group form__group--third">
+                    <label asp-for="Price" class="form__label">Price (Override Base Price)</label>
+                    <input asp-for="Price" type="number" step="0.01" class="form__input" />
+                    <small class="form__help">Leave empty to use product base price</small>
+                </div>
+            </div>
+
+            <div class="form__row">
+                <div class="form__group form__group--third">
+                    <label asp-for="CompareAtPrice" class="form__label">Compare At Price</label>
+                    <input asp-for="CompareAtPrice" type="number" step="0.01" class="form__input" />
+                    <small class="form__help">Original price for discount display</small>
+                </div>
+                <div class="form__group form__group--third">
+                    <label asp-for="Stock" class="form__label">Stock</label>
+                    <input asp-for="Stock" type="number" value="0" class="form__input" />
+                </div>
+                <div class="form__group form__group--third">
+                    <label asp-for="LowStockThreshold" class="form__label">Low Stock Threshold</label>
+                    <input asp-for="LowStockThreshold" type="number" value="10" class="form__input" />
+                </div>
+            </div>
+        </div>
+
+        <div class="form__section">
+            <h3 class="form__section-title">Settings</h3>
+            
+            <div class="form__row">
+                <div class="form__group form__group--third">
+                    <label asp-for="IsActive" class="form__label">Status</label>
+                    <select asp-for="IsActive" class="form__select">
+                        <option value="true">Active</option>
+                        <option value="false">Inactive</option>
+                    </select>
+                </div>
+                <div class="form__group form__group--third">
+                    <label asp-for="IsDefault" class="form__label">Set as Default</label>
+                    <select asp-for="IsDefault" class="form__select">
+                        <option value="false">No</option>
+                        <option value="true">Yes</option>
+                    </select>
+                    <small class="form__help">Default variant will display on product page</small>
+                </div>
+                <div class="form__group form__group--third">
+                    <label asp-for="DisplayOrder" class="form__label">Display Order</label>
+                    <input asp-for="DisplayOrder" type="number" value="0" class="form__input" />
+                </div>
+            </div>
+        </div>
+
+        <div class="form__section">
+            <h3 class="form__section-title">Variant Images <span class="form__required">*</span></h3>
+            <p class="form__help">Upload multiple images. <strong>Required:</strong> At least 1 image must be marked as primary.</p>
+            
+            @if (!ViewData.ModelState.IsValid && ViewData.ModelState[""]?.Errors != null && ViewData.ModelState[""]?.Errors.Count > 0)
+            {
+                <div class="form__error-box">
+                    @foreach (var error in ViewData.ModelState[""]!.Errors)
+                    {
+                        <p>@error.ErrorMessage</p>
+                    }
+                </div>
+            }
+
+            <div class="form__group">
+                <label class="form__label">Upload Images <span class="form__required">*</span></label>
+                <input type="file" name="variantImages" multiple accept="image/*,.avif,.webp,image/avif,image/webp" class="form__input" id="imageUpload" required />
+                <small class="form__help">You can select multiple images at once. At least 1 image must be marked as primary.</small>
+            </div>
+
+            <div id="imagePreview" class="image-preview"></div>
+        </div>
+
+        <div class="form__actions">
+            <button type="submit" class="btn btn-primary">Create Variant</button>
+            <a asp-action="Index" asp-route-productId="@productId" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const colorPicker = document.getElementById('colorPicker');
+            const colorCodeInput = document.getElementById('colorCodeInput');
+            
+            if (!colorPicker || !colorCodeInput) return;
+            
+            // Initialize: set color picker from input if input has value
+            if (colorCodeInput.value && colorCodeInput.value.match(/^#[0-9A-Fa-f]{6}$/)) {
+                colorPicker.value = colorCodeInput.value.toUpperCase();
+            } else if (colorPicker.value) {
+                colorCodeInput.value = colorPicker.value.toUpperCase();
+            } else {
+                // Set default
+                const defaultValue = '#666666';
+                colorCodeInput.value = defaultValue;
+                colorPicker.value = defaultValue;
+            }
+            
+            // Sync from color picker to text input
+            colorPicker.addEventListener('input', function() {
+                const value = this.value.toUpperCase();
+                colorCodeInput.value = value;
+            });
+            
+            // Sync from text input to color picker
+            colorCodeInput.addEventListener('input', function() {
+                let value = this.value.trim();
+                
+                // Add # if missing
+                if (value && !value.startsWith('#')) {
+                    value = '#' + value;
+                }
+                
+                // Validate hex color format
+                if (value.match(/^#[0-9A-Fa-f]{6}$/)) {
+                    colorPicker.value = value.toUpperCase();
+                    this.value = value.toUpperCase();
+                    this.setCustomValidity('');
+                } else if (value.length > 0 && value.length < 7) {
+                    // Still typing, don't show error yet
+                    this.setCustomValidity('');
+                } else if (value.length > 0) {
+                    this.setCustomValidity('Please enter a valid hex color code (e.g., #666666)');
+                } else {
+                    this.setCustomValidity('');
+                }
+            });
+            
+            // Format on blur
+            colorCodeInput.addEventListener('blur', function() {
+                let value = this.value.trim();
+                if (value && !value.startsWith('#')) {
+                    value = '#' + value;
+                }
+                if (value.match(/^#[0-9A-Fa-f]{6}$/)) {
+                    const formattedValue = value.toUpperCase();
+                    this.value = formattedValue;
+                    colorPicker.value = formattedValue;
+                } else if (value.length > 0) {
+                    // Invalid format, reset to picker value
+                    this.value = colorPicker.value.toUpperCase();
+                }
+            });
+            
+            // Before form submit, ensure both inputs have the same value
+            const form = colorCodeInput.closest('form');
+            if (form) {
+                form.addEventListener('submit', function() {
+                    // Use text input value if valid, otherwise use picker value
+                    const textValue = colorCodeInput.value.trim();
+                    if (textValue.match(/^#[0-9A-Fa-f]{6}$/)) {
+                        colorPicker.value = textValue.toUpperCase();
+                        colorCodeInput.value = textValue.toUpperCase();
+                    } else {
+                        colorCodeInput.value = colorPicker.value.toUpperCase();
+                    }
+                });
+            }
+        });
+    </script>
+}

@@ -1,0 +1,264 @@
+﻿@model Website_Cosmetics.Areas.Admin.ViewModels.DashboardViewModel
+@{
+    ViewData["Title"] = "Dashboard";
+    
+    // Format revenue change
+    var revenueChangeClass = Model.RevenueChangePercent >= 0 ? "kpi__delta--up" : "kpi__delta--down";
+    var revenueChangeSign = Model.RevenueChangePercent >= 0 ? "+" : "";
+    var revenueChangeText = Model.RevenueChangePercent != 0 
+        ? $"{revenueChangeSign}{Model.RevenueChangePercent:F1}%" 
+        : "0%";
+    
+    // Format orders change
+    var ordersChangeClass = Model.OrdersChangePercent >= 0 ? "kpi__delta--up" : "kpi__delta--down";
+    var ordersChangeSign = Model.OrdersChangePercent >= 0 ? "+" : "";
+    var ordersChangeText = Model.OrdersChangePercent != 0 
+        ? $"{ordersChangeSign}{Model.OrdersChangePercent:F1}%" 
+        : "0%";
+    
+    // Format new users change
+    var newUsersChangeClass = Model.NewUsersChangePercent >= 0 ? "kpi__delta--up" : "kpi__delta--down";
+    var newUsersChangeSign = Model.NewUsersChangePercent >= 0 ? "+" : "";
+    var newUsersChangeText = Model.NewUsersChangePercent != 0 
+        ? $"{newUsersChangeSign}{Model.NewUsersChangePercent:F1}%" 
+        : "0%";
+}
+
+<div class="dashboard">
+
+<section class="grid-cards">
+    <div class="card kpi">
+        <div class="kpi__title">Revenue (Today)</div>
+        <div class="kpi__value">$@Model.RevenueToday.ToString("N2")</div>
+        @if (Model.RevenueChangePercent != 0)
+        {
+            <div class="kpi__delta @revenueChangeClass">@revenueChangeText</div>
+        }
+        else
+        {
+            <div class="kpi__delta">No change</div>
+        }
+    </div>
+
+    <div class="card kpi">
+        <div class="kpi__title">Orders (Today)</div>
+        <div class="kpi__value">@Model.TotalOrders</div>
+        @if (Model.OrdersChangePercent != 0)
+        {
+            <div class="kpi__delta @ordersChangeClass">@ordersChangeText</div>
+        }
+        else
+        {
+            <div class="kpi__delta">No change</div>
+        }
+    </div>
+
+    <div class="card kpi">
+        <div class="kpi__title">New Users</div>
+        <div class="kpi__value">@Model.NewUsersToday</div>
+        @if (Model.NewUsersChangePercent != 0)
+        {
+            <div class="kpi__delta @newUsersChangeClass">@newUsersChangeText</div>
+        }
+        else
+        {
+            <div class="kpi__delta">No change</div>
+        }
+    </div>
+
+    <div class="card kpi">
+        <div class="kpi__title">Low Stock</div>
+        <div class="kpi__value">@Model.LowStockCount</div>
+        <div class="kpi__delta">
+            <a asp-area="Admin" asp-controller="Products" asp-action="Index" class="link">Check now</a>
+        </div>
+    </div>
+</section>
+
+<section class="card">
+    <div class="card__hd">
+        <h3>Recent Orders</h3>
+        <a asp-area="Admin" asp-controller="Orders" asp-action="Index" class="link">See all</a>
+    </div>
+    <div class="table">
+        <div class="table__row table__row--hd">
+            <div>#</div>
+            <div>Customer</div>
+            <div>Total</div>
+            <div>Status</div>
+            <div>Placed</div>
+        </div>
+
+        @if (Model.RecentOrders.Any())
+        {
+            @foreach (var order in Model.RecentOrders)
+            {
+                var customerName = order.User != null 
+                    ? (!string.IsNullOrEmpty(order.User.FullName) ? order.User.FullName : order.User.Username)
+                    : "Guest";
+                
+                var statusClass = order.Status.ToLower() switch
+                {
+                    "pending" => "badge-warning",
+                    "processing" => "badge--processing",
+                    "shipped" => "badge--shipped",
+                    "delivered" => "badge-success",
+                    "cancelled" => "badge-danger",
+                    _ => "badge-warning"
+                };
+                
+                var timeAgo = "";
+                var timeDiff = DateTime.Now - order.CreatedAt;
+                if (timeDiff.TotalMinutes < 60)
+                {
+                    timeAgo = $"{(int)timeDiff.TotalMinutes} min ago";
+                }
+                else if (timeDiff.TotalHours < 24)
+                {
+                    timeAgo = $"{(int)timeDiff.TotalHours} hour{(timeDiff.TotalHours >= 2 ? "s" : "")} ago";
+                }
+                else if (timeDiff.TotalDays < 7)
+                {
+                    timeAgo = $"{(int)timeDiff.TotalDays} day{(timeDiff.TotalDays >= 2 ? "s" : "")} ago";
+                }
+                else
+                {
+                    timeAgo = order.CreatedAt.ToString("MM/dd/yyyy");
+                }
+
+                <div class="table__row">
+                    <div data-label="#">@order.OrderNumber</div>
+                    <div data-label="Customer">@customerName</div>
+                    <div data-label="Total">$@order.Total.ToString("N2")</div>
+                    <div data-label="Status"><span class="badge @statusClass">@order.Status</span></div>
+                    <div data-label="Placed">@timeAgo</div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="table__row">
+                <div style="grid-column: 1 / -1; text-align: center; padding: 20px; color: var(--muted);">
+                    No orders found.
+                </div>
+            </div>
+        }
+    </div>
+</section>
+
+<section class="card">
+    <div class="card__hd">
+        <h3>Revenue Growth (Last 30 Days)</h3>
+    </div>
+    <div class="chart-container">
+        <canvas id="revenueChart"></canvas>
+    </div>
+</section>
+
+</div>
+
+@section Styles {
+    <link rel="stylesheet" href="~/admin/css/pages/dashboard.css" asp-append-version="true" />
+}
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const ctx = document.getElementById('revenueChart');
+            if (!ctx) return;
+
+            const revenueData = @Html.Raw(Json.Serialize(Model.MonthlyRevenue.Select(r => r.Revenue)));
+            const labels = @Html.Raw(Json.Serialize(Model.MonthlyRevenue.Select(r => r.Date)));
+
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Revenue ($)',
+                        data: revenueData,
+                        borderColor: 'rgb(59, 130, 246)',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 3,
+                        pointHoverRadius: 5,
+                        pointBackgroundColor: 'rgb(59, 130, 246)',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top',
+                            labels: {
+                                color: '#a0a0a0',
+                                font: {
+                                    size: 12
+                                }
+                            }
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            titleColor: '#fff',
+                            bodyColor: '#fff',
+                            borderColor: 'rgba(255, 255, 255, 0.1)',
+                            borderWidth: 1,
+                            padding: 12,
+                            callbacks: {
+                                label: function(context) {
+                                    return '$' + context.parsed.y.toFixed(2);
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.05)',
+                                drawBorder: false
+                            },
+                            ticks: {
+                                color: '#a0a0a0',
+                                font: {
+                                    size: 11
+                                },
+                                maxRotation: 45,
+                                minRotation: 45
+                            }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.05)',
+                                drawBorder: false
+                            },
+                            ticks: {
+                                color: '#a0a0a0',
+                                font: {
+                                    size: 11
+                                },
+                                callback: function(value) {
+                                    return '$' + value.toFixed(0);
+                                }
+                            }
+                        }
+                    },
+                    interaction: {
+                        mode: 'nearest',
+                        axis: 'x',
+                        intersect: false
+                    }
+                }
+            });
+        });
+    </script>
+}

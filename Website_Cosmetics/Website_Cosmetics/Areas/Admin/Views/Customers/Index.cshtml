@@ -1,0 +1,214 @@
+@model IEnumerable<Website_Cosmetics.Models.User>
+@{
+    ViewData["Title"] = "Customers Management";
+    var search = ViewBag.Search as string ?? "";
+    var status = ViewBag.Status as string ?? "";
+    var currentPage = (int)(ViewBag.CurrentPage ?? 1);
+    var totalPages = (int)(ViewBag.TotalPages ?? 1);
+    var totalCount = (int)(ViewBag.TotalCount ?? 0);
+    var pageSize = (int)(ViewBag.PageSize ?? 10);
+}
+
+<div class="customers">
+    <div class="page-header">
+        <div class="page-header__title">
+            <h1>Customers Management</h1>
+            <span class="page-header__count">@totalCount customer(s)</span>
+        </div>
+        <div class="page-header__actions">
+            <a asp-action="Create" class="btn btn-primary">+ Add New Customer</a>
+        </div>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success">
+            @TempData["SuccessMessage"]
+            <button type="button" class="close" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger">
+            @TempData["ErrorMessage"]
+            <button type="button" class="close" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+    }
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" asp-action="Index" class="staff-filter-form" id="filterForm">
+                <div class="filter-row">
+                    <div class="filter-group">
+                        <label for="search">Search</label>
+                        <input type="text" name="search" id="search" value="@search" placeholder="Search by name, username, or email..." />
+                    </div>
+                    <div class="filter-group">
+                        <label for="status">Status</label>
+                        <select name="status" id="status">
+                            <option value="">All</option>
+                            <option value="active" selected="@(status == "active")">Active</option>
+                            <option value="inactive" selected="@(status == "inactive")">Inactive</option>
+                        </select>
+                    </div>
+                    <div class="filter-group filter-actions">
+                        <button type="submit" class="btn btn-icon btn-primary" title="Apply filters">
+                            <i data-lucide="filter"></i>
+                            <span class="tooltip">Apply filters</span>
+                        </button>
+                        @if (!string.IsNullOrWhiteSpace(search) || !string.IsNullOrWhiteSpace(status))
+                        {
+                            <a asp-action="Index" class="btn btn-icon btn-secondary" title="Reset filters">
+                                <i data-lucide="x"></i>
+                                <span class="tooltip">Reset filters</span>
+                            </a>
+                        }
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="card">
+            <div class="card-body text-center">
+                <p class="text-muted">No customers found.</p>
+                <a asp-action="Create" class="btn btn-primary">Add First Customer</a>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="card">
+            <div class="table-responsive">
+                <table class="table staff-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Full Name</th>
+                            <th>Username</th>
+                            <th>Email</th>
+                            <th>Phone</th>
+                            <th>Status</th>
+                            <th>Email Confirmed</th>
+                            <th>Created At</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var customer in Model)
+                        {
+                            <tr>
+                                <td>@customer.UserId</td>
+                                <td>
+                                    <strong>@(customer.FullName ?? "N/A")</strong>
+                                </td>
+                                <td>@customer.Username</td>
+                                <td>@customer.Email</td>
+                                <td>@(customer.PhoneNumber ?? "N/A")</td>
+                                <td>
+                                    @if (customer.IsActive == true)
+                                    {
+                                        <span class="badge badge-success">Active</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge badge-danger">Inactive</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (customer.IsEmailConfirmed)
+                                    {
+                                        <span class="badge badge-success">Confirmed</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge badge-warning">Pending</span>
+                                    }
+                                </td>
+                                <td>@customer.CreatedAt.ToString("MM/dd/yyyy")</td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <a asp-action="Details" asp-route-id="@customer.UserId" class="btn btn-sm btn-icon btn-info" title="View Details">
+                                            <i data-lucide="eye"></i>
+                                            <span class="tooltip">View Details</span>
+                                        </a>
+                                        <a asp-action="Edit" asp-route-id="@customer.UserId" class="btn btn-sm btn-icon btn-primary" title="Edit">
+                                            <i data-lucide="edit"></i>
+                                            <span class="tooltip">Edit</span>
+                                        </a>
+                                        @if (customer.IsActive == true)
+                                        {
+                                            <form asp-action="Deactivate" asp-route-id="@customer.UserId" method="post" class="action-form">
+                                                @Html.AntiForgeryToken()
+                                                <button type="submit" class="btn btn-sm btn-icon btn-warning" title="Deactivate">
+                                                    <i data-lucide="user-x"></i>
+                                                    <span class="tooltip">Deactivate</span>
+                                                </button>
+                                            </form>
+                                        }
+                                        else
+                                        {
+                                            <form asp-action="Activate" asp-route-id="@customer.UserId" method="post" class="action-form">
+                                                @Html.AntiForgeryToken()
+                                                <button type="submit" class="btn btn-sm btn-icon btn-success" title="Activate">
+                                                    <i data-lucide="user-check"></i>
+                                                    <span class="tooltip">Activate</span>
+                                                </button>
+                                            </form>
+                                        }
+                                        <a asp-action="Delete" asp-route-id="@customer.UserId" class="btn btn-sm btn-icon btn-danger" title="Delete">
+                                            <i data-lucide="trash-2"></i>
+                                            <span class="tooltip">Delete</span>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        @if (totalPages > 1)
+        {
+            <div class="pagination-wrapper">
+                <nav class="pagination">
+                    @if (currentPage > 1)
+                    {
+                        <a asp-action="Index" asp-route-page="@(currentPage - 1)" asp-route-search="@search" asp-route-status="@status" class="pagination-link">Previous</a>
+                    }
+                    
+                    @for (int i = Math.Max(1, currentPage - 2); i <= Math.Min(totalPages, currentPage + 2); i++)
+                    {
+                        <a asp-action="Index" asp-route-page="@i" asp-route-search="@search" asp-route-status="@status" 
+                           class="pagination-link @(i == currentPage ? "active" : "")">@i</a>
+                    }
+                    
+                    @if (currentPage < totalPages)
+                    {
+                        <a asp-action="Index" asp-route-page="@(currentPage + 1)" asp-route-search="@search" asp-route-status="@status" class="pagination-link">Next</a>
+                    }
+                </nav>
+                <div class="pagination-info">
+                    Page @currentPage of @totalPages (@totalCount total records)
+                </div>
+            </div>
+        }
+    }
+</div>
+
+@section Styles {
+    <link rel="stylesheet" href="~/admin/css/pages/customers.css" asp-append-version="true" />
+}
+
+@section Scripts {
+    <script src="~/admin/js/staff-management.js" asp-append-version="true"></script>
+}
+

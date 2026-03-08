@@ -1,49 +1,203 @@
-﻿<!DOCTYPE html>
+﻿@{
+    Layout = null;
+}
+<!doctype html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - Website_Cosmetics</title>
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/Website_Cosmetics.styles.css" asp-append-version="true" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@ViewData["Title"] - Cosmetic</title>
+    <link rel="stylesheet" href="~/public/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/public/css/components/search-dropdown.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/public/css/components/chatbot.css" asp-append-version="true" />
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        // Ensure Lucide is initialized after DOM is ready
+        (function() {
+            function initLucideIcons() {
+                if (typeof lucide !== 'undefined' && typeof lucide.createIcons === 'function') {
+                    lucide.createIcons();
+                } else {
+                    // Retry if Lucide is not ready yet
+                    setTimeout(initLucideIcons, 50);
+                }
+            }
+            
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', initLucideIcons);
+            } else {
+                initLucideIcons();
+            }
+        })();
+    </script>
+    @RenderSection("Styles", required: false)
 </head>
 <body>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">Website_Cosmetics</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-                        </li>
-                    </ul>
-                </div>
+    <!-- Header -->
+    <header class="header">
+        <div class="container header__row">
+            <a asp-controller="Home" asp-action="Index" class="header__brand">COSMETIC</a>
+            <div class="header__search">
+                <input type="text" placeholder="Search products, brands..." autocomplete="off" />
+            </div>
+            <div class="header__actions">
+                @if (User.Identity?.IsAuthenticated == true)
+                {
+                    var userName = User.Identity.Name ?? "User";
+                    var userInitial = !string.IsNullOrEmpty(userName) ? userName.Substring(0, 1).ToUpper() : "U";
+                    var userEmail = User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value ?? "";
+                    <!-- Authenticated user: Show user menu dropdown -->
+                    <div class="user-menu">
+                        <button class="user-menu__trigger" type="button" aria-label="User menu" aria-expanded="false">
+                            <div class="user-menu__avatar">
+                                <span class="user-menu__avatar-text">@userInitial</span>
+                            </div>
+                            <span class="user-menu__name">@userName</span>
+                            <i data-lucide="chevron-down" class="user-menu__chevron"></i>
+                        </button>
+                        <div class="user-menu__dropdown">
+                            <div class="user-menu__header">
+                                <div class="user-menu__avatar user-menu__avatar--large">
+                                    <span class="user-menu__avatar-text">@userInitial</span>
+                                </div>
+                                <div class="user-menu__info">
+                                    <div class="user-menu__username">@userName</div>
+                                    @if (!string.IsNullOrEmpty(userEmail))
+                                    {
+                                        <div class="user-menu__email">@userEmail</div>
+                                    }
+                                </div>
+                            </div>
+                            <div class="user-menu__divider"></div>
+                            <div class="user-menu__items">
+                                <a asp-controller="Account" asp-action="Profile" class="user-menu__item">
+                                    <i data-lucide="user"></i>
+                                    <span>My Profile</span>
+                                </a>
+                                <a asp-controller="Wishlist" asp-action="Index" class="user-menu__item">
+                                    <i data-lucide="heart"></i>
+                                    <span>My Wishlist</span>
+                                </a>
+                                <a asp-controller="Address" asp-action="Index" class="user-menu__item">
+                                    <i data-lucide="map-pin"></i>
+                                    <span>My Addresses</span>
+                                </a>
+                                <a asp-controller="Orders" asp-action="Index" class="user-menu__item">
+                                    <i data-lucide="package"></i>
+                                    <span>My Orders</span>
+                                </a>
+                                <a asp-controller="Account" asp-action="Settings" class="user-menu__item">
+                                    <i data-lucide="settings"></i>
+                                    <span>Settings</span>
+                                </a>
+                                <div class="user-menu__divider"></div>
+                                <form asp-controller="Auth" asp-action="LogoutConfirmed" method="post" class="user-menu__logout-form">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="user-menu__item user-menu__item--logout">
+                                        <i data-lucide="log-out"></i>
+                                        <span>Logout</span>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <!-- Unauthenticated user: Show sign in and sign up buttons -->
+                    <a class="btn" asp-controller="Auth" asp-action="Login">Sign in</a>
+                    <a class="btn btn--brand" asp-controller="Auth" asp-action="Register">Sign up</a>
+                }
+                <a asp-controller="Cart" asp-action="Index" class="btn btn--icon" aria-label="Shopping cart">
+                    <img class="icon icon--cart" src="/public/images/icons/cart.png" alt="" />
+                    <span class="cart-badge" style="display: none;">0</span>
+                </a>
+            </div>
+        </div>
+        <nav class="navbar">
+            <div class="container navbar__row">
+                <a asp-controller="Home" asp-action="Index">Home</a>
+                <a asp-controller="Catalog" asp-action="Trending">New & Trending</a>
+                <a asp-controller="Catalog" asp-action="Makeup">Makeup</a>
+                <a asp-controller="Catalog" asp-action="Tools">Tools & Brushes</a>
+                <a asp-controller="Deals" asp-action="Index">Sale & Offers</a>
             </div>
         </nav>
     </header>
-    <div class="container">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
-    </div>
 
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2025 - Website_Cosmetics - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+    <!-- Page content -->
+    <main class="container">
+        @RenderBody()
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container footer__grid">
+            <section class="footer__col">
+                <h4>Links</h4>
+                <div class="grid grid--tight">
+                    <a asp-controller="Home" asp-action="Index">Home</a>
+                    <a asp-controller="Catalog" asp-action="Trending">New & Trending</a>
+                    <a asp-controller="Catalog" asp-action="Makeup">Makeup</a>
+                    <a asp-controller="Catalog" asp-action="Tools">Tools & Brushes</a>
+                    <a asp-controller="Deals" asp-action="Index">Sale & Offers</a>
+                </div>
+            </section>
+            <section class="footer__col">
+                <h4>Explore</h4>
+                <div class="grid grid--tight">
+                    <a href="#">Resources</a><a href="#">Blog</a><a href="#">Documents</a>
+                </div>
+            </section>
+            <section class="footer__col">
+                <h4>Company</h4>
+                <div class="grid grid--tight">
+                    <a href="#">About us</a><a href="#">Partners</a><a href="#">Contact</a>
+                </div>
+            </section>
+            <section class="footer__col">
+                <h4>Sign up for Cosmetic Emails</h4>
+                <form>
+                    <div class="hstack">
+                        <input class="input input--dark" placeholder="Email address" />
+                        <button class="btn btn--brand" type="button">→</button>
+                    </div>
+                    <p class="muted mt-10">We send news and offers—no spam.</p>
+                </form>
+            </section>
+        </div>
+
+        <div class="container footer__btm">
+            <div>COSMETIC</div>
+            <div class="footer__links"><a href="#">Terms</a><a href="#">Privacy</a><a href="#">Cookies</a></div>
         </div>
     </footer>
-    <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="~/js/site.js" asp-append-version="true"></script>
-    @await RenderSectionAsync("Scripts", required: false)
+
+    <!-- Wishlist Remove Confirmation Modal -->
+    <div id="wishlistRemoveModal" class="modal-overlay">
+        <div class="modal" style="max-width: 400px;">
+            <button type="button" class="modal__close" onclick="Wishlist.closeRemoveModal()">
+                <i data-lucide="x"></i>
+            </button>
+            <h3 style="margin-top: 0; margin-bottom: 16px; font-size: 20px; font-weight: 600;">Remove from Wishlist</h3>
+            <p style="margin-bottom: 24px; color: #6b7280;">Are you sure you want to remove this item from your wishlist?</p>
+            <div style="display: flex; gap: 12px; justify-content: flex-end;">
+                <button type="button" class="btn btn--secondary" onclick="Wishlist.closeRemoveModal()">Cancel</button>
+                <button type="button" class="btn btn--danger" id="confirmRemoveBtn">Remove</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="~/public/js/components/modal.js" asp-append-version="true"></script>
+    <script src="~/public/js/components/toast.js" asp-append-version="true"></script>
+    <script src="~/public/js/components/search.js" asp-append-version="true"></script>
+    <script src="~/public/js/components/quickview.js" asp-append-version="true"></script>
+    <script src="~/public/js/components/wishlist.js" asp-append-version="true"></script>
+    <script src="~/public/js/components/cart.js" asp-append-version="true"></script>
+    <script src="~/public/js/components/chatbot.js" asp-append-version="true"></script>
+    <script src="~/public/js/core/site.js" asp-append-version="true"></script>
+    
+    @RenderSection("Scripts", required: false)
 </body>
 </html>

@@ -1,0 +1,178 @@
+﻿@{
+    Layout = null;
+    var title = ViewData["Title"] as string ?? "Admin";
+}
+
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@title - Cosmetic Admin</title>
+
+    <link rel="stylesheet" href="~/admin/css/site-admin.css" asp-append-version="true" />
+    <script src="https://unpkg.com/lucide@latest"></script>
+    @RenderSection("Styles", required: false)
+</head>
+<body data-page="@(ViewContext.RouteData.Values["controller"]?.ToString()?.ToLower()?.Trim()?.Replace("controller", "") + " ." + ViewContext.RouteData.Values["action"]?.ToString()?.ToLower())">
+
+    <div class="admin">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar__brand">
+                <a asp-area="Admin" asp-controller="Dashboard" asp-action="Index">COSMETIC</a>
+            </div>
+
+            @await Component.InvokeAsync("AdminSidebar")
+        </aside>
+
+        <!-- Main -->
+        <div class="main">
+            <!-- Header -->
+            <header class="header">
+                <button class="header__toggle" id="btnSidebarToggle" aria-label="Toggle sidebar">☰</button>
+
+                <div class="header__actions">
+                    <div class="header__badge">Admin</div>
+                    <a asp-area="" asp-controller="Home" asp-action="Index" class="header__link">View site</a>
+                    <form asp-area="" asp-controller="Auth" asp-action="LogoutConfirmed" method="post" class="header__logout">
+                        @Html.AntiForgeryToken()
+                        <button type="submit">Log out</button>
+                    </form>
+                </div>
+            </header>
+
+            <!-- Content -->
+            <main class="content">
+                @RenderBody()
+            </main>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        // Sidebar toggle and active state
+        document.addEventListener('DOMContentLoaded', function() {
+            const toggleBtn = document.getElementById('btnSidebarToggle');
+            const sidebar = document.querySelector('.sidebar');
+            
+            if (toggleBtn && sidebar) {
+                toggleBtn.addEventListener('click', function() {
+                    sidebar.classList.toggle('is-open');
+                });
+            }
+            
+            // Set active state for current page - ensure only ONE link is active
+            function setActiveSidebarLink() {
+                const currentPath = window.location.pathname.toLowerCase();
+                const sidebarLinks = document.querySelectorAll('.sidebar__link');
+                
+                // Remove all active states first
+                sidebarLinks.forEach(link => {
+                    link.classList.remove('is-active');
+                });
+                
+                // Helper to extract controller name from path
+                function getControllerFromPath(path) {
+                    const parts = path.replace(/^\/+|\/+$/g, '').split('/');
+                    const adminIndex = parts.indexOf('admin');
+                    if (adminIndex >= 0) {
+                        if (parts.length > adminIndex + 1) {
+                            return parts[adminIndex + 1].toLowerCase();
+                        }
+                        // If path is exactly /admin or /admin/, default to dashboard
+                        return 'dashboard';
+                    }
+                    const filtered = parts.filter(p => p && p !== 'admin');
+                    return filtered.length > 0 ? filtered[0].toLowerCase() : 'dashboard';
+                }
+                
+                let currentController = getControllerFromPath(currentPath);
+                
+                // Normalize controller aliases (e.g., StaffDashboard => Dashboard)
+                function normalizeController(name) {
+                    if (!name) return name;
+                    const map = {
+                        'staffdashboard': 'dashboard'
+                    };
+                    return map[name] || name;
+                }
+                
+                currentController = normalizeController(currentController || 'dashboard');
+                
+                // Find the matching link - only ONE should match
+                let activeLink = null;
+                
+                for (const link of sidebarLinks) {
+                    // Priority 1: Check data-controller attribute (most reliable)
+                    const linkController = link.getAttribute('data-controller');
+                    if (linkController && linkController.toLowerCase() === currentController) {
+                        activeLink = link;
+                        break; // Found exact match, stop searching
+                    }
+                }
+                
+                // If no match found via data-controller, try href matching
+                if (!activeLink) {
+                    for (const link of sidebarLinks) {
+                        const linkHref = link.getAttribute('href');
+                        if (!linkHref) continue;
+                        
+                        try {
+                            let linkPath = '';
+                            if (linkHref.startsWith('http://') || linkHref.startsWith('https://')) {
+                                const linkUrl = new URL(linkHref);
+                                linkPath = linkUrl.pathname.toLowerCase();
+                            } else {
+                                const baseUrl = window.location.origin;
+                                const resolvedUrl = new URL(linkHref, baseUrl);
+                                linkPath = resolvedUrl.pathname.toLowerCase();
+                            }
+                            
+                            const extractedController = getControllerFromPath(linkPath);
+                            
+                            // Exact controller match
+                            if (extractedController === currentController) {
+                                activeLink = link;
+                                break;
+                            }
+                            
+                            // Check if current path starts with link path (for sub-routes)
+                            if (linkPath && currentPath.startsWith(linkPath) && linkPath !== '/' && linkPath !== '/admin') {
+                                activeLink = link;
+                                break;
+                            }
+                        } catch (e) {
+                            // Skip invalid URLs
+                            continue;
+                        }
+                    }
+                }
+                
+                // Apply active state to the found link (only ONE)
+                if (activeLink) {
+                    activeLink.classList.add('is-active');
+                }
+            }
+            
+            setActiveSidebarLink();
+            
+            // Initialize Lucide icons
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
+        });
+    </script>
+    
+    <!-- Admin Common JS - Shared functionality -->
+    <script src="~/admin/js/admin-common.js" asp-append-version="true"></script>
+    
+    <!-- Admin Page-specific JS -->
+    <script src="~/admin/js/products.js" asp-append-version="true"></script>
+    <script src="~/admin/js/variants.js" asp-append-version="true"></script>
+    <script src="~/admin/js/staff-management.js" asp-append-version="true"></script>
+    
+    @RenderSection("Scripts", required: false)
+</body>
+</html>
+

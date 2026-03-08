@@ -1,0 +1,130 @@
+@model IEnumerable<Website_Cosmetics.Models.Product>
+@{
+    ViewData["Title"] = "Sale & Offers";
+    var currentPage = ViewBag.CurrentPage as int? ?? 1;
+    var totalPages = ViewBag.TotalPages as int? ?? 1;
+    var totalProducts = ViewBag.TotalProducts as int? ?? 0;
+}
+
+<section class="section">
+    <div class="container">
+        <div class="section__hd">
+            <h1>Sale & Offers</h1>
+            <p>Special deals and discounted products</p>
+            @if (totalProducts > 0)
+            {
+                <p class="catalog-count">Showing @((currentPage - 1) * 12 + 1)-@(Math.Min(currentPage * 12, totalProducts)) of @totalProducts products on sale</p>
+            }
+        </div>
+
+        @if (Model == null || !Model.Any())
+        {
+            <div class="catalog-empty">
+                <div class="catalog-empty__icon">
+                    <i data-lucide="tag"></i>
+                </div>
+                <h2 class="catalog-empty__title">No deals available</h2>
+                <p class="catalog-empty__text">Check back later for special offers and discounts!</p>
+                <a asp-controller="Home" asp-action="Index" class="btn btn--brand">Back to Home</a>
+            </div>
+        }
+        else
+        {
+            <div class="grid grid--products">
+                @foreach (var product in Model)
+                {
+                    // Get image from default variant's primary image, fallback to first variant image, then product image, then default
+                    var defaultVariant = product.ProductVariants?.FirstOrDefault(v => v.IsDefault == true && (v.IsActive == true || v.IsActive == null)) 
+                                         ?? product.ProductVariants?.FirstOrDefault(v => v.IsActive == true || v.IsActive == null)
+                                         ?? product.ProductVariants?.FirstOrDefault();
+                    var productImage = defaultVariant?.ProductVariantImages?.FirstOrDefault(img => img.IsPrimary)?.Url
+                                    ?? defaultVariant?.ProductVariantImages?.FirstOrDefault()?.Url
+                                    ?? product.ProductImages?.FirstOrDefault(img => img.ImageType == "cover")?.Url
+                                    ?? product.ProductImages?.FirstOrDefault()?.Url
+                                    ?? "/public/images/products/img-cart-lip.png";
+                    // Get price from default variant (use variant.Price if exists, otherwise use product.BasePrice)
+                    var currentPrice = defaultVariant?.Price ?? product.BasePrice;
+                    var comparePrice = defaultVariant?.CompareAtPrice ?? product.BasePrice;
+                    var hasDiscount = comparePrice > currentPrice;
+                    var discountPercent = hasDiscount ? (int)((1 - (currentPrice / comparePrice)) * 100) : 0;
+                    
+                    <div class="card product product--sale" data-product-id="@product.ProductId">
+                        <div class="product__header">
+                            <a asp-controller="Products" asp-action="Details" asp-route-id="@product.ProductId" class="product__img">
+                                <img src="@productImage" alt="@product.Name" />
+                            </a>
+                            <span class="product__badge product__badge--sale">@discountPercent% OFF</span>
+                            @if (User.Identity?.IsAuthenticated == true)
+                            {
+                                <button type="button" class="product__wishlist-btn" data-product-id="@product.ProductId" aria-label="Add to wishlist">
+                                    <i data-lucide="heart" class="wishlist-icon"></i>
+                                </button>
+                            }
+                        </div>
+                        <div class="product__body">
+                            <div class="product__brand">@(product.Brand?.Name?.ToUpper() ?? "UNKNOWN")</div>
+                            <h3 class="product__title">
+                                <a asp-controller="Products" asp-action="Details" asp-route-id="@product.ProductId">@product.Name</a>
+                            </h3>
+                            @if (product.Rating.HasValue)
+                            {
+                                <div class="rating">
+                                    <img class="icon icon--star" src="/public/images/icons/star.png" alt="" aria-hidden="true" />
+                                    <span class="rating__score">@product.Rating.Value.ToString("0.0")</span>
+                                    <span class="rating__count">(@product.ReviewCount reviews)</span>
+                                </div>
+                            }
+                            <div class="product__price">
+                                <span class="price--now">$@currentPrice.ToString("0.00")</span>
+                                <span class="price--old">$@comparePrice.ToString("0.00")</span>
+                            </div>
+                            <div class="product__actions">
+                                <button type="button" class="btn" data-quickview>Quick view</button>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            @if (totalPages > 1)
+            {
+                <div class="pagination">
+                    @if (currentPage > 1)
+                    {
+                        <a asp-action="Index" asp-route-page="@(currentPage - 1)" class="pagination__link pagination__link--prev">
+                            <i data-lucide="chevron-left"></i>
+                            Previous
+                        </a>
+                    }
+                    
+                    <div class="pagination__pages">
+                        @for (int i = Math.Max(1, currentPage - 2); i <= Math.Min(totalPages, currentPage + 2); i++)
+                        {
+                            if (i == currentPage)
+                            {
+                                <span class="pagination__page pagination__page--active">@i</span>
+                            }
+                            else
+                            {
+                                <a asp-action="Index" asp-route-page="@i" class="pagination__page">@i</a>
+                            }
+                        }
+                    </div>
+                    
+                    @if (currentPage < totalPages)
+                    {
+                        <a asp-action="Index" asp-route-page="@(currentPage + 1)" class="pagination__link pagination__link--next">
+                            Next
+                            <i data-lucide="chevron-right"></i>
+                        </a>
+                    }
+                </div>
+            }
+        }
+    </div>
+</section>
+
+@section Styles {
+    <link rel="stylesheet" href="~/public/css/pages/catalog.css" asp-append-version="true" />
+}
+

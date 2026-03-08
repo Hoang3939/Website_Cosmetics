@@ -1,0 +1,226 @@
+/* Orders Admin Page - scoped styles to avoid affecting other pages */
+
+.orders .filter-section {
+    margin-bottom: var(--space);
+}
+
+/* Table layout for Orders list */
+.orders .table--orders {
+    display: grid;
+}
+
+.orders .table--orders .table__row {
+    display: grid;
+    grid-template-columns: 70px 2fr 1.6fr 120px 130px 130px 180px 1fr;
+    align-items: center;
+    gap: 12px; /* keep consistent gap for both header/body */
+}
+
+/* Ensure header cells behave like body cells */
+.orders .table--orders .table__row > div {
+    display: flex;
+    align-items: center;
+}
+
+/* Header row */
+.orders .table--orders .table__row--hd {
+    background: #0F1114;
+    color: var(--muted);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    font-weight: 600;
+}
+
+/* Alignment per column */
+.orders .table--orders .table__row > :nth-child(1) { justify-content: center; }
+.orders .table--orders .table__row > :nth-child(4) { justify-content: flex-end; }
+.orders .table--orders .table__row > :nth-child(5),
+.orders .table--orders .table__row > :nth-child(6),
+.orders .table--orders .table__row > :nth-child(8) { justify-content: center; }
+
+.orders .order-link {
+    color: var(--text);
+    font-weight: 600;
+    transition: color var(--t);
+}
+.orders .order-link:hover { color: var(--brand); }
+
+/* Make badges align centrally in table cells */
+.orders .table--orders .badge { margin: 0 auto; }
+
+/* Items table inside details */
+.orders .table--order-items { 
+    display: grid; 
+}
+
+.orders .table--order-items .table__row { 
+    display: grid; 
+    grid-template-columns: 2.5fr 1.5fr 80px 130px 140px; 
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+}
+
+/* Ensure header and body cells behave consistently */
+.orders .table--order-items .table__row > div {
+    display: flex;
+    align-items: center;
+}
+
+/* Header row styling */
+.orders .table--order-items .table__row--hd {
+    background: #0F1114;
+    color: var(--muted);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    font-weight: 600;
+}
+
+/* Alignment per column */
+.orders .table--order-items .table__row > :nth-child(3) { 
+    justify-content: center; 
+}
+.orders .table--order-items .table__row > :nth-child(4),
+.orders .table--order-items .table__row > :nth-child(5) { 
+    justify-content: flex-end; 
+}
+
+/* Details page cards layout - improved spacing and min-widths */
+.orders .grid-cards { 
+    /* Each card tối thiểu 320px để nội dung không bị bóp méo */
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); 
+    gap: 20px;
+    margin-bottom: 24px;
+}
+
+.orders .grid-cards .card {
+    min-width: 0; /* Prevent overflow */
+    overflow: visible;
+    display: flex;
+    flex-direction: column;
+}
+
+.orders .grid-cards .card > div:not(.card__hd) {
+    flex: 1;
+    min-width: 0;
+}
+
+/* Ensure detail-list doesn't overflow */
+.orders .grid-cards .detail-list {
+    min-width: 0;
+    width: 100%;
+}
+
+.orders .grid-cards .detail-item {
+    min-width: 0;
+    width: 100%;
+}
+
+.orders .grid-cards .detail-item dt {
+    min-width: 90px;
+    max-width: 120px;
+    flex-shrink: 0;
+}
+
+.orders .grid-cards .detail-item dd {
+    min-width: 0;
+    flex: 1;
+    word-break: break-word;
+    overflow-wrap: break-word;
+    hyphens: auto;
+}
+
+/* Shipping address - allow wrapping */
+.orders .grid-cards .detail-item dd {
+    line-height: 1.5;
+}
+
+@media (max-width: 1200px) { 
+    .orders .grid-cards { 
+        grid-template-columns: repeat(2, minmax(280px, 1fr)); 
+    } 
+}
+
+@media (max-width: 768px) {
+    .orders .table--order-items .table__row {
+        grid-template-columns: 1fr !important;
+        gap: 0;
+    }
+
+    .orders .table--order-items .table__row--hd {
+        display: none;
+    }
+
+    .orders .table--order-items .table__row > div {
+        padding: 8px 12px;
+        border-bottom: 1px dashed var(--stroke);
+        justify-content: flex-start !important;
+    }
+
+    .orders .table--order-items .table__row > div:last-child {
+        border-bottom: 0;
+    }
+
+    .orders .table--order-items .table__row > div[data-label]::before {
+        content: attr(data-label) ": ";
+        font-weight: 600;
+        color: var(--muted);
+        margin-right: 8px;
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+}
+
+@media (max-width: 640px) { 
+    .orders .grid-cards { 
+        grid-template-columns: 1fr; 
+    } 
+}
+
+/* Summary numbers right-aligned */
+.orders .summary .detail-item dd { 
+    text-align: right; 
+}
+
+/* Prevent long text from overflowing (default) */
+.orders .detail-list dd { 
+    word-break: normal; 
+    overflow-wrap: anywhere;
+}
+
+/* Bigger label column for better readability on Orders details */
+.orders .detail-item { grid-template-columns: 160px 1fr; }
+@media (max-width: 640px) { .orders .detail-item { grid-template-columns: 1fr; } }
+
+/* Utilities */
+.orders .text-ellipsis { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: inline-block; max-width: 100%; }
+.orders .text-multiline { white-space: normal; word-break: normal; overflow-wrap: anywhere; line-height: 1.5; }
+.orders .badge { white-space: nowrap; display: inline-flex; align-items: center; }
+.orders .value { color: var(--text); }
+.orders .value a { color: var(--text); text-decoration: none; }
+.orders .value a:hover { text-decoration: underline; }
+.orders .num { white-space: nowrap; }
+
+/* Key-Value rows for better readability */
+.orders .kv { width: 100%; }
+.orders .kv__row { 
+    display: grid; 
+    grid-template-columns: 160px 1fr; 
+    gap: 16px; 
+    padding: 10px 0; 
+    border-bottom: 1px solid var(--stroke);
+    align-items: center;
+}
+.orders .kv__row:last-child { border-bottom: 0; }
+.orders .kv__label { color: var(--muted); font-weight: 600; font-size: 13px; }
+.orders .kv__value { display: flex; align-items: center; min-width: 0; font-size: 14px; }
+.orders .kv__value--right { justify-content: flex-end; text-align: right; }
+
+@media (max-width: 640px) {
+    .orders .kv__row { grid-template-columns: 1fr; gap: 6px; }
+    .orders .kv__value--right { justify-content: flex-start; text-align: left; }
+}
+

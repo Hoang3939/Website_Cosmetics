@@ -1,0 +1,122 @@
+@{
+    ViewData["Title"] = "Manage Permissions";
+    var user = ViewBag.User as Website_Cosmetics.Models.User;
+    var userPermissions = ViewBag.UserPermissions as IEnumerable<string> ?? new List<string>();
+    var allPermissions = ViewBag.AllPermissions as IEnumerable<Website_Cosmetics.Models.Permission> ?? new List<Website_Cosmetics.Models.Permission>();
+}
+
+<div class="page-header">
+    <div class="page-header__title">
+    <h1>Manage Permissions: @(user?.FullName ?? user?.Username)</h1>
+    </div>
+    <div class="page-header__actions">
+        <a asp-action="Index" class="btn btn-secondary">← Back to List</a>
+        <a asp-action="Details" asp-route-id="@user?.UserId" class="btn btn-info">View Details</a>
+    </div>
+</div>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["SuccessMessage"]
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @TempData["ErrorMessage"]
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+}
+
+<div class="card mb-4">
+    <div class="card-header">
+        <h3>Current Permissions</h3>
+    </div>
+    <div class="card-body">
+        @if (userPermissions.Any())
+        {
+            <div class="permission-list">
+                @foreach (var permission in userPermissions)
+                {
+                    <span class="badge badge-primary permission-badge">
+                        @permission
+                        <form asp-action="RevokePermission" method="post" class="d-inline permission-form">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="userId" value="@user?.UserId" />
+                            <input type="hidden" name="permissionName" value="@permission" />
+                            <button type="submit" class="permission-remove" title="Remove permission" onclick="return confirm('Are you sure you want to revoke this permission?')">×</button>
+                        </form>
+                    </span>
+                }
+            </div>
+        }
+        else
+        {
+            <p class="text-muted">No permissions assigned.</p>
+        }
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h3>Available Permissions</h3>
+    </div>
+    <div class="card-body">
+        @if (allPermissions.Any())
+        {
+            var groupedPermissions = allPermissions.GroupBy(p => p.Category ?? "Other").OrderBy(g => g.Key);
+            @foreach (var group in groupedPermissions)
+            {
+                <div class="permission-category-group" style="margin-bottom: 24px;">
+                    <h4 style="margin-bottom: 12px; color: var(--text); font-size: 16px; font-weight: 600;">@group.Key</h4>
+                    <div class="permission-grid">
+                        @foreach (var permission in group.OrderBy(p => p.PermissionName))
+                        {
+                            var hasPermission = userPermissions.Contains(permission.PermissionName);
+                            <div class="permission-item">
+                                <div class="permission-info">
+                                    <strong>@permission.PermissionName</strong>
+                                    @if (!string.IsNullOrEmpty(permission.Description))
+                                    {
+                                        <p class="text-muted" style="margin: 4px 0 0 0; font-size: 13px;">@permission.Description</p>
+                                    }
+                                </div>
+                                <div class="permission-action">
+                                    @if (hasPermission)
+                                    {
+                                        <span class="badge badge-success">Granted</span>
+                                    }
+                                    else
+                                    {
+                                        <form asp-action="GrantPermission" method="post" class="d-inline">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="userId" value="@user?.UserId" />
+                                            <input type="hidden" name="permissionName" value="@permission.PermissionName" />
+                                            <button type="submit" class="btn btn-sm btn-primary">Grant</button>
+                                        </form>
+                                    }
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <p class="text-muted">No permissions available.</p>
+        }
+    </div>
+</div>
+
+@section Styles {
+    <link rel="stylesheet" href="~/admin/css/pages/staff-management.css" asp-append-version="true" />
+}
+

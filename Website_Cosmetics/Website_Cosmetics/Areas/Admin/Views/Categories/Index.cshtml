@@ -1,0 +1,156 @@
+@model IEnumerable<Website_Cosmetics.Models.Category>
+@{
+    ViewData["Title"] = "Categories Management";
+    var search = ViewBag.Search as string ?? "";
+    var status = ViewBag.Status as string ?? "";
+    var currentPage = (int)(ViewBag.CurrentPage ?? 1);
+    var totalPages = (int)(ViewBag.TotalPages ?? 1);
+    var totalCount = (int)(ViewBag.TotalCount ?? 0);
+}
+
+<div class="page-header">
+    <div class="page-header__title">
+        <h1>Categories Management</h1>
+        <span class="page-header__count">@totalCount category(ies)</span>
+    </div>
+    <div class="page-header__actions">
+        <a asp-action="Create" class="btn btn-primary">+ Add New Category</a>
+    </div>
+</div>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+}
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+}
+
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get" asp-action="Index" class="staff-filter-form" id="filterForm">
+            <div class="filter-row">
+                <div class="filter-group">
+                    <label for="search">Search</label>
+                    <input type="text" name="search" id="search" value="@search" placeholder="Search by name or description..." />
+                </div>
+                <div class="filter-group">
+                    <label for="status">Status</label>
+                    <select name="status" id="status">
+                        <option value="">All</option>
+                        <option value="active" selected="@(status == "active")">Active</option>
+                        <option value="inactive" selected="@(status == "inactive")">Inactive</option>
+                    </select>
+                </div>
+                <div class="filter-group filter-actions">
+                    <button type="submit" class="btn btn-icon btn-primary" title="Apply filters">
+                        <i data-lucide="filter"></i>
+                        <span class="tooltip">Apply filters</span>
+                    </button>
+                    @if (!string.IsNullOrWhiteSpace(search) || !string.IsNullOrWhiteSpace(status))
+                    {
+                        <a asp-action="Index" class="btn btn-icon btn-secondary" title="Reset filters">
+                            <i data-lucide="x"></i>
+                            <span class="tooltip">Reset filters</span>
+                        </a>
+                    }
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    @if (!Model.Any())
+    {
+        <div class="card-body text-center">
+            <p class="text-muted">No categories found.</p>
+            <a asp-action="Create" class="btn btn-primary">Add First Category</a>
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table staff-table">
+                <thead>
+                    <tr>
+                        <th style="width: 70px; text-align:center">ID</th>
+                        <th style="width: 220px;">Name</th>
+                        <th>Description</th>
+                        <th style="width: 140px; text-align:center">Products</th>
+                        <th style="width: 120px; text-align:center">Status</th>
+                        <th style="width: 160px; text-align:center">Created At</th>
+                        <th style="width: 200px; text-align:center">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var cat in Model)
+                    {
+                        <tr>
+                            <td class="text-center">@cat.CategoryId</td>
+                            <td><strong>@cat.Name</strong></td>
+                            <td title="@cat.Description">@cat.Description</td>
+                            <td class="text-center">@(cat.Products?.Count() ?? 0)</td>
+                            <td class="text-center">
+                                @if ((cat.IsActive ?? true) == true)
+                                {
+                                    <span class="badge badge-success">Active</span>
+                                }
+                                else
+                                {
+                                    <span class="badge badge-danger">Inactive</span>
+                                }
+                            </td>
+                            <td class="text-center">@cat.CreatedAt.ToString("MM/dd/yyyy")</td>
+                            <td class="text-center">
+                                <div class="action-buttons" style="justify-content:center;">
+                                    <a asp-action="Details" asp-route-id="@cat.CategoryId" class="btn btn-sm btn-icon btn-info" title="View Details">
+                                        <i data-lucide="eye"></i>
+                                        <span class="tooltip">View Details</span>
+                                    </a>
+                                    <a asp-action="Edit" asp-route-id="@cat.CategoryId" class="btn btn-sm btn-icon btn-primary" title="Edit">
+                                        <i data-lucide="edit"></i>
+                                        <span class="tooltip">Edit</span>
+                                    </a>
+                                    <a asp-action="Delete" asp-route-id="@cat.CategoryId" class="btn btn-sm btn-icon btn-danger" title="Delete">
+                                        <i data-lucide="trash-2"></i>
+                                        <span class="tooltip">Delete</span>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
+
+@if (totalPages > 1)
+{
+    <div class="pagination-wrapper">
+        <nav class="pagination">
+            @if (currentPage > 1)
+            {
+                <a asp-action="Index" asp-route-page="@(currentPage - 1)" asp-route-search="@search" asp-route-status="@status" class="pagination-link">Previous</a>
+            }
+            @for (int i = Math.Max(1, currentPage - 2); i <= Math.Min(totalPages, currentPage + 2); i++)
+            {
+                <a asp-action="Index" asp-route-page="@i" asp-route-search="@search" asp-route-status="@status" class="pagination-link @(i == currentPage ? "active" : "")">@i</a>
+            }
+            @if (currentPage < totalPages)
+            {
+                <a asp-action="Index" asp-route-page="@(currentPage + 1)" asp-route-search="@search" asp-route-status="@status" class="pagination-link">Next</a>
+            }
+        </nav>
+        <div class="pagination-info">
+            Page @currentPage of @totalPages (@totalCount total records)
+        </div>
+    </div>
+}
+
+@section Scripts {
+    <script src="~/admin/js/admin-common.js" asp-append-version="true"></script>
+}
+

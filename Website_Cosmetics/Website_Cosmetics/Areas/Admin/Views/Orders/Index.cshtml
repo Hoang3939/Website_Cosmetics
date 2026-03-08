@@ -1,0 +1,191 @@
+@model IEnumerable<Website_Cosmetics.Models.Order>
+@{
+    ViewData["Title"] = "Orders Management";
+    var search = ViewBag.Search as string ?? string.Empty;
+    var status = ViewBag.Status as string ?? string.Empty;
+    var paymentStatus = ViewBag.PaymentStatus as string ?? string.Empty;
+    var currentPage = (int)(ViewBag.CurrentPage ?? 1);
+    var totalPages = (int)(ViewBag.TotalPages ?? 1);
+    var totalCount = (int)(ViewBag.TotalCount ?? 0);
+    var pageSize = (int)(ViewBag.PageSize ?? 10);
+    var statusList = ViewBag.StatusList as List<string> ?? new List<string>();
+    var paymentStatusList = ViewBag.PaymentStatusList as List<string> ?? new List<string>();
+}
+
+<div class="orders">
+    <div class="page-header">
+        <div class="page-header__title">
+            <h1>Orders Management</h1>
+            <span class="page-header__count">@totalCount order(s)</span>
+        </div>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+    }
+
+    <div class="card filter-section">
+        <form method="get" asp-action="Index" class="filter-form">
+            <div class="filter-form__row">
+                <div class="filter-form__group filter-form__group--search">
+                    <input type="text"
+                           name="search"
+                           value="@search"
+                           placeholder="Search by order number, customer name, or email..."
+                           class="filter-form__input filter-form__input--search" />
+                </div>
+                <div class="filter-form__group">
+                    <select name="status" class="filter-form__select">
+                        <option value="">All Status</option>
+                        @foreach (var s in statusList)
+                        {
+                            <option value="@s" selected="@(status == s)">@s</option>
+                        }
+                    </select>
+                </div>
+                <div class="filter-form__group">
+                    <select name="paymentStatus" class="filter-form__select">
+                        <option value="">All Payment Status</option>
+                        @foreach (var ps in paymentStatusList)
+                        {
+                            <option value="@ps" selected="@(paymentStatus == ps)">@ps</option>
+                        }
+                    </select>
+                </div>
+                <div class="filter-form__group filter-form__group--actions">
+                    <button type="submit" class="btn btn-primary btn-icon" data-tooltip="Apply Filters">
+                        <i data-lucide="filter"></i>
+                    </button>
+                    @if (!string.IsNullOrWhiteSpace(search) || !string.IsNullOrWhiteSpace(status) || !string.IsNullOrWhiteSpace(paymentStatus))
+                    {
+                        <a asp-action="Index" class="btn btn-secondary btn-icon" data-tooltip="Clear All Filters">
+                            <i data-lucide="x"></i>
+                        </a>
+                    }
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div class="card">
+        @if (!Model.Any())
+        {
+            <div class="empty-state">
+                <p>No orders found.</p>
+            </div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="staff-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Order</th>
+                            <th>Customer</th>
+                            <th>Total</th>
+                            <th>Status</th>
+                            <th>Payment</th>
+                            <th>Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var order in Model)
+                        {
+                            <tr>
+                                <td class="text-center">@order.OrderId</td>
+                                <td><a asp-action="Details" asp-route-id="@order.OrderId" class="link">@order.OrderNumber</a></td>
+                                <td>@(order.User?.FullName ?? order.User?.Username ?? "Guest")</td>
+                                <td>@order.Total.ToString("C")</td>
+                                <td class="text-center">
+                                    @switch (order.Status)
+                                    {
+                                        case "Processing":
+                                            <span class="badge badge--processing">Processing</span>
+                                            break;
+                                        case "Shipped":
+                                            <span class="badge badge--shipped">Shipped</span>
+                                            break;
+                                        case "Delivered":
+                                            <span class="badge badge-success">Delivered</span>
+                                            break;
+                                        case "Cancelled":
+                                            <span class="badge badge-danger">Cancelled</span>
+                                            break;
+                                        default:
+                                            <span class="badge badge-warning">Pending</span>
+                                            break;
+                                    }
+                                </td>
+                                <td class="text-center">
+                                    @switch (order.PaymentStatus)
+                                    {
+                                        case "Paid":
+                                            <span class="badge badge-success">Paid</span>
+                                            break;
+                                        case "Failed":
+                                            <span class="badge badge-danger">Failed</span>
+                                            break;
+                                        case "Refunded":
+                                            <span class="badge badge-info">Refunded</span>
+                                            break;
+                                        default:
+                                            <span class="badge badge-warning">Pending</span>
+                                            break;
+                                    }
+                                </td>
+                                <td class="text-center">@order.CreatedAt.ToString("MM/dd/yyyy HH:mm")</td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <a asp-action="Details" asp-route-id="@order.OrderId" class="btn btn-sm btn-icon btn-info" data-tooltip="View Details">
+                                            <i data-lucide="eye"></i>
+                                        </a>
+                                        <a asp-action="UpdateStatus" asp-route-id="@order.OrderId" class="btn btn-sm btn-icon btn-primary" data-tooltip="Update Status">
+                                            <i data-lucide="refresh-cw"></i>
+                                        </a>
+                                        @if (order.Status != "Cancelled" && order.Status != "Delivered")
+                                        {
+                                            <a asp-action="Cancel" asp-route-id="@order.OrderId" class="btn btn-sm btn-icon btn-danger" data-tooltip="Cancel Order">
+                                                <i data-lucide="x-circle"></i>
+                                            </a>
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+
+    @if (totalPages > 1)
+    {
+        <div class="pagination-wrapper">
+            <nav class="pagination">
+                @if (currentPage > 1)
+                {
+                    <a asp-action="Index" asp-route-page="@(currentPage - 1)" asp-route-search="@search" asp-route-status="@status" asp-route-paymentStatus="@paymentStatus" class="pagination-link">Previous</a>
+                }
+                @for (int i = Math.Max(1, currentPage - 2); i <= Math.Min(totalPages, currentPage + 2); i++)
+                {
+                    <a asp-action="Index" asp-route-page="@i" asp-route-search="@search" asp-route-status="@status" asp-route-paymentStatus="@paymentStatus" class="pagination-link @(i == currentPage ? "active" : "")">@i</a>
+                }
+                @if (currentPage < totalPages)
+                {
+                    <a asp-action="Index" asp-route-page="@(currentPage + 1)" asp-route-search="@search" asp-route-status="@status" asp-route-paymentStatus="@paymentStatus" class="pagination-link">Next</a>
+                }
+            </nav>
+            <div class="pagination-info">
+                Page @currentPage of @totalPages (@totalCount total records)
+            </div>
+        </div>
+    }
+</div>
+

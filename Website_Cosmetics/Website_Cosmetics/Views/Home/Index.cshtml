@@ -1,8 +1,180 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+﻿@using Website_Cosmetics.Models
+@{
+    ViewData["Title"] = "Home";
+    var mostLovedProducts = ViewData["MostLovedProducts"] as IEnumerable<Product> ?? new List<Product>();
+    var onSaleProducts = ViewData["OnSaleProducts"] as IEnumerable<Product> ?? new List<Product>();
+    var trendingCount = ViewData["TrendingCount"] as int? ?? 0;
+    var makeupCount = ViewData["MakeupCount"] as int? ?? 0;
+    var toolsCount = ViewData["ToolsCount"] as int? ?? 0;
+    var giftsCount = ViewData["GiftsCount"] as int? ?? 0;
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+<!-- Banner -->
+<section class="section hero">
+    <div class="container">
+        <div class="card hero-card">
+            <img src="/public/images/banner/banner-blush.png" alt="Banner" />
+        </div>
+    </div>
+</section>
+
+<!-- Most Loved -->
+<section class="section">
+    <div class="section__hd">
+        <h2>Most Loved</h2>
+        <p>Top-rated products by our customers.</p>
+    </div>
+
+    <div class="container grid grid--products">
+        @foreach (var product in mostLovedProducts)
+        {
+            // Get image from default variant's primary image, fallback to first variant image, then product image, then default
+            var defaultVariant = product.ProductVariants?.FirstOrDefault(v => v.IsDefault == true && (v.IsActive == true || v.IsActive == null)) 
+                                 ?? product.ProductVariants?.FirstOrDefault(v => v.IsActive == true || v.IsActive == null)
+                                 ?? product.ProductVariants?.FirstOrDefault();
+            var productImage = defaultVariant?.ProductVariantImages?.FirstOrDefault(img => img.IsPrimary)?.Url
+                            ?? defaultVariant?.ProductVariantImages?.FirstOrDefault()?.Url
+                            ?? product.ProductImages?.FirstOrDefault()?.Url
+                            ?? "/public/images/products/img-cart-lip.png";
+            // Get price from default variant (use variant.Price if exists, otherwise use product.BasePrice)
+            var currentPrice = defaultVariant?.Price ?? product.BasePrice;
+            // Compare price: use CompareAtPrice if exists, otherwise use BasePrice
+            var comparePrice = defaultVariant?.CompareAtPrice ?? product.BasePrice;
+            // Check if there's a discount: CompareAtPrice > currentPrice OR (variant.Price < BasePrice)
+            var hasDiscount = (defaultVariant?.CompareAtPrice != null && defaultVariant.CompareAtPrice > currentPrice) 
+                            || (defaultVariant?.Price != null && defaultVariant.Price < product.BasePrice);
+            <div class="card product" data-product-id="@product.ProductId" data-details="@Url.Action("Details", "Products", new { id = product.ProductId })">
+                <div class="product__header">
+                    <a asp-controller="Products" asp-action="Details" asp-route-id="@product.ProductId" class="product__img">
+                        <img src="@productImage" alt="@product.Name" />
+                    </a>
+                    @if (User.Identity?.IsAuthenticated == true)
+                    {
+                        <button type="button" class="product__wishlist-btn" data-product-id="@product.ProductId" aria-label="Add to wishlist">
+                            <i data-lucide="heart" class="wishlist-icon"></i>
+                        </button>
+                    }
+                </div>
+                <div class="product__body">
+                    <div class="product__brand">@(product.Brand?.Name?.ToUpper() ?? "UNKNOWN")</div>
+                    <h3 class="product__title">@product.Name</h3>
+                    <div class="rating">
+                        <img class="icon icon--star" src="/public/images/icons/star.png" alt="" aria-hidden="true" />
+                        <span class="rating__score">4.8</span>
+                        <span class="rating__count">(@(new Random().Next(100, 400)) reviews)</span>
+                    </div>
+                    <div class="product__price">
+                        <span class="price--now">$@currentPrice.ToString("0.00")</span>
+                        @if (hasDiscount)
+                        {
+                            <span class="price--old">$@comparePrice.ToString("0.00")</span>
+                        }
+                    </div>
+                    <div class="product__actions">
+                        <button type="button" class="btn" data-quickview>Quick view</button>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+    <div class="container text-center mt-16">
+        <a class="btn" asp-controller="Products" asp-action="Index">View All Products</a>
+    </div>
+</section>
+
+<!-- Special Deals 40% -->
+<section class="section section--panel">
+    <div class="section__hd">
+        <h2>Special Deals 40%</h2>
+        <p>Hand-picked sale items and bundles.</p>
+    </div>
+
+    <div class="container grid grid--products">
+        @foreach (var product in onSaleProducts)
+        {
+            // Get image from default variant's primary image, fallback to first variant image, then product image, then default
+            var defaultVariant = product.ProductVariants?.FirstOrDefault(v => v.IsDefault == true && (v.IsActive == true || v.IsActive == null)) 
+                                 ?? product.ProductVariants?.FirstOrDefault(v => v.IsActive == true || v.IsActive == null)
+                                 ?? product.ProductVariants?.FirstOrDefault();
+            var productImage = defaultVariant?.ProductVariantImages?.FirstOrDefault(img => img.IsPrimary)?.Url
+                            ?? defaultVariant?.ProductVariantImages?.FirstOrDefault()?.Url
+                            ?? product.ProductImages?.FirstOrDefault()?.Url
+                            ?? "/public/images/products/img-cart-brush.png";
+            // Get price from default variant (use variant.Price if exists, otherwise use product.BasePrice)
+            var currentPrice = defaultVariant?.Price ?? product.BasePrice;
+            // Compare price: use CompareAtPrice if exists, otherwise use BasePrice
+            var comparePrice = defaultVariant?.CompareAtPrice ?? product.BasePrice;
+            // Check if there's a discount: CompareAtPrice > currentPrice OR (variant.Price < BasePrice)
+            var hasDiscount = (defaultVariant?.CompareAtPrice != null && defaultVariant.CompareAtPrice > currentPrice) 
+                            || (defaultVariant?.Price != null && defaultVariant.Price < product.BasePrice);
+            <div class="card product" data-product-id="@product.ProductId" data-details="@Url.Action("Details", "Products", new { id = product.ProductId })">
+                <div class="product__header">
+                    <a asp-controller="Products" asp-action="Details" asp-route-id="@product.ProductId" class="product__img">
+                        <img src="@productImage" alt="@product.Name" />
+                    </a>
+                    @if (User.Identity?.IsAuthenticated == true)
+                    {
+                        <button type="button" class="product__wishlist-btn" data-product-id="@product.ProductId" aria-label="Add to wishlist">
+                            <i data-lucide="heart" class="wishlist-icon"></i>
+                        </button>
+                    }
+                </div>
+                <div class="product__body">
+                    <div class="product__brand">@(product.Brand?.Name?.ToUpper() ?? "UNKNOWN")</div>
+                    <h3 class="product__title">@product.Name</h3>
+                    <div class="rating">
+                        <img class="icon icon--star" src="/public/images/icons/star.png" alt="" aria-hidden="true" />
+                        <span class="rating__score">4.8</span>
+                        <span class="rating__count">(@(new Random().Next(100, 400)) reviews)</span>
+                    </div>
+                    <div class="product__price">
+                        <span class="price--now">$@currentPrice.ToString("0.00")</span>
+                        @if (hasDiscount)
+                        {
+                            <span class="price--old">$@comparePrice.ToString("0.00")</span>
+                        }
+                    </div>
+                    <div class="product__actions">
+                        <button type="button" class="btn" data-quickview>Quick view</button>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+    <!-- View all for Sales -->
+    <div class="container text-center mt-16">
+        <a class="btn btn--brand" asp-controller="Deals" asp-action="Index">View All Deals</a>
+    </div>
+</section>
+
+<!-- Explore the Collection -->
+<section class="section">
+    <div class="section__hd">
+        <h2>Explore the Collection</h2>
+        <p>Find the right products for your needs.</p>
+    </div>
+
+    <div class="container grid grid--categories">
+        @{
+            var collections = new[] {
+        new { Name = "New & Trending",   Image = "/public/images/ui/collections-trending.png", Count = trendingCount, Action = "Trending" },
+        new { Name = "Makeup",           Image = "/public/images/ui/collections-makeup.png",   Count = makeupCount, Action = "Makeup" },
+        new { Name = "Tools & Brushes",  Image = "/public/images/ui/collections-tools.jpg",    Count = toolsCount,  Action = "Tools" },
+        new { Name = "Gift & Value Sets",Image = "/public/images/ui/collections-gifts.jpg",    Count = giftsCount, Action = "Gifts" }
+        };
+        }
+        @foreach (var c in collections)
+        {
+            <a class="collection-card" style="--bg: url('@c.Image')"
+               asp-controller="Catalog" asp-action="@c.Action">
+                <div class="collection-card__media" aria-hidden="true"></div>
+                <div class="collection-card__caption">
+                    <h3 class="collection-card__title">@c.Name</h3>
+                    <p class="collection-card__meta">@c.Count products</p>
+                </div>
+            </a>
+        }
+    </div>
+</section>

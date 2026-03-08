@@ -1,0 +1,81 @@
+@{
+    ViewData["Title"] = "Staff Dashboard";
+}
+
+<section class="grid-cards">
+    <div class="card kpi">
+        <div class="kpi__title">My Tasks</div>
+        <div class="kpi__value">15</div>
+        <div class="kpi__delta kpi__delta--up">+3 new</div>
+    </div>
+
+    <div class="card kpi">
+        <div class="kpi__title">Orders Processed</div>
+        <div class="kpi__value">42</div>
+        <div class="kpi__delta kpi__delta--up">+12%</div>
+    </div>
+
+    <div class="card kpi">
+        <div class="kpi__title">Products Managed</div>
+        <div class="kpi__value">156</div>
+        <div class="kpi__delta">Updated today</div>
+    </div>
+
+    <div class="card kpi">
+        <div class="kpi__title">Customer Inquiries</div>
+        <div class="kpi__value">8</div>
+        <div class="kpi__delta kpi__delta--down">-2 resolved</div>
+    </div>
+</section>
+
+<section class="card">
+    <div class="card__hd">
+        <h3>My Recent Activities</h3>
+        <a href="#" class="link">View all</a>
+    </div>
+    <div class="table">
+        <div class="table__row table__row--hd">
+            <div>Activity</div>
+            <div>Type</div>
+            <div>Status</div>
+            <div>Time</div>
+        </div>
+
+        <div class="table__row">
+            <div>Updated product "Lipstick Set"</div>
+            <div>Product Management</div>
+            <div><span class="badge badge--completed">Completed</span></div>
+            <div>2 hours ago</div>
+        </div>
+
+        <div class="table__row">
+            <div>Processed order SO-000912</div>
+            <div>Order Processing</div>
+            <div><span class="badge badge--processing">In Progress</span></div>
+            <div>3 hours ago</div>
+        </div>
+
+        <div class="table__row">
+            <div>Responded to customer inquiry</div>
+            <div>Customer Service</div>
+            <div><span class="badge badge--completed">Completed</span></div>
+            <div>5 hours ago</div>
+        </div>
+    </div>
+</section>
+
+<section class="card">
+    <div class="card__hd">
+        <h3>Quick Actions</h3>
+    </div>
+    <div class="grid grid--tight">
+        <a asp-area="Admin" asp-controller="Products" asp-action="Index" class="btn btn--brand">Manage Products</a>
+        <a asp-area="Admin" asp-controller="Orders" asp-action="Index" class="btn btn--brand">Process Orders</a>
+        <a asp-area="Admin" asp-controller="Customers" asp-action="Index" class="btn btn--brand">View Customers</a>
+        <a asp-area="Admin" asp-controller="Reports" asp-action="Index" class="btn btn--brand">View Reports</a>
+    </div>
+</section>
+
+@section Styles {
+    <link rel="stylesheet" href="~/admin/css/pages/dashboard.css" asp-append-version="true" />
+}

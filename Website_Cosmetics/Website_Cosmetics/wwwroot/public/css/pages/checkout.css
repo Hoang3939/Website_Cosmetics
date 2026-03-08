@@ -1,0 +1,226 @@
+/* ---------- Checkout Page ---------- */
+.checkout-empty {
+    text-align: center;
+    padding: 60px 20px;
+}
+
+.checkout {
+    display: grid;
+    grid-template-columns: 1fr 400px;
+    gap: 32px;
+    margin-top: 32px;
+}
+
+.checkout__main {
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+}
+
+.checkout__section {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 24px;
+}
+
+.checkout__section-title {
+    font-size: var(--fs-lg);
+    font-weight: 700;
+    margin: 0 0 20px;
+    color: var(--ink);
+}
+
+.radio-group {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.radio {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 16px;
+    border: 2px solid var(--line);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all var(--t-fast) var(--ease);
+}
+
+.radio:hover {
+    border-color: var(--brand);
+    background: rgba(var(--brand-rgb), 0.05);
+}
+
+.radio input[type="radio"] {
+    margin: 0;
+    margin-top: 2px;
+    cursor: pointer;
+}
+
+.radio input[type="radio"]:checked + .radio__label {
+    color: var(--brand);
+}
+
+.radio:has(input[type="radio"]:checked) {
+    border-color: var(--brand);
+    background: rgba(var(--brand-rgb), 0.1);
+}
+
+.radio__label {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+    cursor: pointer;
+}
+
+.radio__label strong {
+    font-size: var(--fs-md);
+    font-weight: 600;
+    color: var(--ink);
+}
+
+.radio__description {
+    font-size: var(--fs-sm);
+    color: var(--muted);
+}
+
+.checkout__sidebar {
+    position: sticky;
+    top: 100px;
+    height: fit-content;
+}
+
+.checkout-summary {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 24px;
+}
+
+.checkout-summary__title {
+    font-size: var(--fs-xl);
+    font-weight: 700;
+    margin: 0 0 20px;
+    color: var(--ink);
+}
+
+.checkout-summary__items {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-bottom: 24px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--line);
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.checkout-summary__item {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.checkout-summary__item-image {
+    width: 60px;
+    height: 60px;
+    border-radius: 8px;
+    overflow: hidden;
+    background: var(--bg);
+    flex-shrink: 0;
+}
+
+.checkout-summary__item-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.checkout-summary__item-details {
+    flex: 1;
+    min-width: 0;
+}
+
+.checkout-summary__item-name {
+    font-size: var(--fs-sm);
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 4px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.checkout-summary__item-variant {
+    font-size: var(--fs-xs);
+    color: var(--muted);
+    margin-bottom: 2px;
+}
+
+.checkout-summary__item-quantity {
+    font-size: var(--fs-xs);
+    color: var(--muted);
+}
+
+.checkout-summary__item-price {
+    font-size: var(--fs-md);
+    font-weight: 600;
+    color: var(--ink);
+    flex-shrink: 0;
+}
+
+.checkout-summary__totals {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.checkout-summary__row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: var(--fs-md);
+}
+
+.checkout-summary__row--total {
+    font-size: var(--fs-xl);
+    font-weight: 700;
+    margin-top: 8px;
+}
+
+.checkout-summary__subtotal {
+    font-weight: 600;
+}
+
+.checkout-summary__shipping {
+    font-weight: 600;
+}
+
+.checkout-summary__total {
+    font-size: var(--fs-2xl);
+    color: var(--brand);
+}
+
+.checkout-summary__divider {
+    height: 1px;
+    background: var(--line);
+    margin: 8px 0;
+}
+
+.checkout-summary__submit {
+    margin-top: 24px;
+}
+
+@media (max-width: 968px) {
+    .checkout {
+        grid-template-columns: 1fr;
+    }
+
+    .checkout__sidebar {
+        position: static;
+    }
+}
+

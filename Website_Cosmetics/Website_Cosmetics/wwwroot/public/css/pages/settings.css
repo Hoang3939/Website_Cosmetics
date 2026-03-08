@@ -1,0 +1,138 @@
+/* ---------- Settings Page ---------- */
+.settings {
+    max-width: 800px;
+    margin: 32px auto 0;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.settings__section {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 32px;
+}
+
+.settings__section-title {
+    font-size: var(--fs-xl);
+    font-weight: 700;
+    margin: 0 0 8px;
+    color: var(--ink);
+}
+
+.settings__section-description {
+    font-size: var(--fs-sm);
+    color: var(--muted);
+    margin: 0 0 24px;
+}
+
+.settings-form .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 20px;
+}
+
+.settings-form .form-label {
+    font-size: var(--fs-sm);
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 4px;
+}
+
+.settings-form .form-control {
+    width: 100%;
+    height: 44px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--bg);
+    color: var(--ink);
+    padding: 0 16px;
+    font-size: var(--fs-md);
+    transition: all var(--t-fast) var(--ease);
+}
+
+.settings-form .form-control:focus {
+    outline: none;
+    border-color: var(--brand);
+    box-shadow: 0 0 0 3px rgba(179, 29, 29, 0.1);
+}
+
+.settings-form .form-control::placeholder {
+    color: var(--muted);
+}
+
+.settings-form .form-text {
+    font-size: var(--fs-xs);
+    color: var(--muted);
+    margin-top: 4px;
+}
+
+.settings-form .form-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 24px;
+}
+
+.settings-info {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.settings-info__row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--line);
+}
+
+.settings-info__row:last-child {
+    border-bottom: none;
+}
+
+.settings-info__label {
+    font-size: var(--fs-md);
+    font-weight: 600;
+    color: var(--ink);
+}
+
+.settings-info__value {
+    font-size: var(--fs-md);
+    color: var(--muted);
+}
+
+.badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: var(--fs-xs);
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.badge--success {
+    background: rgba(16, 185, 129, 0.1);
+    color: var(--ok);
+}
+
+.badge--warning {
+    background: rgba(245, 158, 11, 0.1);
+    color: var(--warn);
+}
+
+@media (max-width: 768px) {
+    .settings__section {
+        padding: 24px 16px;
+    }
+
+    .settings-info__row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+}
+
+

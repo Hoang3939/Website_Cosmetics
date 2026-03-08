@@ -1,0 +1,351 @@
+@model Website_Cosmetics.Models.ProductVariant
+@{
+    ViewData["Title"] = "Edit Variant";
+    var product = ViewBag.Product as Website_Cosmetics.Models.Product;
+    var productId = (int)ViewBag.ProductId;
+}
+
+<div class="page-header">
+    <div class="page-header__title">
+        <h1>Edit Variant: @Model.VariantName</h1>
+    </div>
+    <div class="page-header__actions">
+    <a asp-action="Index" asp-route-productId="@productId" class="btn btn-secondary">← Back to Variants</a>
+    </div>
+</div>
+
+<div class="card product-info-card">
+    <div class="product-info-card__header">
+        <h3>Product Information</h3>
+    </div>
+    <div class="product-info-card__body">
+        <div class="product-info-card__row">
+            <div class="product-info-card__item">
+                <span class="product-info-card__label">Product Name:</span>
+                <span class="product-info-card__value">@product?.Name</span>
+            </div>
+            <div class="product-info-card__item">
+                <span class="product-info-card__label">Brand:</span>
+                <span class="product-info-card__value">@(product?.Brand?.Name ?? "N/A")</span>
+            </div>
+            <div class="product-info-card__item">
+                <span class="product-info-card__label">Base Price:</span>
+                <span class="product-info-card__value">@product?.BasePrice.ToString("C")</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <form asp-action="Edit" method="post" enctype="multipart/form-data" class="form" asp-route-id="@Model.VariantId">
+        @Html.AntiForgeryToken()
+        <input type="hidden" asp-for="VariantId" />
+        <input type="hidden" asp-for="ProductId" />
+
+        <div asp-validation-summary="ModelOnly" class="form__error-box" role="alert"></div>
+
+        <div class="form__section">
+            <h3 class="form__section-title">Basic Information</h3>
+            
+            <div class="form__group">
+                <label asp-for="VariantName" class="form__label">Variant Name <span class="form__required">*</span></label>
+                <input asp-for="VariantName" class="form__input" required />
+                <span asp-validation-for="VariantName" class="form__error"></span>
+            </div>
+        </div>
+
+        <div class="form__section">
+            <h3 class="form__section-title">Color Information</h3>
+            
+            <div class="form__row">
+                <div class="form__group form__group--third">
+                    <label asp-for="ColorName" class="form__label">Color Name</label>
+                    <input asp-for="ColorName" class="form__input" />
+                    <span asp-validation-for="ColorName" class="form__error"></span>
+                </div>
+                <div class="form__group form__group--third">
+                    <label asp-for="ColorCode" class="form__label">Color Code</label>
+                    <div class="color-input-group">
+                        <input type="color" class="form__input form__input--color" id="colorPicker" value="@(Model.ColorCode ?? "#666666")" />
+                        <input asp-for="ColorCode" type="text" class="form__input form__input--color-code" id="colorCodeInput" placeholder="#666666" pattern="^#[0-9A-Fa-f]{6}$" maxlength="7" value="@Model.ColorCode" />
+                    </div>
+                    <span asp-validation-for="ColorCode" class="form__error"></span>
+                    <small class="form__help">Select color or enter hex code (e.g., #666666)</small>
+                </div>
+                <div class="form__group form__group--third">
+                    <label asp-for="ColorFamily" class="form__label">Color Family</label>
+                    <input asp-for="ColorFamily" class="form__input" />
+                </div>
+            </div>
+        </div>
+
+        <div class="form__section">
+            <h3 class="form__section-title">Size Information</h3>
+            
+            <div class="form__row">
+                <div class="form__group form__group--third">
+                    <label asp-for="Size" class="form__label">Size</label>
+                    <input asp-for="Size" class="form__input" />
+                </div>
+                <div class="form__group form__group--third">
+                    <label asp-for="SizeValue" class="form__label">Numeric Value</label>
+                    <input asp-for="SizeValue" type="number" step="0.01" class="form__input" />
+                </div>
+                <div class="form__group form__group--third">
+                    <label asp-for="SizeUnit" class="form__label">Unit</label>
+                    <input asp-for="SizeUnit" class="form__input" />
+                </div>
+            </div>
+
+            <div class="form__group">
+                <label asp-for="VariantType" class="form__label">Variant Type</label>
+                <input asp-for="VariantType" class="form__input" />
+            </div>
+        </div>
+
+        <div class="form__section">
+            <h3 class="form__section-title">Sales Information</h3>
+            
+            <div class="form__row">
+                <div class="form__group form__group--third">
+                    <label asp-for="SKU" class="form__label">SKU Code</label>
+                    <input asp-for="SKU" class="form__input" />
+                </div>
+                <div class="form__group form__group--third">
+                    <label asp-for="Barcode" class="form__label">Barcode</label>
+                    <input asp-for="Barcode" class="form__input" />
+                </div>
+                <div class="form__group form__group--third">
+                    <label asp-for="Price" class="form__label">Price (Override Base Price)</label>
+                    <input asp-for="Price" type="number" step="0.01" class="form__input" />
+                </div>
+            </div>
+
+            <div class="form__row">
+                <div class="form__group form__group--third">
+                    <label asp-for="CompareAtPrice" class="form__label">Compare At Price</label>
+                    <input asp-for="CompareAtPrice" type="number" step="0.01" class="form__input" />
+                </div>
+                <div class="form__group form__group--third">
+                    <label asp-for="Stock" class="form__label">Stock</label>
+                    <input asp-for="Stock" type="number" class="form__input" />
+                </div>
+                <div class="form__group form__group--third">
+                    <label asp-for="LowStockThreshold" class="form__label">Low Stock Threshold</label>
+                    <input asp-for="LowStockThreshold" type="number" class="form__input" />
+                </div>
+            </div>
+        </div>
+
+        <div class="form__section">
+            <h3 class="form__section-title">Settings</h3>
+            
+            <div class="form__row">
+                <div class="form__group form__group--third">
+                    <label asp-for="IsActive" class="form__label">Status</label>
+                    <select asp-for="IsActive" class="form__select">
+                        @if (Model.IsActive == true)
+                        {
+                            <option value="true" selected>Active</option>
+                            <option value="false">Inactive</option>
+                        }
+                        else
+                        {
+                            <option value="true">Active</option>
+                            <option value="false" selected>Inactive</option>
+                        }
+                    </select>
+                </div>
+                <div class="form__group form__group--third">
+                    <label asp-for="IsDefault" class="form__label">Set as Default</label>
+                    <select asp-for="IsDefault" class="form__select">
+                        @if (Model.IsDefault == true)
+                        {
+                            <option value="false">No</option>
+                            <option value="true" selected>Yes</option>
+                        }
+                        else
+                        {
+                            <option value="false" selected>No</option>
+                            <option value="true">Yes</option>
+                        }
+                    </select>
+                </div>
+                <div class="form__group form__group--third">
+                    <label asp-for="DisplayOrder" class="form__label">Display Order</label>
+                    <input asp-for="DisplayOrder" type="number" class="form__input" />
+                </div>
+            </div>
+        </div>
+
+        <div class="form__section">
+            <h3 class="form__section-title">Variant Images <span class="form__required">*</span></h3>
+            <p class="form__help">💡 Drag and drop images to reorder. <strong>Required:</strong> At least 1 image must be marked as primary.</p>
+            
+            @if (!ViewData.ModelState.IsValid && ViewData.ModelState[""]?.Errors != null && ViewData.ModelState[""]?.Errors.Count > 0)
+            {
+                <div class="form__error-box">
+                    @foreach (var error in ViewData.ModelState[""]!.Errors)
+                    {
+                        <p>@error.ErrorMessage</p>
+                    }
+                </div>
+            }
+
+            @if (Model.ProductVariantImages != null && Model.ProductVariantImages.Any())
+            {
+                <div class="image-gallery" id="existingImages">
+                    @for (int i = 0; i < Model.ProductVariantImages.Count; i++)
+                    {
+                        var image = Model.ProductVariantImages.ElementAt(i);
+                        <div class="image-card image-item" 
+                             data-image-id="@image.ImageId" 
+                             draggable="true">
+                            <img src="@image.Url" class="image-card__img" draggable="false" />
+                            <div class="image-card__body" style="position: relative;">
+                                <div style="position: absolute; top: 5px; right: 5px; background: rgba(0,0,0,0.5); color: white; padding: 2px 8px; border-radius: 3px; font-size: 12px;">
+                                    Order: <span class="order-number">@(i + 1)</span>
+                                </div>
+                                <input type="hidden" name="existingImageIds" class="image-id-input" value="@image.ImageId" />
+                                <input type="hidden" name="existingDisplayOrder" class="display-order-input" value="@i" />
+                                
+                                <div class="form-check">
+                                    <input class="form-check-input existing-primary-checkbox" 
+                                           type="checkbox" 
+                                           name="existingIsPrimary" 
+                                           value="@i" 
+                                           id="existing_primary_@i"
+                                           @(image.IsPrimary ? "checked" : "")>
+                                    <label class="form-check-label" for="existing_primary_@i">
+                                        Primary Image
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input existing-makeup-checkbox" 
+                                           type="checkbox" 
+                                           name="existingIsMakeupReference" 
+                                           value="@i" 
+                                           id="existing_makeup_@i"
+                                           @(image.IsMakeupReference ? "checked" : "")>
+                                    <label class="form-check-label" for="existing_makeup_@i">
+                                        Virtual Try-On
+                                    </label>
+                                </div>
+                                <button type="button" 
+                                        class="btn btn-sm btn-danger btn-delete-image" 
+                                        data-image-id="@image.ImageId"
+                                        data-delete-url="@Url.Action("DeleteImage", "Variants")">
+                                    Delete Image
+                                </button>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <p class="form__help">No images uploaded yet</p>
+            }
+
+            <hr style="margin: var(--space-lg) 0;" />
+            <h4>Add New Images</h4>
+
+            <div class="form__group">
+                <label class="form__label">Upload New Images</label>
+                <input type="file" name="newVariantImages" multiple accept="image/*,.avif,.webp,image/avif,image/webp" class="form__input" id="imageUpload" />
+            </div>
+
+            <div id="imagePreview" class="image-preview"></div>
+        </div>
+
+        <div class="form__actions">
+            <button type="submit" class="btn btn-primary">Save Changes</button>
+            <a asp-action="Index" asp-route-productId="@productId" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const colorPicker = document.getElementById('colorPicker');
+            const colorCodeInput = document.getElementById('colorCodeInput');
+            
+            if (!colorPicker || !colorCodeInput) return;
+            
+            // Initialize: set color picker from input if input has value
+            if (colorCodeInput.value && colorCodeInput.value.match(/^#[0-9A-Fa-f]{6}$/)) {
+                colorPicker.value = colorCodeInput.value.toUpperCase();
+            } else if (colorPicker.value) {
+                colorCodeInput.value = colorPicker.value.toUpperCase();
+            } else {
+                // Set default
+                const defaultValue = '#666666';
+                colorCodeInput.value = defaultValue;
+                colorPicker.value = defaultValue;
+            }
+            
+            // Sync from color picker to text input
+            colorPicker.addEventListener('input', function() {
+                const value = this.value.toUpperCase();
+                colorCodeInput.value = value;
+            });
+            
+            // Sync from text input to color picker
+            colorCodeInput.addEventListener('input', function() {
+                let value = this.value.trim();
+                
+                // Add # if missing
+                if (value && !value.startsWith('#')) {
+                    value = '#' + value;
+                }
+                
+                // Validate hex color format
+                if (value.match(/^#[0-9A-Fa-f]{6}$/)) {
+                    colorPicker.value = value.toUpperCase();
+                    this.value = value.toUpperCase();
+                    this.setCustomValidity('');
+                } else if (value.length > 0 && value.length < 7) {
+                    // Still typing, don't show error yet
+                    this.setCustomValidity('');
+                } else if (value.length > 0) {
+                    this.setCustomValidity('Please enter a valid hex color code (e.g., #666666)');
+                } else {
+                    this.setCustomValidity('');
+                }
+            });
+            
+            // Format on blur
+            colorCodeInput.addEventListener('blur', function() {
+                let value = this.value.trim();
+                if (value && !value.startsWith('#')) {
+                    value = '#' + value;
+                }
+                if (value.match(/^#[0-9A-Fa-f]{6}$/)) {
+                    const formattedValue = value.toUpperCase();
+                    this.value = formattedValue;
+                    colorPicker.value = formattedValue;
+                } else if (value.length > 0) {
+                    // Invalid format, reset to picker value
+                    this.value = colorPicker.value.toUpperCase();
+                }
+            });
+            
+            // Before form submit, ensure both inputs have the same value
+            const form = colorCodeInput.closest('form');
+            if (form) {
+                form.addEventListener('submit', function() {
+                    // Use text input value if valid, otherwise use picker value
+                    const textValue = colorCodeInput.value.trim();
+                    if (textValue.match(/^#[0-9A-Fa-f]{6}$/)) {
+                        colorPicker.value = textValue.toUpperCase();
+                        colorCodeInput.value = textValue.toUpperCase();
+                    } else {
+                        colorCodeInput.value = colorPicker.value.toUpperCase();
+                    }
+                });
+            }
+        });
+    </script>
+}

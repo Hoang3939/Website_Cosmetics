@@ -1,0 +1,221 @@
+﻿.no-scroll {
+    overflow: hidden;
+}
+
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .2s ease;
+    z-index: 1000;
+}
+
+    .modal-overlay.is-open {
+        opacity: 1;
+        pointer-events: auto;
+    }
+
+.modal {
+    position: relative;
+    background: #fff;
+    border-radius: 16px;
+    padding: 24px;
+    max-width: 960px;
+    width: 90%;
+    max-height: 88vh;
+    overflow-y: auto;
+    transform: translateY(10px);
+    transition: all .2s ease;
+}
+
+.modal-overlay.is-open .modal {
+    transform: translateY(0);
+}
+
+.modal__close {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    width: 36px;
+    height: 36px;
+    border: none;
+    background: #f3f4f6;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    z-index: 10;
+}
+
+.modal__close:hover {
+    background: #e5e7eb;
+    transform: scale(1.1);
+}
+
+.modal__close svg,
+.modal__close i {
+    width: 20px;
+    height: 20px;
+    stroke: #374151;
+    margin: 0;
+    padding: 0;
+    display: block;
+}
+
+.modal-nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: #fff;
+    border: 2px solid #e5e7eb;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 0;
+    margin: 0;
+}
+
+.modal-nav:hover {
+    background: var(--brand, #dc2626);
+    border-color: var(--brand, #dc2626);
+    transform: translateY(-50%) scale(1.1);
+    box-shadow: 0 6px 12px rgba(220, 38, 38, 0.3);
+}
+
+.modal-nav:hover svg,
+.modal-nav:hover i {
+    stroke: #fff;
+}
+
+.modal-nav svg,
+.modal-nav i {
+    width: 24px;
+    height: 24px;
+    stroke: #374151;
+    transition: stroke 0.3s ease;
+    margin: 0;
+    padding: 0;
+    display: block;
+    flex-shrink: 0;
+}
+
+.modal-nav i {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-nav i svg,
+.modal__close i svg {
+    margin: 0;
+    padding: 0;
+    display: block;
+}
+
+.modal-nav--prev {
+    left: 24px;
+}
+
+.modal-nav--next {
+    right: 24px;
+}
+
+@media (max-width: 768px) {
+    .modal-nav {
+        display: none;
+    }
+}
+
+/* ---------- Confirmation Modal ---------- */
+.modal-overlay.is-confirm .modal {
+    max-width: 400px;
+    width: 90%;
+    padding: 32px 24px;
+}
+
+.modal--confirm {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+}
+
+/* Hide navigation arrows for confirmation modal */
+.modal-overlay.is-confirm .modal-nav {
+    display: none !important;
+}
+
+.modal__icon {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+}
+
+.modal__icon--warning {
+    background: rgba(239, 68, 68, 0.1);
+    color: var(--err);
+}
+
+.modal__icon--warning i {
+    width: 32px;
+    height: 32px;
+    color: var(--err);
+}
+
+.modal__title {
+    font-size: var(--fs-xl);
+    font-weight: 700;
+    color: var(--ink);
+    margin: 0;
+}
+
+.modal__message {
+    font-size: var(--fs-md);
+    color: var(--muted);
+    margin: 0;
+    line-height: 1.5;
+}
+
+.modal__actions {
+    display: flex;
+    gap: 12px;
+    width: 100%;
+    margin-top: 8px;
+    justify-content: flex-end;
+}
+
+.modal__actions .btn {
+    min-width: 100px;
+    height: 44px;
+    font-weight: 500;
+    flex: 0 0 auto;
+}
+
+.modal__actions .btn--cancel {
+    background: var(--panel);
+    color: var(--ink);
+    border-color: var(--line);
+}
+
+.modal__actions .btn--cancel:hover {
+    background: var(--line);
+    border-color: var(--muted);
+}
