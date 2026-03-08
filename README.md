@@ -1,60 +1,91 @@
-# 💄 Cosmetic Store – ASP.NET Core MVC (develop)
+# Website Cosmetics
 
-> **Branch:** `develop`  
-> **Framework:** .NET 8 • ASP.NET Core MVC • EF Core • SQL Server  
-> **Goal:** Stable integration branch that aggregates features, passes tests, and is deployable to test/staging.
-
----
-
-## 📦 Project Overview
-
-An e-commerce web application for cosmetics with:
-- User Authentication (Login/Logout, Register, Password Recovery, Email Confirmation)
-- Role-based Authorization (Admin / Staff / User)
-- Admin module: Users, Products, Orders, Permissions, Reports
-- Customer module: Home, Product browsing/search, Cart (in scope of FE)
-- Clean MVC layering and EF Core with SQL Server
+Nền tảng thương mại điện tử mỹ phẩm, xây dựng bằng **ASP.NET Core MVC (.NET 8)**, tích hợp:
+- Website bán hàng (customer-facing)
+- Khu vực quản trị (Admin Area)
+- Hệ thống xác thực/phân quyền
+- Gợi ý sản phẩm (Recommendation)
+- Chat/RAG demo và tích hợp Virtual Try-On (PSGAN API)
 
 ---
 
-## 🏗 Architecture
+## 1) Cấu trúc repository
 
-Website_Cosmetics/ # Solution root
-├─ Controllers/ # MVC controllers (Auth, Products, Orders, Admin/*)
-├─ Areas/
-│ └─ Admin/
-│ ├─ Controllers/
-│ └─ Views/
-├─ Models/ # Domain models + ViewModels
-├─ Data/
-│ ├─ ApplicationDbContext.cs # EF Core DbContext
-│ └─ Migrations/ # EF Core migrations
-├─ Services/ # AuthService, EmailService, AuthorizationService, etc.
-├─ Views/ # Razor Views (.cshtml)
-│ └─ Shared/ (_Layout.cshtml, _Alerts.cshtml, ...)
-├─ wwwroot/ # Static assets (css, js, images)
-├─ Database/ # Optional SQL scripts (schema, seed, permissions)
-├─ appsettings.json # Local settings (DO NOT commit secrets)
-├─ Program.cs # App bootstrap (DI, middleware, routing)
-└─ Website_Cosmetics.csproj
-
+```text
+Website_Cosmetics/
+├─ Website_Cosmetics/                  # Solution .NET chính
+│  ├─ Website_Cosmetics.sln
+│  ├─ Database/                        # Script SQL tạo bảng/seed/index
+│  └─ Website_Cosmetics/               # ASP.NET Core MVC app
+│     ├─ Areas/Admin/
+│     ├─ Controllers/
+│     ├─ Data/
+│     ├─ Migrations/
+│     ├─ Models/
+│     ├─ Repositories/
+│     ├─ Services/
+│     ├─ Views/
+│     ├─ wwwroot/
+│     ├─ Program.cs
+│     └─ Website_Cosmetics.csproj
+├─ scripts/                            # Python scripts cho RAG/embedding + API phụ trợ
+├─ integrations/PSGAN-master/          # Nguồn tích hợp virtual makeup
+├─ notebooks/                          # Notebook thử nghiệm
+└─ Jenkinsfile                         # Pipeline CI/CD
+```
 
 ---
 
-## 🛠 Tech Stack
+## 2) Công nghệ sử dụng
 
 - **Backend:** ASP.NET Core MVC (.NET 8), C#
-- **ORM:** Entity Framework Core (SQL Server)
-- **Auth:** Cookies / Identity-like flow (custom models), BCrypt
-- **Mail:** MailKit / SMTP
-- **Build/CI:** dotnet CLI, (Jenkins/GitHub Actions supported)
-- **Tests:** Manual test packs + (room for xUnit/MSTest)
+- **ORM:** Entity Framework Core + SQL Server
+- **Authentication:** Cookie auth + service tùy biến
+- **Password hash:** BCrypt
+- **Email:** MailKit/MimeKit (SMTP)
+- **Logging:** Serilog
+- **JSON:** Newtonsoft.Json
+- **AI/ML tích hợp:** RAG scripts, PSGAN virtual try-on API
 
 ---
 
-## ⚙️ Configuration
+## 3) Tính năng chính
 
-Create `appsettings.Development.json` (local) and set environment variables in production.
+### Customer
+- Trang chủ, danh mục sản phẩm, chi tiết sản phẩm
+- Tìm kiếm, wishlist, giỏ hàng, địa chỉ giao hàng
+- Đặt hàng, lịch sử đơn hàng
+- Hồ sơ người dùng
+
+### Authentication / Authorization
+- Đăng ký, đăng nhập, đăng xuất
+- Quên mật khẩu, reset mật khẩu, xác thực email
+- Phân quyền vai trò (Admin/Staff/User)
+
+### Admin
+- Quản lý danh mục, thương hiệu, sản phẩm, biến thể
+- Quản lý người dùng, nhân viên, khách hàng
+- Quản lý đơn hàng
+- Dashboard tổng quan
+
+### Recommendation / AI
+- Recommendation service theo độ tương đồng sản phẩm
+- Chat/RAG demo qua Python scripts
+- Virtual try-on qua tích hợp PSGAN API
+
+---
+
+## 4) Yêu cầu môi trường
+
+- .NET SDK 8.0+
+- SQL Server (local hoặc container)
+- (Tuỳ chọn) Python 3.10+ cho scripts RAG/PSGAN API
+
+---
+
+## 5) Cấu hình ứng dụng .NET
+
+Tạo file `Website_Cosmetics/Website_Cosmetics/Website_Cosmetics/appsettings.Development.json` và cấu hình:
 
 ```json
 {
@@ -83,27 +114,77 @@ Create `appsettings.Development.json` (local) and set environment variables in p
   },
   "AllowedHosts": "*"
 }
+```
 
-▶️ Build & Run
-# Restore dependencies
-dotnet restore
+---
 
-# Build project
-dotnet build -c Debug   # or Release
+## 6) Chạy dự án .NET
 
-# Apply database migrations
-dotnet ef database update
+Từ thư mục repo root:
 
-# Run the application
-dotnet run --project Website_Cosmetics
-# App runs at http://localhost:5000 (or as configured in Kestrel/appsettings)
+```bash
+cd Website_Cosmetics
+dotnet restore Website_Cosmetics/Website_Cosmetics/Website_Cosmetics.sln
+dotnet build Website_Cosmetics/Website_Cosmetics/Website_Cosmetics.sln -c Debug
+```
 
-🧩 EF Core CLI Commands
-# Install EF tool (if not installed)
-dotnet tool install --global dotnet-ef
+Apply migration/database:
 
-# Create a new migration
-dotnet ef migrations add InitAuthAndCore
+```bash
+dotnet ef database update --project Website_Cosmetics/Website_Cosmetics/Website_Cosmetics/Website_Cosmetics.csproj
+```
 
-# Apply latest migration
-dotnet ef database update
+Run app:
+
+```bash
+dotnet run --project Website_Cosmetics/Website_Cosmetics/Website_Cosmetics/Website_Cosmetics.csproj
+```
+
+---
+
+## 7) Scripts Python (tuỳ chọn)
+
+Thư mục `scripts/` chứa các tiện ích như:
+- `generate_embeddings.py`
+- `rag_demo_clean.py`
+- `rag_demo_pipeline.py`
+- `psgan_api/app.py`
+
+Cài dependency:
+
+```bash
+cd scripts
+pip install -r requirements.txt
+```
+
+PSGAN API riêng:
+
+```bash
+cd psgan_api
+pip install -r requirements.txt
+python app.py
+```
+
+---
+
+## 8) Database scripts
+
+- `Website_Cosmetics/Website_Cosmetics/Database/` chứa script SQL phục vụ tạo bảng, seed dữ liệu, index, và script tiện ích kiểm tra/cập nhật.
+
+Khuyến nghị:
+- Dùng EF migrations cho luồng chính.
+- Dùng SQL scripts khi cần bootstrap nhanh hoặc fix dữ liệu môi trường test.
+
+---
+
+## 9) CI/CD
+
+- Pipeline cấu hình tại `Jenkinsfile` (đang theo nhánh `develop`).
+
+---
+
+## 10) Lưu ý quan trọng
+
+- Không commit secrets vào `appsettings*.json`.
+- Chỉ giữ tài liệu tổng hợp tại `README.md` ở root.
+- Các tài liệu guide cũ đã được loại bỏ để tránh phân mảnh tài liệu.
