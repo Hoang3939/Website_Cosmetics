@@ -107,6 +107,7 @@
         close() {
             if (!this._overlay) return;
             this._overlay.classList.remove('is-open');
+            this._overlay.classList.remove('is-confirm');
             this._overlay.setAttribute('aria-hidden', 'true');
             document.documentElement.classList.remove('no-scroll');
             document.removeEventListener('keydown', this._escHandler);
