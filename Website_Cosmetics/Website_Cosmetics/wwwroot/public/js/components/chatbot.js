@@ -257,7 +257,8 @@ const Chatbot = {
         
         products.forEach(product => {
             const productLink = document.createElement('a');
-            productLink.href = product.slug ? `/Products/Details/${product.slug}` : `/Products/Details/${product.productId}`;
+            // Use productId instead of slug
+            productLink.href = `/Products/Details/${product.productId}`;
             productLink.className = 'chatbot-product-link';
             productLink.target = '_blank';
             

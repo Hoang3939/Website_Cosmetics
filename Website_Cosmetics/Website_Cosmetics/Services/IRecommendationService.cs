@@ -1,13 +1,12 @@
-using Website_Cosmetics.Models;
-
 namespace Website_Cosmetics.Services
 {
     public interface IRecommendationService
     {
-        Task<List<RecommendationResult>> GetRecommendationsAsync(int productId, int topK = 5);
+        Task<List<ProductRecommendation>> GetRecommendationsAsync(int productId, int topK = 5);
+        Task<Dictionary<int, List<ProductRecommendation>>> BuildSimilarityMatrixAsync();
     }
 
-    public class RecommendationResult
+    public class ProductRecommendation
     {
         public int ProductId { get; set; }
         public string Name { get; set; } = string.Empty;
@@ -17,5 +16,3 @@ namespace Website_Cosmetics.Services
         public string? ImageUrl { get; set; }
     }
 }
-
-

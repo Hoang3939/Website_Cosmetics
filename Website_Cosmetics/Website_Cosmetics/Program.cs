@@ -43,6 +43,9 @@ builder.Services.AddScoped<IEmailService, EmailService>();
 // Add RAG Service
 builder.Services.AddScoped<IRAGService, RAGService>();
 
+// Add Recommendation Service
+builder.Services.AddScoped<IRecommendationService, RecommendationService>();
+
 // Add HttpClient for VirtualMakeupService
 builder.Services.AddHttpClient();
 
